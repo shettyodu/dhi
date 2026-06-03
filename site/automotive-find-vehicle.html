@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find My Vehicle — AutoCommand AI Marketplace | DHI</title>
+  <meta name="description" content="Tell AutoCommand what you're looking for and our AI-guided, dealer-backed process finds the right vehicle — with clear cost, financing options, protection, and delivery." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ["Inter","ui-sans-serif","system-ui","sans-serif"], display: ["Montserrat","Inter","sans-serif"] },
+      colors: { brand: { 50:"#eef4fb",100:"#d9e6f5",200:"#b7cfe9",300:"#8bb0d8",400:"#5a8bc2",600:"#1d4e89",700:"#143c6c",800:"#0e3a5f",900:"#0a2540",950:"#071a30" } },
+    } } };
+  </script>
+  <style>body{font-family:Inter,system-ui,sans-serif}.ck-in{margin-top:.25rem;width:100%;border-radius:.5rem;border:1px solid #cbd5e1;padding:.55rem .7rem;font-size:.9rem}.ck-in:focus{outline:none;border-color:#06b6d4;box-shadow:0 0 0 2px rgba(6,182,212,.25)}</style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <section class="relative overflow-hidden bg-brand-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 10%, #06b6d4 0, transparent 40%), radial-gradient(circle at 10% 90%, #f59e0b 0, transparent 42%);"></div>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
+      <nav class="mb-5 flex items-center gap-2 text-sm text-slate-400">
+        <a href="index.html" class="hover:text-cyan-300">Home</a><span>/</span>
+        <a href="automotive.html" class="hover:text-cyan-300">Automotive</a><span>/</span>
+        <span class="text-slate-200">Find My Vehicle</span>
+      </nav>
+      <p class="text-sm font-semibold uppercase tracking-wider text-cyan-300">AutoCommand AI Marketplace</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Find, finance, protect &amp; ship your next vehicle</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">Tell us what you're after. Our AI-guided, <strong class="text-white">dealer-backed</strong> process searches beyond one lot, shows real delivered cost, and a human reviews every match before you buy.</p>
+    </div>
+  </section>
+
+  <!-- SUBNAV -->
+  <div class="sticky top-16 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 sm:px-6 lg:px-8">
+      <a href="automotive.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Overview</a>
+      <a href="automotive-find-vehicle.html" class="whitespace-nowrap border-b-2 border-cyan-600 px-3 py-3 text-sm font-semibold text-cyan-700">Find My Vehicle</a>
+      <a href="automotive-passport.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Vehicle Passport</a>
+      <a href="automotive-partners.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Dealers &amp; Suppliers</a>
+      <a href="automotive-influencers.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Creators</a>
+      <a href="contact.html?interest=Automotive" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Talk to us</a>
+    </div>
+  </div>
+
+  <main class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="font-display text-xl font-bold text-brand-900">What are you looking for?</h2>
+      <p class="mt-1 text-sm text-slate-500">A quick request — no obligation. We'll match vehicles, outline real delivered cost, and share financing &amp; protection options.</p>
+      <form id="fv-form" class="mt-5 grid gap-4 sm:grid-cols-2">
+        <label class="block"><span class="text-sm font-medium text-slate-700">Make / brand</span><input id="fv-make" class="ck-in" placeholder="Toyota, Ford, any…" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Model</span><input id="fv-model" class="ck-in" placeholder="Camry, F-150, open…" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Year range</span><input id="fv-year" class="ck-in" placeholder="2019–2023" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Max mileage</span><input id="fv-mileage" class="ck-in" placeholder="60,000" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Price range</span><input id="fv-price" class="ck-in" placeholder="$20k–$30k" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Target monthly payment</span><input id="fv-payment" class="ck-in" placeholder="$450/mo" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Down payment / trade-in</span><input id="fv-down" class="ck-in" placeholder="$3,000 + 2018 Civic" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Credit band <span class="text-slate-400">(optional)</span></span>
+          <select id="fv-credit" class="ck-in"><option value="">Prefer not to say</option><option>Excellent (720+)</option><option>Good (660–719)</option><option>Fair (600–659)</option><option>Rebuilding (&lt;600)</option></select></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Delivery location (ZIP / city)</span><input id="fv-location" class="ck-in" placeholder="27504 / New Bern, NC" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Shipping preference</span>
+          <select id="fv-shipping" class="ck-in"><option value="">No preference</option><option>Local pickup</option><option>Local delivery</option><option>National transport</option><option>Port / international</option></select></label>
+        <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Use case <span class="text-slate-400">(optional)</span></span><input id="fv-use" class="ck-in" placeholder="First car, family SUV, work truck, EV, export…" /></label>
+        <div class="h-px bg-slate-100 sm:col-span-2"></div>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Your name</span><input id="fv-name" class="ck-in" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Email</span><input id="fv-email" type="email" class="ck-in" /></label>
+        <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Phone <span class="text-slate-400">(optional)</span></span><input id="fv-phone" class="ck-in" /></label>
+        <div class="sm:col-span-2">
+          <button id="fv-submit" type="submit" class="rounded-lg bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Find my vehicle →</button>
+          <span id="fv-status" class="ml-3 text-sm"></span>
+        </div>
+      </form>
+      <div id="fv-result" class="mt-5 hidden"></div>
+      <p class="mt-4 text-xs text-slate-400">AI-guided, dealer-backed, human-reviewed. Financing is subject to lender approval — prequalification is not final approval. Vehicle availability is confirmed before any purchase. This is a request, not an offer or binding agreement.</p>
+    </div>
+  </main>
+
+  <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-lg bg-brand-900 px-4 py-2 text-sm font-medium text-white opacity-0 shadow-lg transition-opacity duration-300"></div>
+
+  <script src="assets/components.js"></script>
+  <script src="assets/automotive-find-vehicle.js"></script>
+</body>
+</html>

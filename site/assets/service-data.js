@@ -509,6 +509,29 @@ const SERVICE_CONTENT = {
     sections: [
       {
         type: "prose",
+        heading: "Search smarter. Finance clearer. Protect better. Ship anywhere.",
+        paragraphs: [
+          "AutoCommand AI Marketplace — the AI-guided, dealer-backed way to find, finance, protect, accessorize, and ship your next vehicle, with a human review before you buy.",
+          '<span class="mt-2 inline-flex flex-wrap gap-2"><a class="inline-block rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700" href="automotive-find-vehicle.html">Find my vehicle &rarr;</a><a class="inline-block rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-brand-800 hover:bg-slate-50" href="automotive-passport.html">Vehicle passport</a><a class="inline-block rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-brand-800 hover:bg-slate-50" href="automotive-partners.html">Dealer / supplier sign-up</a><a class="inline-block rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-brand-800 hover:bg-slate-50" href="automotive-influencers.html">Creator program</a></span>',
+        ],
+      },
+      {
+        type: "list",
+        heading: "Buy with confidence",
+        cols2: true,
+        items: [
+          "Clear pricing — no hidden add-ons",
+          "Human review before every purchase",
+          "AI-guided, dealer-backed process",
+          "Vehicle history available on listings",
+          "Protection shown up front",
+          "Shipping coordinated — local to port",
+          "Financing subject to lender approval (prequalification is not final approval)",
+          "Dealer participation subject to verification",
+        ],
+      },
+      {
+        type: "prose",
         heading: "One platform, one simple promise",
         paragraphs: [
           "Customers search by brand, model, year, mileage, price, monthly payment, domestic or international availability, shipping preference, and protection preference. The system then pulls qualified vehicles, ranks them, attaches vehicle-history information such as a Carfax or equivalent report, presents financing choices, offers protection products, confirms availability, coordinates the purchase path, and arranges delivery or shipment.",

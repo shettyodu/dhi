@@ -36,6 +36,7 @@ async function signUpInfluencer(body) {
   const channel = String(b.channel || "").trim();   // platform / handle / URL
   const audience = String(b.audience || "").trim();  // audience size / niche
   const payoutNote = String(b.payoutNote || "").trim();
+  const program = b.program === "automotive" ? "automotive" : "lighting";
 
   if (!name) return { status: 400, json: { error: "Name is required" } };
   if (!EMAIL_RE.test(email)) return { status: 400, json: { error: "A valid email is required" } };
@@ -51,7 +52,7 @@ async function signUpInfluencer(body) {
   // Reuse an existing code if this email already signed up (idempotent).
   let code = null;
   try {
-    const existingIdx = await blob.get("by-email/" + email.toLowerCase(), { type: "json" });
+    const existingIdx = await blob.get("by-email/" + program + "/" + email.toLowerCase(), { type: "json" });
     if (existingIdx && existingIdx.code) code = existingIdx.code;
   } catch (e) { /* ignore */ }
 
@@ -73,7 +74,7 @@ async function signUpInfluencer(body) {
     channel,
     audience,
     payoutNote,
-    program: "lighting",
+    program,
     payoutModel: "7% of gross profit on attributed completed sales",
     status: "pending-review",
     signedUpAt: new Date().toISOString(),
@@ -81,13 +82,14 @@ async function signUpInfluencer(body) {
 
   try {
     await blob.setJSON(code, record);
-    await blob.setJSON("by-email/" + email.toLowerCase(), { code });
+    await blob.setJSON("by-email/" + program + "/" + email.toLowerCase(), { code });
   } catch (e) {
     console.error("influencer blobs write failed:", e.message);
     return { status: 503, json: { error: "Sign-up is temporarily unavailable. Please email us to join the program." } };
   }
 
-  const link = `${PUBLIC_BASE}/lighting-catalog.html?ref=${encodeURIComponent(code)}`;
+  const landing = program === "automotive" ? "automotive.html" : "lighting-catalog.html";
+  const link = `${PUBLIC_BASE}/${landing}?ref=${encodeURIComponent(code)}`;
   return { status: 200, json: { code, link, record } };
 }
 
