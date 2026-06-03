@@ -5,8 +5,13 @@
    Pricing is quote-based (B2B), so "purchase" = add to a Quote Request.
    ===================================================================== */
 (function () {
-  const PRODUCTS = (typeof KEYSTONE_PRODUCTS !== "undefined" ? KEYSTONE_PRODUCTS : []).slice();
+  // Existing Keystone catalog + any additional suppliers (kept in a separate
+  // data file so suppliers' products are never co-mingled in source).
+  const PRODUCTS = (typeof KEYSTONE_PRODUCTS !== "undefined" ? KEYSTONE_PRODUCTS : []).slice()
+    .concat(typeof EXTRA_LIGHTING_PRODUCTS !== "undefined" ? EXTRA_LIGHTING_PRODUCTS : []);
   const CATS = ["Lamps", "Fixtures", "Power Supplies", "Controls"];
+  const DEFAULT_SUPPLIER = "Keystone Technologies";
+  const sup = (p) => p.supplier || DEFAULT_SUPPLIER; // products carry their own supplier; legacy = Keystone
   const PAGE = 48; // items rendered per "page"
   const STORE = "dhi_keystone_quote";
 
@@ -16,7 +21,7 @@
   if (!grid || !toolbar) return;
 
   // ---- state ----
-  let state = { q: "", cat: "All", family: "", sort: "rel", shown: PAGE };
+  let state = { q: "", cat: "All", family: "", supplier: "", sort: "rel", shown: PAGE };
 
   function money(n) {
     return "$" + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -50,7 +55,8 @@
           <input id="cat-q" type="search" placeholder="Search 1,497 items — catalog #, type, wattage, CCT, base…"
             class="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-3 text-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none" />
         </div>
-        <select id="cat-family" class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-cyan-500 focus:outline-none lg:w-64"></select>
+        <select id="cat-family" class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-cyan-500 focus:outline-none lg:w-56"></select>
+        <select id="cat-supplier" class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-cyan-500 focus:outline-none lg:w-48"></select>
         <select id="cat-sort" class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-cyan-500 focus:outline-none lg:w-48">
           <option value="rel">Sort: Relevance</option>
           <option value="plh">Price: low to high</option>
@@ -69,6 +75,7 @@
 
   const qEl = document.getElementById("cat-q");
   const familyEl = document.getElementById("cat-family");
+  const supplierEl = document.getElementById("cat-supplier");
   const countEl = document.getElementById("cat-count");
 
   function refreshPills() {
@@ -92,6 +99,17 @@
     familyEl.value = state.family;
   }
 
+  function refreshSuppliers() {
+    // Suppliers within the current category context; products stay siloed by supplier.
+    const pool = state.cat === "All" ? PRODUCTS : PRODUCTS.filter((p) => p.cat === state.cat);
+    const sups = [...new Set(pool.map(sup).filter(Boolean))].sort();
+    supplierEl.innerHTML =
+      `<option value="">All suppliers (${sups.length})</option>` +
+      sups.map((s) => `<option value="${s.replace(/"/g, "&quot;")}">${s}</option>`).join("");
+    if (![...supplierEl.options].some((o) => o.value === state.supplier)) state.supplier = "";
+    supplierEl.value = state.supplier;
+  }
+
   // ---- filtering ----
   function filtered() {
     const q = state.q.trim().toLowerCase();
@@ -99,8 +117,9 @@
     const list = PRODUCTS.filter((p) => {
       if (state.cat !== "All" && p.cat !== state.cat) return false;
       if (state.family && p.group !== state.family) return false;
+      if (state.supplier && sup(p) !== state.supplier) return false;
       if (terms.length) {
-        const hay = (p.id + " " + p.group + " " + p.specs + " " + p.cct + " " + p.base + " " + p.cat).toLowerCase();
+        const hay = (p.id + " " + p.group + " " + p.specs + " " + p.cct + " " + p.base + " " + p.cat + " " + sup(p)).toLowerCase();
         return terms.every((t) => hay.includes(t));
       }
       return true;
@@ -145,6 +164,7 @@
           </div>
         </div>
         ${p.group ? `<p class="mt-1 text-xs font-medium text-slate-500">${p.group}</p>` : ""}
+        <p class="mt-1 text-[11px] text-slate-400">by <span class="font-medium text-slate-500">${sup(p)}</span></p>
         ${badges ? `<div class="mt-2.5 flex flex-wrap gap-1.5">${badges}</div>` : ""}
         <p class="mt-2.5 flex-1 text-xs leading-relaxed text-slate-500">${p.specs}</p>
         <div class="mt-3 flex items-baseline justify-between border-t border-slate-100 pt-3">
@@ -289,15 +309,18 @@
     t = setTimeout(() => { state.q = qEl.value; state.shown = PAGE; render(); }, 140);
   });
   familyEl.addEventListener("change", () => { state.family = familyEl.value; state.shown = PAGE; render(); });
+  supplierEl.addEventListener("change", () => { state.supplier = supplierEl.value; state.shown = PAGE; render(); });
   document.getElementById("cat-sort").addEventListener("change", (e) => { state.sort = e.target.value; state.shown = PAGE; render(); });
   toolbar.addEventListener("click", (e) => {
     const pill = e.target.closest(".cat-pill");
     if (!pill) return;
     state.cat = pill.dataset.cat;
     state.family = "";
+    state.supplier = "";
     state.shown = PAGE;
     refreshPills();
     refreshFamilies();
+    refreshSuppliers();
     render();
   });
   grid.addEventListener("click", (e) => {
@@ -310,10 +333,14 @@
   const params = new URLSearchParams(location.search);
   if (params.get("q")) { state.q = params.get("q"); qEl.value = state.q; }
   if (params.get("cat") && ["All", ...CATS].includes(params.get("cat"))) state.cat = params.get("cat");
+  // affiliate attribution: capture an influencer referral code and keep it for checkout
+  const ref = params.get("ref");
+  if (ref) { try { localStorage.setItem("dhi_lighting_ref", ref.slice(0, 64)); } catch (e) {} }
 
   // ---- init ----
   refreshPills();
   refreshFamilies();
+  refreshSuppliers();
   render();
   renderDock();
 })();

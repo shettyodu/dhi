@@ -11,7 +11,8 @@ function stripe() { return stripeLib(process.env.STRIPE_SECRET_KEY); }
 const TAX_CODE = process.env.STRIPE_TAX_CODE || "txcd_99999999";
 
 async function createPaymentIntent(body) {
-  const { items, ship, exempt, email } = body || {};
+  const { items, ship, exempt, email, referral_code } = body || {};
+  const referral = String(referral_code || "").trim().slice(0, 64);
   if (!Array.isArray(items) || !items.length) return { status: 400, json: { error: "No items" } };
 
   // Authoritative repricing from the server-side price table (never trust client totals).
@@ -68,6 +69,7 @@ async function createPaymentIntent(body) {
       shipping: String(q.shipping), tax_source: taxSource,
       tax_calculation: taxCalcId || "",
       ship_state: q.state || "", ship_zip: (ship && ship.zip) || "",
+      referral_code: referral,   // affiliate attribution — influencer payout on completed sales
     },
   });
 

@@ -23,6 +23,9 @@
   const PRODUCTS = SRC.products;
   const byId = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
   const STORE = SRC.store;
+  // Affiliate attribution: referral code from ?ref= or captured on the catalog page.
+  const refParam = new URLSearchParams(location.search).get("ref");
+  const REFERRAL = (refParam || (function () { try { return localStorage.getItem("dhi_lighting_ref") || ""; } catch (e) { return ""; } })() || "").slice(0, 64);
   const root = document.getElementById("checkout-root");
   if (!root) return;
 
@@ -225,6 +228,7 @@
                   <select id="f-state" class="ck-in"><option value="">—</option>${STATES.map((s) => `<option>${s}</option>`).join("")}</select></label>
                 <label class="block"><span class="text-sm font-medium text-slate-700">ZIP code</span><input id="f-zip" inputmode="numeric" class="ck-in" placeholder="27504"/></label>
               </div>
+              <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Referral / promo code <span class="text-slate-400">(optional)</span></span><input id="f-ref" class="ck-in" placeholder="e.g., CREATOR-AB12" value="${REFERRAL}"/></label>
             </div>
             <label class="mt-3 flex items-start gap-2 text-sm text-slate-600">
               <input id="f-exempt" type="checkbox" class="mt-0.5"/> <span>Tax-exempt order (resale / government / hospital) — a valid exemption certificate will be required.</span>
@@ -334,6 +338,7 @@
             ship: { line1: v("f-addr"), city: v("f-city"), state: state.ship.state, zip: v("f-zip") },
             exempt: state.exempt,
             email: billing.email,
+            referral_code: (v("f-ref") || "").trim().slice(0, 64),
           }),
         })
           .then((r) => r.json())

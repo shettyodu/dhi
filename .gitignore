@@ -13,8 +13,14 @@
 !/WESCO_EDI_request_email.md
 
 # 3) never commit secrets, dependencies, build output, or OS cruft
+marketing/            # internal marketing/outreach docs — keep local, never publish
 backend/node_modules/
 backend/.env
+# Smart-contract subproject: commit source only, never deps/build output/keys
+backend/blockchain/node_modules/
+backend/blockchain/artifacts/
+backend/blockchain/cache/
+backend/blockchain/.env
 .env
 .netlify/
 .vercel/

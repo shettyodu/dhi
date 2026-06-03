@@ -504,6 +504,7 @@ const SERVICE_CONTENT = {
       { k: "Promise", v: "Search to delivery, one platform" },
       { k: "Engine", v: "Agentic AI workflow by DHI" },
       { k: "Reach", v: "Domestic & worldwide shipping" },
+      { k: "Trust", v: "Blockchain vehicle passport" },
     ],
     sections: [
       {
@@ -533,6 +534,24 @@ const SERVICE_CONTENT = {
         paragraphs: [
           "AutoCommand AI is built on DHI's Agentic AI architecture — not a generic chatbot, but a controlled automotive workflow engine with specialized agents for customer intake, vehicle search, inventory normalization, scoring, history review, financing, protection products, dealer communication, shipping, compliance, and CRM reporting.",
           "Every recommended vehicle receives a scorecard covering price-versus-market, mileage, title and accident risk, dealer reliability, financing fit, shipping-adjusted total cost, and export eligibility. The AI recommends, drafts, scores, and routes — but never binds a purchase, financing decision, or contract without documented human approval and customer authorization.",
+        ],
+      },
+      {
+        type: "cards",
+        heading: "Asset tokenization — the DHI Vehicle Passport",
+        intro: "Built on DHI's blockchain trust fabric: each vehicle gets a tamper-evident digital passport so buyers can trust what they're buying.",
+        items: [
+          { title: "Blockchain-anchored provenance", desc: "Title, history, ownership, and service records are captured as a vehicle passport whose cryptographic fingerprint is written on-chain — so the record can't be quietly altered." },
+          { title: "Independently verifiable", desc: "Any buyer can verify a passport against its on-chain anchor in seconds — no need to trust the seller's copy." },
+          { title: "Travels with the car", desc: "The passport (and its protection products) can move with the vehicle across resales, building a durable, portable history." },
+          { title: "A record, not an investment", desc: "The passport is a verifiable digital record that complements — and does not replace — your DMV legal title. It is not a security or financial instrument." },
+        ],
+      },
+      {
+        type: "prose",
+        heading: "Try the Vehicle Passport",
+        paragraphs: [
+          "Issue and verify a blockchain-anchored vehicle passport in our pilot (on a test network). <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"automotive-passport.html\">Open the Vehicle Passport tool &rarr;</a>",
         ],
       },
       {
