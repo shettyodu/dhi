@@ -3,6 +3,7 @@
    on-chain (ERC-721, testnet), stores the record in Netlify Blobs.
    Returns { passportId, tokenId, txHash, hash, explorerTx, explorerToken, record }. */
 const { createPassport } = require("../../lib/passport");
+const { connectLambda } = require("@netlify/blobs");
 
 const cors = {
   "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
@@ -11,6 +12,7 @@ const cors = {
 };
 
 exports.handler = async (event) => {
+  try { connectLambda(event); } catch (e) { /* auto-context fallback */ }
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: cors, body: JSON.stringify({ error: "Method not allowed" }) };
 

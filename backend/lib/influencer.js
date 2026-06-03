@@ -45,7 +45,7 @@ async function signUpInfluencer(body) {
   try { blob = store(); }
   catch (e) {
     console.error("influencer blobs not configured:", e.message);
-    return { status: 503, json: { error: "Sign-up is temporarily unavailable. Please email us to join the program.", detail: String(e && e.message).slice(0, 200) } };
+    return { status: 503, json: { error: "Sign-up is temporarily unavailable. Please email us to join the program." } };
   }
 
   // Reuse an existing code if this email already signed up (idempotent).
@@ -84,7 +84,7 @@ async function signUpInfluencer(body) {
     await blob.setJSON("by-email/" + email.toLowerCase(), { code });
   } catch (e) {
     console.error("influencer blobs write failed:", e.message);
-    return { status: 503, json: { error: "Sign-up is temporarily unavailable. Please email us to join the program.", detail: String(e && e.message).slice(0, 200) } };
+    return { status: 503, json: { error: "Sign-up is temporarily unavailable. Please email us to join the program." } };
   }
 
   const link = `${PUBLIC_BASE}/lighting-catalog.html?ref=${encodeURIComponent(code)}`;

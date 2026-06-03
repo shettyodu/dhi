@@ -2,6 +2,7 @@
    Verifies a passport: recomputes the record hash and compares it to the
    on-chain anchor. Returns { verified, tokenId, computedHash, onChainHash, record }. */
 const { verifyPassport } = require("../../lib/passport");
+const { connectLambda } = require("@netlify/blobs");
 
 const cors = {
   "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
@@ -10,6 +11,7 @@ const cors = {
 };
 
 exports.handler = async (event) => {
+  try { connectLambda(event); } catch (e) { /* auto-context fallback */ }
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors, body: "" };
 
   let query = {};

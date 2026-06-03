@@ -1,6 +1,7 @@
 /* Netlify Function: POST /.netlify/functions/sign-up-influencer
    Registers a lighting-program influencer and returns a referral code + link. */
 const { signUpInfluencer } = require("../../lib/influencer");
+const { connectLambda } = require("@netlify/blobs");
 
 const cors = {
   "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
@@ -9,6 +10,9 @@ const cors = {
 };
 
 exports.handler = async (event) => {
+  // Wire the Netlify Blobs context for Lambda-compatibility functions (required
+  // before getStore() — modern v2 functions get this automatically).
+  try { connectLambda(event); } catch (e) { /* older runtime / auto-context */ }
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: cors, body: JSON.stringify({ error: "Method not allowed" }) };
 
