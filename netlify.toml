@@ -1,0 +1,13 @@
+# Deploy the WHOLE `website/` folder (this directory) to Netlify so ONE site
+# serves both the static storefront (site/) and the payment functions
+# (backend/netlify/functions). Same-origin = no CORS issues, and the endpoint
+# already set in site/assets/checkout.js resolves on this same domain.
+
+[build]
+  command = "npm install"          # installs the `stripe` dependency for the functions
+  publish = "site"                 # the static storefront
+  functions = "backend/netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["backend/data/prices.json"]

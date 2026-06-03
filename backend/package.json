@@ -1,0 +1,12 @@
+{
+  "name": "dhi-lighting-payments",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serverless payment backend for DHI lighting checkout (Stripe).",
+  "scripts": {
+    "build-prices": "node scripts/build-prices.mjs"
+  },
+  "dependencies": {
+    "stripe": "^16.0.0"
+  }
+}

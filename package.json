@@ -1,0 +1,9 @@
+{
+  "name": "dhi-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DHI static storefront + Netlify payment functions (single Netlify site).",
+  "dependencies": {
+    "stripe": "^16.0.0"
+  }
+}

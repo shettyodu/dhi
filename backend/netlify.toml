@@ -1,0 +1,13 @@
+# Netlify config for the DHI lighting payments functions.
+# Deploy with this `backend/` folder as the Netlify base directory.
+
+[build]
+  # No site build step — this project is functions-only.
+  command = ""
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+  # Ensure the server-side price table ships with the bundle.
+  included_files = ["data/prices.json"]

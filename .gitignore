@@ -1,0 +1,21 @@
+# This repo is the deployable DHI site + Netlify payment functions only.
+# The surrounding folder is a research/source dump, so we ALLOWLIST what to commit.
+
+# 1) ignore everything at the top level by default
+/*
+
+# 2) re-include only the deployable pieces
+!/.gitignore
+!/netlify.toml
+!/package.json
+!/site/
+!/backend/
+!/WESCO_EDI_request_email.md
+
+# 3) never commit secrets, dependencies, build output, or OS cruft
+backend/node_modules/
+backend/.env
+.env
+.netlify/
+.vercel/
+**/.DS_Store
