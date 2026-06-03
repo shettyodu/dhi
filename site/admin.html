@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>DHI Admin — Leads &amp; Signups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ["Inter","ui-sans-serif","system-ui","sans-serif"] },
+      colors: { brand: { 50:"#eef4fb",100:"#d9e6f5",200:"#b7cfe9",300:"#8bb0d8",400:"#5a8bc2",600:"#1d4e89",700:"#143c6c",800:"#0e3a5f",900:"#0a2540",950:"#071a30" } },
+    } } };
+  </script>
+  <style>body{font-family:Inter,system-ui,sans-serif}.in{width:100%;border-radius:.5rem;border:1px solid #cbd5e1;padding:.55rem .7rem;font-size:.9rem}.in:focus{outline:none;border-color:#06b6d4;box-shadow:0 0 0 2px rgba(6,182,212,.25)}td,th{padding:.5rem .6rem;border-bottom:1px solid #e2e8f0;text-align:left;vertical-align:top;font-size:.8rem}th{background:#f8fafc;color:#0a2540;font-weight:600;position:sticky;top:0}</style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased">
+  <header class="border-b border-slate-200 bg-brand-950 text-white">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-2"><span class="rounded bg-white/10 px-2 py-1 text-xs font-bold tracking-wide">DHI ADMIN</span><span class="text-sm text-slate-300">Leads &amp; Signups</span></div>
+      <button id="logout" class="hidden rounded-md border border-white/25 px-3 py-1.5 text-xs font-semibold hover:bg-white/10">Log out</button>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+    <!-- GATE -->
+    <div id="gate" class="mx-auto max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h1 class="font-bold text-brand-900">Admin access</h1>
+      <p class="mt-1 text-sm text-slate-500">Enter the admin passphrase to view captured leads and signups.</p>
+      <form id="gate-form" class="mt-4 space-y-3">
+        <input id="gate-secret" type="password" class="in" placeholder="Admin passphrase" autocomplete="off" />
+        <button class="w-full rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700">Unlock</button>
+        <p id="gate-msg" class="text-sm text-red-600"></p>
+      </form>
+    </div>
+
+    <!-- PANEL -->
+    <div id="panel" class="hidden">
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <span id="counts" class="text-sm text-slate-600"></span>
+        <div class="ml-auto flex gap-2">
+          <button id="refresh" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">Refresh</button>
+          <button id="export" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">Export CSV</button>
+        </div>
+      </div>
+      <div id="content" class="space-y-8"></div>
+    </div>
+  </main>
+
+  <script src="assets/admin.js"></script>
+</body>
+</html>
