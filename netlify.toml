@@ -4,9 +4,12 @@
 # already set in site/assets/checkout.js resolves on this same domain.
 
 [build]
-  command = "npm install"          # installs the `stripe` dependency for the functions
+  command = "npm install"          # installs stripe + ethers + @netlify/blobs for the functions
   publish = "site"                 # the static storefront
   functions = "backend/netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"              # ethers v6 / @netlify/blobs need Node >= 18
 
 [functions]
   node_bundler = "esbuild"
