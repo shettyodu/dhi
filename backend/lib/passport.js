@@ -26,7 +26,13 @@ const ABI = [
 const STORE = "vehicle-passports";
 const VIN_RE = /^[A-HJ-NPR-Z0-9]{11,17}$/; // excludes I, O, Q per VIN spec
 
-function store() { return getStore(STORE); }
+function store() {
+  // Prefer explicit config (works under manual CLI deploys); fall back to the
+  // automatic runtime context when available.
+  const siteID = process.env.NETLIFY_BLOBS_SITE_ID || process.env.BLOBS_SITE_ID;
+  const token = process.env.NETLIFY_BLOBS_TOKEN || process.env.BLOBS_TOKEN;
+  return siteID && token ? getStore({ name: STORE, siteID, token }) : getStore(STORE);
+}
 function sha256Hex(s) { return crypto.createHash("sha256").update(s, "utf8").digest("hex"); }
 function vinHashOf(vin) { return ethers.keccak256(ethers.toUtf8Bytes(vin)); }
 function provider() { return new ethers.JsonRpcProvider(RPC); }

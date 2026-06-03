@@ -10,7 +10,13 @@ const STORE = "influencer-signups";
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL || "https://courageous-fairy-0b2d3c.netlify.app";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
-function store() { return getStore(STORE); }
+// Prefer explicit config (works under manual CLI deploys); fall back to the
+// automatic runtime context when available (git-built deploys).
+function store() {
+  const siteID = process.env.NETLIFY_BLOBS_SITE_ID || process.env.BLOBS_SITE_ID;
+  const token = process.env.NETLIFY_BLOBS_TOKEN || process.env.BLOBS_TOKEN;
+  return siteID && token ? getStore({ name: STORE, siteID, token }) : getStore(STORE);
+}
 
 function slugify(s) {
   return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 18);
@@ -35,7 +41,12 @@ async function signUpInfluencer(body) {
   if (!EMAIL_RE.test(email)) return { status: 400, json: { error: "A valid email is required" } };
   if (!channel) return { status: 400, json: { error: "Your channel / handle is required" } };
 
-  const blob = store();
+  let blob;
+  try { blob = store(); }
+  catch (e) {
+    console.error("influencer blobs not configured:", e.message);
+    return { status: 503, json: { error: "Sign-up is temporarily unavailable. Please email us to join the program." } };
+  }
 
   // Reuse an existing code if this email already signed up (idempotent).
   let code = null;
@@ -68,8 +79,13 @@ async function signUpInfluencer(body) {
     signedUpAt: new Date().toISOString(),
   };
 
-  await blob.setJSON(code, record);
-  await blob.setJSON("by-email/" + email.toLowerCase(), { code });
+  try {
+    await blob.setJSON(code, record);
+    await blob.setJSON("by-email/" + email.toLowerCase(), { code });
+  } catch (e) {
+    console.error("influencer blobs write failed:", e.message);
+    return { status: 503, json: { error: "Sign-up is temporarily unavailable. Please email us to join the program." } };
+  }
 
   const link = `${PUBLIC_BASE}/lighting-catalog.html?ref=${encodeURIComponent(code)}`;
   return { status: 200, json: { code, link, record } };
