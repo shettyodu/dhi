@@ -6,6 +6,8 @@
 
 (function () {
   const slug = window.PAGE_SLUG;
+  // Per Steve's feedback, make the automotive section headers larger/more prominent.
+  const HSIZE = slug === "automotive.html" ? "text-3xl" : "text-2xl";
   const meta = VERTICALS.find((v) => v.slug === slug);
   const data = SERVICE_CONTENT[slug];
   const mount = document.getElementById("service-root");
@@ -19,14 +21,14 @@
     if (s.type === "prose") {
       return `
         <div>
-          <h2 class="text-2xl font-bold tracking-tight text-brand-900">${s.heading}</h2>
+          <h2 class="${HSIZE} font-bold tracking-tight text-brand-900">${s.heading}</h2>
           ${s.paragraphs.map((p) => `<p class="mt-4 text-lg leading-relaxed text-slate-600">${p}</p>`).join("")}
         </div>`;
     }
     if (s.type === "cards") {
       return `
         <div>
-          <h2 class="text-2xl font-bold tracking-tight text-brand-900">${s.heading}</h2>
+          <h2 class="${HSIZE} font-bold tracking-tight text-brand-900">${s.heading}</h2>
           <div class="mt-6 grid gap-5 sm:grid-cols-2">
             ${s.items
               .map(
@@ -44,7 +46,7 @@
       const colCls = s.cols2 ? "sm:grid-cols-2" : "sm:grid-cols-1";
       return `
         <div>
-          <h2 class="text-2xl font-bold tracking-tight text-brand-900">${s.heading}</h2>
+          <h2 class="${HSIZE} font-bold tracking-tight text-brand-900">${s.heading}</h2>
           ${s.intro ? `<p class="mt-3 text-lg text-slate-600">${s.intro}</p>` : ""}
           <ul class="mt-6 grid gap-3 ${colCls}">
             ${s.items
@@ -59,7 +61,7 @@
     if (s.type === "gallery") {
       return `
         <div>
-          <h2 class="text-2xl font-bold tracking-tight text-brand-900">${s.heading}</h2>
+          <h2 class="${HSIZE} font-bold tracking-tight text-brand-900">${s.heading}</h2>
           ${s.intro ? `<p class="mt-3 text-lg text-slate-600">${s.intro}</p>` : ""}
           <div class="mt-6 grid gap-4 sm:grid-cols-3">
             ${s.items
