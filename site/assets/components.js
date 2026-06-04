@@ -185,7 +185,7 @@ function buildHeader() {
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="flex h-16 items-center justify-between">
       <a href="index.html" class="flex items-center" aria-label="Digital Health International — home">
-        <img src="assets/img/dhi-logo.png" alt="Digital Health International" class="h-7 w-auto sm:h-9" />
+        <img src="assets/img/dhi-logo.svg" alt="Digital Health International" onerror="this.onerror=null;this.src='assets/img/dhi-logo.png'" class="h-7 w-auto sm:h-9" />
       </a>
 
       <nav class="hidden items-center gap-1 lg:flex">
