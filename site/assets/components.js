@@ -101,8 +101,8 @@ const VERTICALS = [
   },
   {
     slug: "automotive.html",
-    title: "Automotive & Mobility",
-    menu: "Automotive & Mobility (AutoCommand AI)",
+    title: "AutoCommand AI Marketplace",
+    menu: "AutoCommand AI Marketplace",
     summary:
       "AutoCommand AI Marketplace — a digital-first vehicle acquisition platform to search, finance, protect, buy, and ship vehicles through one Agentic AI-powered system.",
     icon: "car",
