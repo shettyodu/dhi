@@ -70,6 +70,7 @@
     Object.assign(p, loc(val("fv-location")));
     const ship = val("fv-shipping");
     if (ship) { p.accept_shipping = !/local pickup/i.test(ship); notes.push("Shipping: " + ship); }
+    const down = val("fv-down"); if (down) notes.push("Down payment: " + down);
     if (notes.length) p.notes = notes.join(" · ");
     return p;
   }
@@ -80,7 +81,7 @@
       name: val("fv-name"), email: val("fv-email"), phone: val("fv-phone"),
       make: val("fv-make"), model: val("fv-model"), body_style: val("fv-body"),
       year: val("fv-year"), mileage: val("fv-mileage"), price: val("fv-price"),
-      payment: val("fv-payment"), fuel: val("fv-fuel"), drivetrain: val("fv-drive"),
+      payment: val("fv-payment"), down_payment: val("fv-down"), fuel: val("fv-fuel"), drivetrain: val("fv-drive"),
       credit: val("fv-credit"), location: val("fv-location"), shipping: val("fv-shipping"),
     };
   }
@@ -321,6 +322,17 @@
   });
   const nlInput = $("nl-q");
   if (nlInput) nlInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); nlGo.click(); } });
+
+  // Down payment auto-defaults to 10% of the price, until the user edits it.
+  let downDirty = false;
+  const priceEl = $("fv-price"), downEl = $("fv-down");
+  if (downEl) downEl.addEventListener("input", () => { downDirty = downEl.value.trim() !== ""; });
+  if (priceEl && downEl) priceEl.addEventListener("input", () => {
+    if (downDirty) return;
+    const pr = moneyRange(priceEl.value);
+    const base = pr.max || pr.min;
+    downEl.value = base ? "$" + Math.round(base * 0.1).toLocaleString("en-US") : "";
+  });
 
   $("cmp-go").addEventListener("click", openCompare);
   $("cmp-clear").addEventListener("click", () => { selected.clear(); document.querySelectorAll("[data-cmp]").forEach((c) => (c.checked = false)); updateCmpBar(); });
