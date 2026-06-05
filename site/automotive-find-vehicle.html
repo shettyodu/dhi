@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Find My Vehicle — AutoCommand AI Marketplace | DHI</title>
-  <meta name="description" content="Tell AutoCommand what you're looking for and our AI-guided, dealer-backed process finds the right vehicle — with clear cost, financing options, protection, and delivery." />
+  <title>Start Your Deal — AutoCommand AI Marketplace | DHI</title>
+  <meta name="description" content="Search AutoCommand's marketplace — describe what you want or filter by details. See every match plus the top picks with the reasons why, then start your deal." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +14,13 @@
       colors: { brand: { 50:"#eef4fb",100:"#d9e6f5",200:"#b7cfe9",300:"#8bb0d8",400:"#5a8bc2",600:"#1d4e89",700:"#143c6c",800:"#0e3a5f",900:"#0a2540",950:"#071a30" } },
     } } };
   </script>
-  <style>body{font-family:Inter,system-ui,sans-serif}.ck-in{margin-top:.25rem;width:100%;border-radius:.5rem;border:1px solid #cbd5e1;padding:.55rem .7rem;font-size:.9rem}.ck-in:focus{outline:none;border-color:#06b6d4;box-shadow:0 0 0 2px rgba(6,182,212,.25)}</style>
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}
+    .ck-in{margin-top:.25rem;width:100%;border-radius:.5rem;border:1px solid #cbd5e1;padding:.55rem .7rem;font-size:.9rem}
+    .ck-in:focus{outline:none;border-color:#06b6d4;box-shadow:0 0 0 2px rgba(6,182,212,.25)}
+    .bucket-tab.active{background:#0a2540;color:#fff}
+    .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+  </style>
 </head>
 <body class="bg-slate-50 text-slate-700 antialiased">
 
@@ -28,8 +34,8 @@
         <span class="text-slate-200">Start Your Deal</span>
       </nav>
       <p class="text-sm font-semibold uppercase tracking-wider text-cyan-300">AutoCommand AI Marketplace</p>
-      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Find, finance, protect &amp; ship your next vehicle</h1>
-      <p class="mt-4 max-w-2xl text-lg text-slate-300">Tell us what you're after. Our AI-guided, <strong class="text-white">dealer-backed</strong> process searches beyond one lot, shows real delivered cost, and a human reviews every match before you buy.</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Start your deal</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">Tell us what you're after. We search beyond one lot, show <strong class="text-white">every match</strong> plus the <strong class="text-white">top picks and why</strong>, and a human reviews before you buy.</p>
     </div>
   </section>
 
@@ -46,37 +52,78 @@
     </div>
   </div>
 
-  <main class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10">
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- NL SEARCH -->
     <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 class="font-display text-xl font-bold text-brand-900">What are you looking for?</h2>
-      <p class="mt-1 text-sm text-slate-500">A quick request — no obligation. We'll match vehicles, outline real delivered cost, and share financing &amp; protection options.</p>
-      <form id="fv-form" class="mt-5 grid gap-4 sm:grid-cols-2">
+      <h2 class="font-display text-xl font-bold text-brand-900">Describe your ideal vehicle</h2>
+      <p class="mt-1 text-sm text-slate-500">Type it like you'd say it — we'll figure out the details.</p>
+      <div class="mt-4 flex flex-col gap-2 sm:flex-row">
+        <input id="nl-q" class="ck-in !mt-0 flex-1" placeholder="e.g., 2022–2024 Toyota or Honda SUV under 60k miles, around $35k, near Raleigh, ~$600/mo" />
+        <button id="nl-go" class="whitespace-nowrap rounded-lg bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Search</button>
+      </div>
+      <p id="nl-note" class="mt-2 text-xs text-slate-400"></p>
+    </div>
+
+    <!-- STRUCTURED SEARCH -->
+    <div class="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="font-display text-xl font-bold text-brand-900">Or search by details</h2>
+      <p class="mt-1 text-sm text-slate-500">Leave anything blank. Add your name &amp; email and an advisor will follow up with options, real delivered cost, and financing &amp; protection choices.</p>
+      <form id="fv-form" class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <label class="block"><span class="text-sm font-medium text-slate-700">Make / brand</span><input id="fv-make" class="ck-in" placeholder="Toyota, Ford, any…" /></label>
         <label class="block"><span class="text-sm font-medium text-slate-700">Model</span><input id="fv-model" class="ck-in" placeholder="Camry, F-150, open…" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Body style</span>
+          <select id="fv-body" class="ck-in"><option value="">Any</option><option>SUV</option><option>Sedan</option><option>Truck</option><option>Coupe</option><option>Minivan</option><option>Wagon</option><option>Hatchback</option><option>Convertible</option></select></label>
         <label class="block"><span class="text-sm font-medium text-slate-700">Year range</span><input id="fv-year" class="ck-in" placeholder="2019–2023" /></label>
         <label class="block"><span class="text-sm font-medium text-slate-700">Max mileage</span><input id="fv-mileage" class="ck-in" placeholder="60,000" /></label>
         <label class="block"><span class="text-sm font-medium text-slate-700">Price range</span><input id="fv-price" class="ck-in" placeholder="$20k–$30k" /></label>
         <label class="block"><span class="text-sm font-medium text-slate-700">Target monthly payment</span><input id="fv-payment" class="ck-in" placeholder="$450/mo" /></label>
-        <label class="block"><span class="text-sm font-medium text-slate-700">Down payment / trade-in</span><input id="fv-down" class="ck-in" placeholder="$3,000 + 2018 Civic" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Fuel</span>
+          <select id="fv-fuel" class="ck-in"><option value="">Any</option><option>Gas</option><option>Hybrid</option><option>Electric</option><option>Diesel</option></select></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Drivetrain</span>
+          <select id="fv-drive" class="ck-in"><option value="">Any</option><option>FWD</option><option>RWD</option><option>AWD</option><option>4WD</option></select></label>
         <label class="block"><span class="text-sm font-medium text-slate-700">Credit band <span class="text-slate-400">(optional)</span></span>
-          <select id="fv-credit" class="ck-in"><option value="">Prefer not to say</option><option>Excellent (720+)</option><option>Good (660–719)</option><option>Fair (600–659)</option><option>Rebuilding (&lt;600)</option></select></label>
-        <label class="block"><span class="text-sm font-medium text-slate-700">Delivery location (ZIP / city)</span><input id="fv-location" class="ck-in" placeholder="27504 / New Bern, NC" /></label>
+          <select id="fv-credit" class="ck-in"><option value="">Prefer not to say</option><option value="excellent">Excellent (720+)</option><option value="good">Good (660–719)</option><option value="fair">Fair (600–659)</option><option value="rebuilding">Rebuilding (&lt;600)</option></select></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Delivery location (ZIP / state)</span><input id="fv-location" class="ck-in" placeholder="27504 / NC" /></label>
         <label class="block"><span class="text-sm font-medium text-slate-700">Shipping preference</span>
           <select id="fv-shipping" class="ck-in"><option value="">No preference</option><option>Local pickup</option><option>Local delivery</option><option>National transport</option><option>Port / international</option></select></label>
-        <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Use case <span class="text-slate-400">(optional)</span></span><input id="fv-use" class="ck-in" placeholder="First car, family SUV, work truck, EV, export…" /></label>
-        <div class="h-px bg-slate-100 sm:col-span-2"></div>
-        <label class="block"><span class="text-sm font-medium text-slate-700">Your name</span><input id="fv-name" class="ck-in" /></label>
-        <label class="block"><span class="text-sm font-medium text-slate-700">Email</span><input id="fv-email" type="email" class="ck-in" /></label>
-        <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Phone <span class="text-slate-400">(optional)</span></span><input id="fv-phone" class="ck-in" /></label>
-        <div class="sm:col-span-2">
-          <button id="fv-submit" type="submit" class="rounded-lg bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Start my deal →</button>
+        <div class="h-px bg-slate-100 sm:col-span-2 lg:col-span-3"></div>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Your name <span class="text-slate-400">(for follow-up)</span></span><input id="fv-name" class="ck-in" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Email <span class="text-slate-400">(for follow-up)</span></span><input id="fv-email" type="email" class="ck-in" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Phone <span class="text-slate-400">(optional)</span></span><input id="fv-phone" class="ck-in" /></label>
+        <div class="sm:col-span-2 lg:col-span-3">
+          <button id="fv-submit" type="submit" class="rounded-lg bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Search inventory →</button>
           <span id="fv-status" class="ml-3 text-sm"></span>
         </div>
       </form>
-      <div id="fv-result" class="mt-5 hidden"></div>
-      <p class="mt-4 text-xs text-slate-400">AI-guided, dealer-backed, human-reviewed. Financing is subject to lender approval — prequalification is not final approval. Vehicle availability is confirmed before any purchase. This is a request, not an offer or binding agreement.</p>
     </div>
+
+    <!-- RESULTS -->
+    <section id="results" class="mt-8 hidden"></section>
+
+    <p class="mt-6 text-xs text-slate-400">AI-guided, dealer-backed, human-reviewed. Pricing and availability are confirmed before purchase. Financing is subject to lender approval — prequalification is not final approval. This is a request, not an offer or binding agreement.</p>
   </main>
+
+  <!-- COMPARE BAR -->
+  <div id="cmp-bar" class="pointer-events-none fixed bottom-4 left-1/2 z-40 hidden -translate-x-1/2">
+    <div class="pointer-events-auto flex items-center gap-3 rounded-full bg-brand-900 px-5 py-3 text-sm text-white shadow-xl">
+      <span id="cmp-count" class="font-semibold">0 selected</span>
+      <button id="cmp-go" class="rounded-full bg-cyan-500 px-4 py-1.5 font-semibold text-brand-950 hover:bg-cyan-400 disabled:opacity-50">Compare &amp; recommend</button>
+      <button id="cmp-clear" class="text-slate-300 hover:text-white">Clear</button>
+    </div>
+  </div>
+
+  <!-- COMPARE MODAL -->
+  <div id="cmp-modal" class="fixed inset-0 z-50 hidden">
+    <div id="cmp-backdrop" class="absolute inset-0 bg-black/50"></div>
+    <div class="absolute inset-x-3 top-8 bottom-8 mx-auto max-w-5xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:inset-x-6">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display text-lg font-bold text-brand-900">Side-by-side comparison</h3>
+        <button id="cmp-close" class="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div id="cmp-body" class="mt-4"></div>
+    </div>
+  </div>
 
   <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-lg bg-brand-900 px-4 py-2 text-sm font-medium text-white opacity-0 shadow-lg transition-opacity duration-300"></div>
 
