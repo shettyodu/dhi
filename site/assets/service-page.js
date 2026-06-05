@@ -15,6 +15,9 @@
 
   const check =
     '<svg class="h-5 w-5 flex-none text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>';
+  const infoIcon =
+    '<svg class="h-5 w-5 flex-none text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>';
+  const explainers = []; // collected from "explainers" sections; opened in a shared modal
 
   // ----- Sections -----
   function renderSection(s) {
@@ -72,6 +75,29 @@
                      ${it.caption ? `<figcaption class="border-t border-slate-100 px-3 py-2 text-center text-xs font-medium text-slate-600">${it.caption}</figcaption>` : ""}
                    </figure>`
               )
+              .join("")}
+          </div>
+        </div>`;
+    }
+    if (s.type === "explainers") {
+      return `
+        <div>
+          <h2 class="${HSIZE} font-bold tracking-tight text-brand-900">${s.heading}</h2>
+          ${s.intro ? `<p class="mt-3 text-lg text-slate-600">${s.intro}</p>` : ""}
+          <div class="mt-6 grid gap-4 sm:grid-cols-2">
+            ${s.items
+              .map((it) => {
+                const idx = explainers.push(it) - 1;
+                return `
+              <button type="button" data-exp="${idx}" class="group flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-md">
+                <span class="mt-0.5">${infoIcon}</span>
+                <span class="flex-1">
+                  <span class="font-semibold text-brand-900">${it.title}</span>
+                  ${it.tag ? `<span class="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">${it.tag}</span>` : ""}
+                  <span class="mt-1 block text-sm font-semibold text-cyan-700 group-hover:underline">Learn more &rarr;</span>
+                </span>
+              </button>`;
+              })
               .join("")}
           </div>
         </div>`;
@@ -170,6 +196,45 @@
       <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">${othersHtml}</div>
     </div>
   </section>`;
+
+  // ----- Explainer modal (for "explainers" sections) -----
+  if (explainers.length) {
+    const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const modal = document.createElement("div");
+    modal.id = "exp-modal";
+    modal.className = "fixed inset-0 z-[70] hidden";
+    modal.innerHTML = `
+      <div data-exp-close class="absolute inset-0 bg-black/50"></div>
+      <div class="absolute inset-x-3 top-10 bottom-10 mx-auto max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:inset-x-6">
+        <div class="flex items-start justify-between gap-3">
+          <h3 id="exp-title" class="font-display text-xl font-bold text-brand-900"></h3>
+          <button data-exp-close class="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div id="exp-video" class="mt-4"></div>
+        <p id="exp-what" class="mt-4 leading-relaxed text-slate-600"></p>
+        <div id="exp-covers" class="mt-4"></div>
+        <div id="exp-why" class="mt-4 rounded-xl bg-brand-50 p-4 text-sm leading-relaxed text-brand-900"></div>
+        <p class="mt-4 text-xs text-slate-400">Coverage, limits, exclusions, and pricing are confirmed in your agreement before purchase. Availability varies by state and lender.</p>
+      </div>`;
+    document.body.appendChild(modal);
+
+    const close = () => modal.classList.add("hidden");
+    function open(it) {
+      modal.querySelector("#exp-title").textContent = it.title;
+      modal.querySelector("#exp-video").innerHTML = it.video
+        ? `<div class="aspect-video w-full overflow-hidden rounded-xl bg-black"><iframe class="h-full w-full" src="${esc(it.video)}" title="${esc(it.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+        : `<div class="flex aspect-video w-full items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm font-medium text-slate-400"><svg class="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg>Video explainer coming soon</div>`;
+      modal.querySelector("#exp-what").textContent = it.what || "";
+      modal.querySelector("#exp-covers").innerHTML = (it.covers && it.covers.length)
+        ? `<p class="text-xs font-semibold uppercase tracking-wider text-slate-400">What it covers</p><ul class="mt-2 space-y-1.5">${it.covers.map((c) => `<li class="flex items-start gap-2 text-sm text-slate-600"><span class="mt-0.5 text-cyan-600">${check}</span><span>${esc(c)}</span></li>`).join("")}</ul>`
+        : "";
+      modal.querySelector("#exp-why").innerHTML = `<span class="font-semibold">Why it matters:</span> ${esc(it.why || "")}`;
+      modal.classList.remove("hidden");
+    }
+    mount.querySelectorAll("[data-exp]").forEach((btn) => btn.addEventListener("click", () => open(explainers[+btn.dataset.exp])));
+    modal.querySelectorAll("[data-exp-close]").forEach((el) => el.addEventListener("click", close));
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  }
 
   // Set document title dynamically
   document.title = `${meta.title} — Digital Health International Inc.`;
