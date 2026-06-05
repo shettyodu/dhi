@@ -25,6 +25,19 @@ const COOKIE_TTL = 9 * 60 * 1000;
 let _cookie = null;
 let _cookieAt = 0;
 
+// Rewrite relative vehicle photo paths (e.g. "/static/photos/x.jpg") to absolute
+// URLs on the upstream host, so the browser can load them directly without the
+// front-end needing to know where the service is hosted.
+function absolutizePhotos(node) {
+  if (Array.isArray(node)) { node.forEach(absolutizePhotos); return; }
+  if (node && typeof node === "object") {
+    if (Array.isArray(node.photos)) {
+      node.photos = node.photos.map((p) => (typeof p === "string" && p.charAt(0) === "/") ? API_URL + p : p);
+    }
+    for (const k in node) absolutizePhotos(node[k]);
+  }
+}
+
 function notConfigured() {
   return {
     status: 503,
@@ -78,6 +91,7 @@ async function call(path, { method = "GET", body } = {}, _retry = false) {
     let json = null;
     try { json = await res.json(); }
     catch (_) { json = { error: `Upstream returned a non-JSON response (HTTP ${res.status}).` }; }
+    if (res.status >= 200 && res.status < 300 && API_URL) absolutizePhotos(json);
     return { status: res.status, json };
   } catch (e) {
     const aborted = e.name === "AbortError";

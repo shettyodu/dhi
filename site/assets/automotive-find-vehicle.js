@@ -179,7 +179,8 @@
 
   function photoHtml(v) {
     const path = (v.photos && v.photos[0]) || "";
-    if (path && PHOTO_BASE) return `<img src="${esc(PHOTO_BASE + path)}" alt="${esc(v.year + " " + v.make + " " + v.model)}" loading="lazy" class="h-44 w-full rounded-t-2xl object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div style="display:none" class="h-44 w-full items-center justify-center rounded-t-2xl bg-gradient-to-br from-brand-800 to-brand-950 text-sm font-semibold text-cyan-200">${esc(v.body_style || "Vehicle")}</div>`;
+    const src = /^https?:\/\//.test(path) ? path : (path && PHOTO_BASE ? PHOTO_BASE + path : "");
+    if (src) return `<img src="${esc(src)}" alt="${esc(v.year + " " + v.make + " " + v.model)}" loading="lazy" class="h-44 w-full rounded-t-2xl object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div style="display:none" class="h-44 w-full items-center justify-center rounded-t-2xl bg-gradient-to-br from-brand-800 to-brand-950 text-sm font-semibold text-cyan-200">${esc(v.body_style || "Vehicle")}</div>`;
     return `<div class="flex h-44 w-full items-center justify-center rounded-t-2xl bg-gradient-to-br from-brand-800 to-brand-950 text-sm font-semibold text-cyan-200">${esc(v.body_style || "Vehicle")}</div>`;
   }
 
