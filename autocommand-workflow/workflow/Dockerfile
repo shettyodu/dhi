@@ -25,9 +25,9 @@ COPY schemas.py         ./workflow/schemas.py
 COPY tools.py           ./workflow/tools.py
 COPY workflow.py        ./workflow/workflow.py
 COPY api.py             ./workflow/api.py
-COPY assets/            ./workflow/assets/
 COPY prompts/           ./workflow/prompts/
 COPY templates/         ./workflow/templates/
+COPY static/            ./workflow/static/
 COPY fixtures/          ./workflow/fixtures/
 
 # Runtime dirs (mountable as volumes for persistence)
