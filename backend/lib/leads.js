@@ -5,6 +5,7 @@
 
 const crypto = require("crypto");
 const { getStore } = require("@netlify/blobs");
+const hubspot = require("./hubspot");
 
 const STORE = "automotive-leads";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -66,7 +67,12 @@ async function submitLead(body) {
     return { status: 503, json: { error: "We couldn't submit that right now — please email us and we'll follow up." } };
   }
 
-  return { status: 200, json: { ok: true, id, type } };
+  // Best-effort sync to HubSpot CRM — never blocks or fails the lead capture.
+  let crm = { skipped: true };
+  try { crm = await hubspot.upsertLead(record); }
+  catch (e) { console.error("hubspot sync error:", e.message); crm = { ok: false }; }
+
+  return { status: 200, json: { ok: true, id, type, crm: crm.ok ? "synced" : crm.skipped ? "off" : "deferred" } };
 }
 
 module.exports = { submitLead };
