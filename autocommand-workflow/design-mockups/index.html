@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AutoCommand · Design Variants</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f5f5f7;color:#111;min-height:100vh;line-height:1.5}
+.page{max-width:1180px;margin:0 auto;padding:64px 32px}
+header{margin-bottom:48px}
+.eyebrow{font-size:0.78rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#737373;margin-bottom:14px}
+h1{font-size:2.4rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:10px}
+.lead{font-size:1.05rem;color:#525252;max-width:600px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:24px;margin-bottom:40px}
+.card{background:#fff;border:1px solid #e5e5e5;border-radius:18px;overflow:hidden;text-decoration:none;color:#111;transition:all .2s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.08);border-color:#d4d4d4}
+.preview{aspect-ratio:16/10;position:relative;overflow:hidden;border-bottom:1px solid #e5e5e5}
+.preview iframe{position:absolute;top:0;left:0;width:200%;height:200%;border:none;transform:scale(0.5);transform-origin:0 0;pointer-events:none}
+.card-body{padding:22px 24px 24px}
+.label{display:inline-block;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;border-radius:4px;margin-bottom:10px}
+.card h2{font-size:1.3rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:6px}
+.card p{font-size:0.92rem;color:#525252;line-height:1.6;margin-bottom:16px}
+.swatches{display:flex;gap:6px;margin-bottom:16px}
+.sw{width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #e5e5e5}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px}
+.tag{font-size:0.72rem;font-weight:500;color:#525252;background:#f5f5f5;border:1px solid #e5e5e5;padding:2px 8px;border-radius:5px}
+.card-action{display:inline-flex;align-items:center;gap:6px;font-size:0.86rem;font-weight:600;color:#2563eb}
+
+.label-1{background:#fef3c7;color:#92400e}
+.label-2{background:#dbeafe;color:#1e40af}
+.label-3{background:#fef9c3;color:#854d0e}
+.label-4{background:#dcfce7;color:#166534}
+
+footer{padding:28px;border-radius:14px;background:#fff;border:1px solid #e5e5e5;text-align:center}
+footer h3{font-size:1rem;font-weight:600;margin-bottom:6px}
+footer p{font-size:0.88rem;color:#525252}
+</style></head><body>
+
+<div class="page">
+  <header>
+    <div class="eyebrow">AutoCommand · Frontend Design Variants</div>
+    <h1>Pick a direction</h1>
+    <p class="lead">Four self-contained HTML mockups — same content, very different visual languages. Click any card to open the full page in a new tab. Once you pick one, I'll port it into the Flask templates.</p>
+    <p style="margin-top:14px;font-size:0.95rem">
+      <strong>Just want a different color?</strong>
+      &nbsp;The current design with <a href="color-themes.html" target="_blank" style="color:#2563eb;font-weight:600">7 swappable color themes →</a>
+    </p>
+  </header>
+
+  <div class="grid">
+
+    <a class="card" href="01-premium-dark.html" target="_blank">
+      <div class="preview"><iframe src="01-premium-dark.html" scrolling="no"></iframe></div>
+      <div class="card-body">
+        <span class="label label-1">Option 1</span>
+        <h2>Premium Dark</h2>
+        <p>Refined orange + copper accents on near-black. Playfair Display serif headlines for an editorial feel. Reads like a luxury dealership website.</p>
+        <div class="swatches">
+          <div class="sw" style="background:#0a0a0f"></div>
+          <div class="sw" style="background:#d97706"></div>
+          <div class="sw" style="background:#f59e0b"></div>
+          <div class="sw" style="background:#1a1a24"></div>
+        </div>
+        <div class="tags">
+          <span class="tag">Serif headlines</span>
+          <span class="tag">Roman numerals</span>
+          <span class="tag">Glow accents</span>
+          <span class="tag">Editorial</span>
+        </div>
+        <span class="card-action">Open mockup →</span>
+      </div>
+    </a>
+
+    <a class="card" href="02-clean-light.html" target="_blank">
+      <div class="preview"><iframe src="02-clean-light.html" scrolling="no"></iframe></div>
+      <div class="card-body">
+        <span class="label label-2">Option 2</span>
+        <h2>Clean Light SaaS</h2>
+        <p>White background, electric-blue accent. Linear/Notion-style minimalism — geometric, lots of whitespace, sticky filter chips, KPI stats strip at the top.</p>
+        <div class="swatches">
+          <div class="sw" style="background:#ffffff"></div>
+          <div class="sw" style="background:#2563eb"></div>
+          <div class="sw" style="background:#eff6ff"></div>
+          <div class="sw" style="background:#0f172a"></div>
+        </div>
+        <div class="tags">
+          <span class="tag">Light theme</span>
+          <span class="tag">Stats strip</span>
+          <span class="tag">Breadcrumb nav</span>
+          <span class="tag">B2B feel</span>
+        </div>
+        <span class="card-action">Open mockup →</span>
+      </div>
+    </a>
+
+    <a class="card" href="03-sport-bold.html" target="_blank">
+      <div class="preview"><iframe src="03-sport-bold.html" scrolling="no"></iframe></div>
+      <div class="card-body">
+        <span class="label label-3">Option 3</span>
+        <h2>Sport Bold</h2>
+        <p>Pure black + electric yellow + racing red. Angular clip-paths, monospaced data, all-caps everything. Reads like a Porsche configurator or racing telemetry app.</p>
+        <div class="swatches">
+          <div class="sw" style="background:#000000"></div>
+          <div class="sw" style="background:#facc15"></div>
+          <div class="sw" style="background:#ef4444"></div>
+          <div class="sw" style="background:#1a1a1a"></div>
+        </div>
+        <div class="tags">
+          <span class="tag">High contrast</span>
+          <span class="tag">Mono numbers</span>
+          <span class="tag">Angular shapes</span>
+          <span class="tag">Enthusiast</span>
+        </div>
+        <span class="card-action">Open mockup →</span>
+      </div>
+    </a>
+
+    <a class="card" href="04-warm-classic.html" target="_blank">
+      <div class="preview"><iframe src="04-warm-classic.html" scrolling="no"></iframe></div>
+      <div class="card-body">
+        <span class="label label-4">Option 4</span>
+        <h2>Warm Classic</h2>
+        <p>Cream background, forest green + orange accents. Rounded everything, Fraunces serif for headlines. Approachable, family-friendly — Edmunds meets Mailchimp.</p>
+        <div class="swatches">
+          <div class="sw" style="background:#faf6f0"></div>
+          <div class="sw" style="background:#15803d"></div>
+          <div class="sw" style="background:#ea580c"></div>
+          <div class="sw" style="background:#1c1917"></div>
+        </div>
+        <div class="tags">
+          <span class="tag">Light + warm</span>
+          <span class="tag">Rounded</span>
+          <span class="tag">Friendly tone</span>
+          <span class="tag">Consumer</span>
+        </div>
+        <span class="card-action">Open mockup →</span>
+      </div>
+    </a>
+
+  </div>
+
+  <h2 style="margin-top:48px;margin-bottom:8px;font-size:1.6rem;font-weight:800;letter-spacing:-0.02em">Same layout, different color worlds</h2>
+  <p style="font-size:0.96rem;color:#525252;max-width:640px;margin-bottom:24px">Four full color repaintings of the current layout — backgrounds, surfaces, and accents all change together. Two dark, two light.</p>
+
+  <div class="grid">
+
+    <a class="card" href="color-emerald-night.html" target="_blank">
+      <div class="preview"><iframe src="color-emerald-night.html" scrolling="no"></iframe></div>
+      <div class="card-body">
+        <span class="label" style="background:#dcfce7;color:#166534">Dark · Green</span>
+        <h2>Emerald Night</h2>
+        <p>Deep forest-dark backgrounds with subtly green-tinted surfaces. Emerald → lime accent gradient. Reads like an outdoors / adventure brand.</p>
+        <div class="swatches">
+          <div class="sw" style="background:#04110c"></div>
+          <div class="sw" style="background:#0e2a22"></div>
+          <div class="sw" style="background:#10b981"></div>
+          <div class="sw" style="background:#84cc16"></div>
+        </div>
+        <div class="tags">
+          <span class="tag">Dark theme</span>
+          <span class="tag">Forest tinted</span>
+          <span class="tag">Emerald gradient</span>
+          <span class="tag">Outdoors vibe</span>
+        </div>
+        <span class="card-action">Open mockup →</span>
+      </div>
+    </a>
+
+    <a class="card" href="color-forest-light.html" target="_blank">
+      <div class="preview"><iframe src="color-forest-light.html" scrolling="no"></iframe></div>
+      <div class="card-body">
+        <span class="label" style="background:#d1fae5;color:#065f46">Light · Green</span>
+        <h2>Forest Light</h2>
+        <p>Warm cream background with white cards and forest green accents. The bright, clean feel of Mailchimp meets the trustworthiness of an outdoors brand.</p>
+        <div class="swatches">
+          <div class="sw" style="background:#fafaf5"></div>
+          <div class="sw" style="background:#ffffff"></div>
+          <div class="sw" style="background:#15803d"></div>
+          <div class="sw" style="background:#86efac"></div>
+        </div>
+        <div class="tags">
+          <span class="tag">Light theme</span>
+          <span class="tag">Warm cream</span>
+          <span class="tag">Forest green</span>
+          <span class="tag">Friendly</span>
+        </div>
+        <span class="card-action">Open mockup →</span>
+      </div>
+    </a>
+
+    <a class="card" href="color-ocean-coastal.html" target="_blank">
+      <div class="preview"><iframe src="color-ocean-coastal.html" scrolling="no"></iframe></div>
+      <div class="card-body">
+        <span class="label" style="background:#cffafe;color:#155e75">Light · Teal</span>
+        <h2>Ocean Coastal</h2>
+        <p>Sea-foam white background with deep teal accents and sand-yellow card gradients. Coastal, modern, calm. Like a beach-town premium brand.</p>
+        <div class="swatches">
+          <div class="sw" style="background:#f7fafc"></div>
+          <div class="sw" style="background:#cffafe"></div>
+          <div class="sw" style="background:#0891b2"></div>
+          <div class="sw" style="background:#fef3c7"></div>
+        </div>
+        <div class="tags">
+          <span class="tag">Light theme</span>
+          <span class="tag">Coastal</span>
+          <span class="tag">Teal + sand</span>
+          <span class="tag">Calm</span>
+        </div>
+        <span class="card-action">Open mockup →</span>
+      </div>
+    </a>
+
+    <a class="card" href="color-aurora.html" target="_blank">
+      <div class="preview"><iframe src="color-aurora.html" scrolling="no"></iframe></div>
+      <div class="card-body">
+        <span class="label" style="background:#ede9fe;color:#5b21b6">Dark · Multi-gradient</span>
+        <h2>Aurora</h2>
+        <p>Deep navy with northern-lights gradient running across logo, hero text, and primary button. Cycles green → cyan → purple → pink. Looks like cutting-edge AI.</p>
+        <div class="swatches">
+          <div class="sw" style="background:#070716"></div>
+          <div class="sw" style="background:#10b981"></div>
+          <div class="sw" style="background:#06b6d4"></div>
+          <div class="sw" style="background:#a78bfa"></div>
+          <div class="sw" style="background:#ec4899"></div>
+        </div>
+        <div class="tags">
+          <span class="tag">Dark theme</span>
+          <span class="tag">4-color gradient</span>
+          <span class="tag">AI-forward</span>
+          <span class="tag">Premium tech</span>
+        </div>
+        <span class="card-action">Open mockup →</span>
+      </div>
+    </a>
+
+  </div>
+
+  <footer>
+    <h3>How to pick</h3>
+    <p>Open each in a new tab, click around, see which one matches your brand intent. Then tell me which name, and I'll wire it into the existing Flask templates (<code>index.html</code> + <code>compare.html</code> + <code>login.html</code>) so the live app picks up the new look.</p>
+  </footer>
+</div>
+
+</body></html>

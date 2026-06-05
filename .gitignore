@@ -11,6 +11,8 @@
 !/site/
 !/backend/
 !/WESCO_EDI_request_email.md
+# AutoCommand workflow drop (separate Python service)
+!/autocommand-workflow/
 
 # 3) never commit secrets, dependencies, build output, or OS cruft
 marketing/            # internal marketing/outreach docs — keep local, never publish

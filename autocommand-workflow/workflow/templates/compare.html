@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compare Vehicles · AutoCommand</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #050810;
+      --bg2:      #0a1020;
+      --surface:  #0f1626;
+      --surface2: #152030;
+      --border:   rgba(255,255,255,0.07);
+      --border2:  rgba(255,255,255,0.12);
+      --accent:   #3b82f6;
+      --accent2:  #06b6d4;
+      --good:     #2dce89;
+      --warn:     #fb923c;
+      --bad:      #f5365c;
+      --text:     #e8eaf0;
+      --text2:    #a0a8be;
+      --text3:    #5a6280;
+      --radius:   14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* ── Nav (compact, same look as home) ── */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(20px);
+      background: rgba(6,7,13,0.8);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px; height: 60px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-mark {
+      width: 32px; height: 32px; border-radius: 9px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px rgba(59,130,246,0.3);
+    }
+    .logo-text { font-size: 0.98rem; font-weight: 700; letter-spacing: -0.02em; }
+    .logo-text span {
+      background: linear-gradient(120deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .back-link {
+      color: var(--text2); text-decoration: none; font-size: 0.84rem;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px; border-radius: 6px;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 0.78rem; color: var(--text2); }
+
+    /* ── Page ── */
+    .page { max-width: 1280px; margin: 0 auto; padding: 28px 24px 80px; }
+
+    h1 {
+      font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em;
+      margin-bottom: 18px;
+    }
+    h1 .grad {
+      background: linear-gradient(120deg, #fff 10%, var(--accent) 60%, var(--accent2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    /* ── Error state ── */
+    .error-state {
+      background: var(--surface);
+      border: 1px solid rgba(245,54,92,0.3);
+      border-radius: var(--radius);
+      padding: 32px; text-align: center;
+    }
+    .error-state h2 { font-size: 1.2rem; margin-bottom: 8px; }
+    .error-state p  { color: var(--text2); }
+
+    /* ── Vehicle header row ── */
+    .header-row {
+      display: grid; gap: 14px;
+      margin-bottom: 28px;
+    }
+    .h-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .h-photo {
+      aspect-ratio: 16 / 10;
+      background: linear-gradient(135deg, var(--bg2), var(--surface2));
+      background-size: cover; background-position: center;
+      position: relative;
+    }
+    .h-score {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(6,7,13,0.85); backdrop-filter: blur(6px);
+      border: 1px solid var(--border);
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 0.78rem; font-weight: 700;
+    }
+    .h-score.good { color: var(--good); border-color: rgba(45,206,137,0.4); }
+    .h-score.warn { color: var(--warn); border-color: rgba(251,146,60,0.4); }
+    .h-score.bad  { color: var(--bad);  border-color: rgba(245,54,92,0.4); }
+    .h-body { padding: 14px 16px 16px; }
+    .h-title { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.01em; }
+    .h-trim  { font-size: 0.76rem; color: var(--text3); margin-top: -2px; }
+    .h-price {
+      margin-top: 8px;
+      font-size: 1.35rem; font-weight: 700;
+    }
+    .h-loc { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+    .h-detail-link {
+      display: inline-block; margin-top: 10px;
+      font-size: 0.76rem; color: var(--accent);
+      text-decoration: none;
+    }
+    .h-detail-link:hover { text-decoration: underline; }
+
+    /* ── Section / table ── */
+    .section {
+      margin-bottom: 22px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text3);
+      background: rgba(255,255,255,0.02);
+    }
+    .row {
+      display: grid;
+      align-items: center;
+    }
+    .row + .row { border-top: 1px solid var(--border); }
+
+    .row-label {
+      padding: 12px 18px;
+      font-size: 0.82rem; color: var(--text2); font-weight: 500;
+      background: rgba(255,255,255,0.02);
+    }
+    .cell {
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      border-left: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .cell.different { background: rgba(59,130,246,0.04); }
+    .cell.best      { color: var(--good); font-weight: 600; }
+    .cell.best::after {
+      content: "★"; color: var(--good); margin-left: 4px; font-size: 0.85rem;
+    }
+    .cell.dim { color: var(--text3); }
+    .cell ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+    .cell ul li {
+      padding: 1px 7px; border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      font-size: 0.74rem; color: var(--text2);
+      border: 1px solid var(--border);
+    }
+
+    /* ── AI section ── */
+    .ai-section {
+      margin-top: 28px;
+      background: var(--surface);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+    }
+    .ai-header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .ai-header svg { color: var(--accent); }
+    .ai-header h2 { font-size: 1.05rem; font-weight: 700; }
+    .ai-sub { color: var(--text3); font-size: 0.85rem; margin-bottom: 18px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 22px; border-radius: 9px;
+      font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; border: none; font-family: inherit;
+      transition: all 0.15s;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(59,130,246,0.3);
+    }
+    .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(59,130,246,0.45); transform: translateY(-1px); }
+    .btn-ghost {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--text2);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ai-result { margin-top: 20px; display: none; }
+    .ai-result.show { display: block; }
+
+    .ai-rec {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px; margin-bottom: 18px;
+    }
+    .ai-rec .conf {
+      display: inline-block;
+      font-size: 0.66rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .conf.high   { background: rgba(45,206,137,0.15); color: var(--good); }
+    .conf.medium { background: rgba(251,146,60,0.15); color: var(--warn); }
+    .conf.low    { background: rgba(245,54,92,0.15);  color: var(--bad); }
+
+    .ai-rec h3 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
+    .ai-narrative {
+      font-size: 0.92rem; color: var(--text2); line-height: 1.7;
+      margin-bottom: 22px;
+    }
+
+    .trade-grid {
+      display: grid; gap: 10px;
+    }
+    .trade-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+    }
+    .trade-card .vname {
+      font-size: 0.88rem; font-weight: 600;
+      margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .trade-card .vname .pick {
+      font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; padding: 2px 8px; border-radius: 4px;
+    }
+    .trade-card ul { list-style: none; padding: 0; margin-top: 4px; }
+    .trade-card li { font-size: 0.82rem; padding: 3px 0; padding-left: 18px; position: relative; }
+    .trade-card li.pro::before { content: "✓"; color: var(--good); position: absolute; left: 0; }
+    .trade-card li.con::before { content: "✗"; color: var(--bad);  position: absolute; left: 0; }
+
+    .ai-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+
+    .ai-error {
+      background: rgba(245,54,92,0.08);
+      border: 1px solid rgba(245,54,92,0.25);
+      border-radius: 10px;
+      padding: 14px 18px;
+      color: var(--text2); font-size: 0.85rem;
+      margin-top: 14px; display: none;
+    }
+    .ai-error.show { display: block; }
+    .ai-error b { color: var(--bad); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="back-link" href="/">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Back to search
+  </a>
+  <a class="nav-logo" href="/" style="margin-left: 20px;">
+    <div class="logo-mark">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2">
+        <path d="M3 17h2a2 2 0 0 1 2-2v-3h10v3a2 2 0 0 1 2 2h2"/>
+        <circle cx="7" cy="17" r="1.5" fill="#fff"/>
+        <circle cx="17" cy="17" r="1.5" fill="#fff"/>
+        <path d="M5 12l1.5-4.5A2 2 0 0 1 8.5 6h7a2 2 0 0 1 2 1.5L19 12"/>
+      </svg>
+    </div>
+    <span class="logo-text">Auto<span>Command</span></span>
+  </a>
+  <div class="nav-right">
+    {% if user %}<span>{{ user }}</span>{% endif %}
+  </div>
+</nav>
+
+<div class="page">
+
+{% if error %}
+  <div class="error-state">
+    <h2>Comparison unavailable</h2>
+    <p>{{ error }}</p>
+  </div>
+{% else %}
+
+  <h1><span class="grad">Comparing {{ data.count }} vehicles</span></h1>
+
+  <!-- Vehicle headers -->
+  <div class="header-row" style="grid-template-columns: 220px repeat({{ data.count }}, 1fr);">
+    <div></div>
+    {% for v in data.vehicles %}
+      {% set score = v.score or 0 %}
+      {% set score_cls = "good" if score >= 80 else "warn" if score >= 60 else "bad" %}
+      <div class="h-card">
+        <div class="h-photo" style="background-image:url('{{ v.photo }}')">
+          {% if v.score is not none %}
+            <div class="h-score {{ score_cls }}">{{ v.score | round | int }}</div>
+          {% endif %}
+        </div>
+        <div class="h-body">
+          <div class="h-title">{{ v.year }} {{ v.make }} {{ v.model }}</div>
+          {% if v.trim %}<div class="h-trim">{{ v.trim }}</div>{% endif %}
+          <div class="h-price">${{ "{:,.0f}".format(v.asking_price) }}</div>
+          <div class="h-loc">{{ v.location or "—" }}</div>
+          <a class="h-detail-link" href="/#detail-{{ v.vehicle_id }}" onclick="event.preventDefault(); window.open('/?detail={{ v.vehicle_id }}','_blank')">
+            View details →
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Spec sections -->
+  {% for section in data.sections %}
+    <div class="section">
+      <div class="section-header">{{ section.label }}</div>
+      {% for row in section.rows %}
+        <div class="row" style="grid-template-columns: 220px repeat({{ data.count }}, 1fr);">
+          <div class="row-label">{{ row.label }}</div>
+          {% for v in row['values'] %}
+            {% set is_best  = (row.best_idx is not none and loop.index0 == row.best_idx) %}
+            {% set cell_cls = "best" if is_best else "" %}
+            <div class="cell {{ cell_cls }}">
+              {% if row.format == 'money' %}
+                {% if v is none %}<span class="dim">—</span>
+                {% else %}${{ "{:,.0f}".format(v) }}{% endif %}
+              {% elif row.format == 'percent' %}
+                {% if v is none %}<span class="dim">—</span>
+                {% else %}{{ "%+.1f"|format(v) }}%{% endif %}
+              {% elif row.format == 'miles' %}
+                {% if v is none %}<span class="dim">—</span>
+                {% else %}{{ "{:,.0f}".format(v) }} mi{% endif %}
+              {% elif row.format == 'int' %}
+                {% if v is none %}<span class="dim">—</span>{% else %}{{ v }}{% endif %}
+              {% elif row.format == 'score' %}
+                {% if v is none %}<span class="dim">—</span>
+                {% else %}{{ "%.1f"|format(v) }} / 100{% endif %}
+              {% elif row.format == 'score01' %}
+                {% if v is none %}<span class="dim">—</span>
+                {% else %}{{ (v * 100) | round | int }}%{% endif %}
+              {% elif row.format == 'bool' %}
+                {% if v is none %}<span class="dim">—</span>
+                {% elif v %}✓ Yes
+                {% else %}✗ No{% endif %}
+              {% elif row.format == 'list' %}
+                {% if v %}<ul>{% for f in v %}<li>{{ f }}</li>{% endfor %}</ul>
+                {% else %}<span class="dim">none unique</span>{% endif %}
+              {% elif row.format == 'shared' %}
+                {% if v %}<ul>{% for f in v %}<li>{{ f }}</li>{% endfor %}</ul>
+                {% else %}<span class="dim">none shared</span>{% endif %}
+              {% else %}
+                {{ v or '—' }}
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+
+  <!-- AI section -->
+  <div class="ai-section">
+    <div class="ai-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+        <line x1="9" y1="9" x2="9.01" y2="9"/>
+        <line x1="15" y1="9" x2="15.01" y2="9"/>
+      </svg>
+      <h2>AI Recommendation</h2>
+    </div>
+    <p class="ai-sub">Have the AI consider your stated profile and recommend one of these vehicles, with trade-offs.</p>
+
+    <button class="btn btn-primary" id="ai-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      Get AI Recommendation
+    </button>
+
+    <div class="ai-error" id="ai-error"></div>
+
+    <div class="ai-result" id="ai-result">
+      <div class="ai-rec" id="ai-rec"></div>
+      <div class="trade-grid" id="ai-trade" style="grid-template-columns: repeat({{ data.count }}, 1fr);"></div>
+      <div class="ai-actions">
+        <button class="btn btn-ghost" id="ai-regen">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+          </svg>
+          Regenerate
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const IDS = "{{ ids_csv }}".split(",");
+    const PROFILE = {{ profile_json|safe }};
+
+    const $ = id => document.getElementById(id);
+
+    async function fetchNarrative() {
+      $("ai-btn").disabled = true;
+      $("ai-btn").innerHTML = '<div class="spinner"></div> Analyzing…';
+      $("ai-error").classList.remove("show");
+      $("ai-result").classList.remove("show");
+
+      try {
+        const r = await fetch("/compare/narrative", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: IDS, profile: PROFILE }),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error || `HTTP ${r.status}`);
+        }
+        const data = await r.json();
+        renderNarrative(data);
+      } catch (err) {
+        $("ai-error").classList.add("show");
+        $("ai-error").innerHTML = `<b>Could not generate AI recommendation:</b> ${err.message}`;
+      } finally {
+        $("ai-btn").disabled = false;
+        $("ai-btn").innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Get AI Recommendation`;
+      }
+    }
+
+    function renderNarrative(data) {
+      const rec = data.recommendation || {};
+      const conf = (rec.confidence || "medium").toLowerCase();
+
+      $("ai-rec").innerHTML = `
+        <span class="conf ${conf}">${conf} confidence</span>
+        <h3>${rec.headline || ""}</h3>
+        <p class="ai-narrative" style="margin-top:10px">${data.narrative || ""}</p>
+      `;
+
+      const cards = (data.trade_offs || []).map(t => {
+        const isPick = t.vehicle_id === rec.vehicle_id;
+        const v = window.VEHICLES_BY_ID[t.vehicle_id] || {};
+        return `
+          <div class="trade-card">
+            <div class="vname">
+              <span>${v.year || ""} ${v.make || ""} ${v.model || ""}</span>
+              ${isPick ? '<span class="pick">Pick</span>' : ""}
+            </div>
+            <ul>
+              ${(t.pros||[]).map(p => `<li class="pro">${p}</li>`).join("")}
+              ${(t.cons||[]).map(c => `<li class="con">${c}</li>`).join("")}
+            </ul>
+          </div>`;
+      }).join("");
+      $("ai-trade").innerHTML = cards;
+      $("ai-result").classList.add("show");
+    }
+
+    window.VEHICLES_BY_ID = {
+      {% for v in data.vehicles %}
+      "{{ v.vehicle_id }}": { year: {{ v.year }}, make: "{{ v.make }}", model: "{{ v.model }}" },
+      {% endfor %}
+    };
+
+    $("ai-btn").addEventListener("click", fetchNarrative);
+    $("ai-regen").addEventListener("click", fetchNarrative);
+  </script>
+
+{% endif %}
+
+</div>
+</body>
+</html>

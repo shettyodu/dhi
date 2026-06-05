@@ -1,0 +1,7 @@
+openai-agents>=0.3.0
+pydantic>=2.10
+sqlmodel>=0.0.16
+requests>=2.32
+flask>=3.0
+flask-cors>=6.0
+waitress>=3.0
