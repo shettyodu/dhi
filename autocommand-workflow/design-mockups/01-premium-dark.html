@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AutoCommand · Premium Dark</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f; --bg2:#13131a; --surface:#1a1a24; --surface2:#22222e;
+  --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
+  --accent:#d97706;      /* copper / dark orange */
+  --accent-soft:#fb923c;
+  --gold:#f59e0b;
+  --text:#f1f1f3; --text2:#9ca3af; --text3:#6b7280;
+  --good:#10b981; --bad:#ef4444;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sans-serif;line-height:1.5;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 20% 0%,rgba(217,119,6,0.06) 0%,transparent 50%),radial-gradient(circle at 80% 100%,rgba(245,158,11,0.04) 0%,transparent 50%);pointer-events:none;z-index:0}
+nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);background:rgba(10,10,15,0.85);border-bottom:1px solid var(--border);padding:0 48px;height:70px;display:flex;align-items:center;gap:18px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(217,119,6,0.4)}
+.logo-text{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;letter-spacing:-0.02em}
+.logo-text em{font-style:normal;color:var(--accent-soft)}
+.nav-divider{width:1px;height:22px;background:var(--border)}
+.nav-link{color:var(--text2);font-size:0.84rem;text-decoration:none;padding:7px 12px;border-radius:6px}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,0.04)}
+.nav-link.active{color:var(--text);background:rgba(217,119,6,0.12)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:0.82rem;color:var(--text2)}
+.user-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,0.04);border:1px solid var(--border)}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#d97706,#f59e0b)}
+
+.page{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:48px 32px 80px}
+
+.hero{margin-bottom:36px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.hero h1{font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;letter-spacing:-0.02em;line-height:1.05;max-width:680px}
+.hero h1 em{font-style:italic;color:var(--accent-soft);font-weight:600}
+.hero .sub{color:var(--text2);font-size:0.98rem;margin-top:12px;max-width:540px;line-height:1.65}
+.hero-stat{text-align:right;padding:18px 22px;background:linear-gradient(145deg,rgba(217,119,6,0.08),transparent);border:1px solid rgba(217,119,6,0.18);border-radius:10px}
+.hero-stat-num{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:var(--gold);line-height:1}
+.hero-stat-label{font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-top:6px}
+
+.search-card{background:linear-gradient(180deg,var(--surface),var(--bg2));border:1px solid var(--border);border-radius:16px;padding:30px;margin-bottom:48px;position:relative;overflow:hidden}
+.search-card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(217,119,6,0.4),transparent)}
+.search-label{font-family:'Playfair Display',serif;font-size:0.78rem;color:var(--accent-soft);font-style:italic;letter-spacing:0.06em;margin-bottom:18px;display:inline-block}
+.search-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
+.fl{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:7px}
+.input,.select{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:0.88rem;color:var(--text);transition:all .15s}
+.input:focus,.select:focus{outline:0;border-color:var(--accent);background:rgba(217,119,6,0.04)}
+.range{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.actions{display:flex;justify-content:space-between;align-items:center;padding-top:20px;border-top:1px solid var(--border)}
+.actions-left{font-size:0.78rem;color:var(--text3)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.btn-primary{background:linear-gradient(135deg,#d97706,#f59e0b);color:#0a0a0f;box-shadow:0 4px 20px rgba(217,119,6,0.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(217,119,6,0.5)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+
+.bucket{margin-bottom:42px}
+.bucket-head{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.bucket-num{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--gold);font-style:italic}
+.bucket-title{font-size:1.1rem;font-weight:600;letter-spacing:-0.01em}
+.bucket-sub{margin-left:auto;font-size:0.76rem;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+.card:hover{border-color:rgba(217,119,6,0.4);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.5)}
+.card-photo{aspect-ratio:16/10;background:linear-gradient(135deg,var(--bg2),var(--surface2));background-size:cover;position:relative}
+.card-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,15,0.6),transparent 40%)}
+.score{position:absolute;top:12px;right:12px;padding:5px 12px;background:rgba(10,10,15,0.92);border:1px solid rgba(245,158,11,0.4);border-radius:999px;font-size:0.78rem;font-weight:700;color:var(--gold);backdrop-filter:blur(6px);z-index:2}
+.source{position:absolute;top:12px;left:12px;padding:3px 9px;background:rgba(10,10,15,0.85);border:1px solid var(--border);border-radius:4px;font-size:0.68rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2);z-index:2}
+.card-body{padding:18px}
+.card-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:600;letter-spacing:-0.01em}
+.card-trim{font-size:0.76rem;color:var(--text3);margin-top:3px;font-style:italic}
+.price-row{display:flex;align-items:baseline;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.price{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:700;color:var(--text)}
+.market{font-size:0.74rem;font-weight:600;color:var(--good)}
+.meta{display:flex;gap:14px;margin-top:10px;font-size:0.78rem;color:var(--text2)}
+.meta span{display:inline-flex;align-items:center;gap:5px}
+
+@media(max-width:640px){.hero h1{font-size:2rem}nav{padding:0 20px}.page{padding:28px 20px 60px}}
+</style></head><body>
+
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 17h2a2 2 0 0 1 2-2v-3h10v3a2 2 0 0 1 2 2h2"/><circle cx="7" cy="17" r="1.5" fill="#fff"/><circle cx="17" cy="17" r="1.5" fill="#fff"/><path d="M5 12l1.5-4.5A2 2 0 0 1 8.5 6h7a2 2 0 0 1 2 1.5L19 12"/></svg>
+    </div>
+    <span class="logo-text">Auto<em>Command</em></span>
+  </a>
+  <div class="nav-divider"></div>
+  <a href="#" class="nav-link active">Marketplace</a>
+  <a href="#" class="nav-link">Auctions</a>
+  <a href="#" class="nav-link">Sell My Car</a>
+  <a href="#" class="nav-link">Showroom</a>
+  <div class="nav-right">
+    <a href="#" class="nav-link">Saved (3)</a>
+    <div class="user-chip"><div class="user-avatar"></div>James</div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="hero">
+    <div>
+      <h1>Find a vehicle <em>worth</em><br/>commanding the road in.</h1>
+      <p class="sub">AI-curated inventory across dealer feeds, auctions, and AutoCommand-owned stock. Personally scored, market-priced, ready to drive home.</p>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">412</div>
+      <div class="hero-stat-label">Vehicles Available</div>
+    </div>
+  </div>
+
+  <div class="search-card">
+    <span class="search-label">Begin your search</span>
+    <div class="search-grid">
+      <div><div class="fl">Brand</div><select class="select"><option>Any Brand</option><option>Toyota</option><option>Honda</option><option>BMW</option></select></div>
+      <div><div class="fl">Model</div><input class="input" placeholder="Any"/></div>
+      <div><div class="fl">Body Style</div><select class="select"><option>Any</option><option>SUV</option><option>Sedan</option><option>Truck</option></select></div>
+      <div><div class="fl">Drivetrain</div><select class="select"><option>Any</option><option>AWD</option><option>4WD</option></select></div>
+      <div><div class="fl">Year Range</div><div class="range"><input class="input" placeholder="From"/><input class="input" placeholder="To"/></div></div>
+      <div><div class="fl">Budget</div><div class="range"><input class="input" placeholder="Min"/><input class="input" placeholder="Max"/></div></div>
+      <div><div class="fl">Max Mileage</div><input class="input" placeholder="60,000"/></div>
+      <div><div class="fl">Location</div><select class="select"><option>Any</option><option>NC</option><option>FL</option></select></div>
+    </div>
+    <div class="actions">
+      <span class="actions-left">3 dealer-direct feeds online · Auction sources active</span>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Discover Inventory
+      </button>
+    </div>
+  </div>
+
+  <div class="bucket">
+    <div class="bucket-head">
+      <span class="bucket-num">i.</span>
+      <span class="bucket-title">Best Overall Match</span>
+      <span class="bucket-sub">5 hand-curated · sorted by composite score</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/1a1a24/d97706?text=2023+Highlander')">
+          <div class="source">dealer feed</div><div class="score">★ 94.8</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">2023 Toyota Highlander</div>
+          <div class="card-trim">XLE · Magnetic Gray · AWD</div>
+          <div class="price-row"><div class="price">$29,600</div><div class="market">−11.6% mkt</div></div>
+          <div class="meta"><span>⊙ 24,373 mi</span><span>📍 Charlotte, NC</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/1a1a24/d97706?text=2024+Santa+Fe')">
+          <div class="source">dealer feed</div><div class="score">★ 89.1</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">2024 Hyundai Santa Fe</div>
+          <div class="card-trim">Limited · Pearl White · AWD</div>
+          <div class="price-row"><div class="price">$27,500</div><div class="market">−5.2% mkt</div></div>
+          <div class="meta"><span>⊙ 18,200 mi</span><span>📍 Atlanta, GA</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/1a1a24/d97706?text=2022+CR-V')">
+          <div class="source">consignment</div><div class="score">★ 92.7</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">2022 Honda CR-V</div>
+          <div class="card-trim">EX-L · Lunar Rock · AWD</div>
+          <div class="price-row"><div class="price">$20,700</div><div class="market">−13.2% mkt</div></div>
+          <div class="meta"><span>⊙ 35,612 mi</span><span>📍 Raleigh, NC</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bucket">
+    <div class="bucket-head">
+      <span class="bucket-num">ii.</span>
+      <span class="bucket-title">Best Price vs Market</span>
+      <span class="bucket-sub">Most under fair market value</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/1a1a24/d97706?text=2022+Equinox')">
+          <div class="source">auction</div><div class="score">★ 82.3</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">2022 Chevrolet Equinox</div>
+          <div class="card-trim">LT · Silver · AWD</div>
+          <div class="price-row"><div class="price">$17,800</div><div class="market">−19.1% mkt</div></div>
+          <div class="meta"><span>⊙ 58,462 mi</span><span>📍 Charleston, SC</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/1a1a24/d97706?text=2022+CX-5')">
+          <div class="source">dealer feed</div><div class="score">★ 81.7</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">2022 Mazda CX-5</div>
+          <div class="card-trim">Carbon Edition · Polymetal Gray</div>
+          <div class="price-row"><div class="price">$18,800</div><div class="market">−18.3% mkt</div></div>
+          <div class="meta"><span>⊙ 64,138 mi</span><span>📍 Tampa, FL</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/1a1a24/d97706?text=2024+Crosstrek')">
+          <div class="source">dealer feed</div><div class="score">★ 85.7</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">2024 Subaru Crosstrek</div>
+          <div class="card-trim">Premium · Geyser Blue · AWD</div>
+          <div class="price-row"><div class="price">$20,100</div><div class="market">−18.0% mkt</div></div>
+          <div class="meta"><span>⊙ 24,035 mi</span><span>📍 Tampa, FL</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body></html>

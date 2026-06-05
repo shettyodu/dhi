@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AutoCommand · Warm Classic</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf6f0;        /* warm cream */
+  --bg2:#f3ede4;
+  --surface:#fff;
+  --border:#e7dfd2;
+  --border2:#d3c7b1;
+  --green:#15803d;     /* forest */
+  --green-soft:#16a34a;
+  --green-bg:#dcfce7;
+  --orange:#ea580c;
+  --orange-bg:#ffedd5;
+  --text:#1c1917;
+  --text2:#57534e;
+  --text3:#a8a29e;
+  --good:#15803d;
+  --bad:#dc2626;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sans-serif;line-height:1.5;min-height:100vh}
+.serif{font-family:'Fraunces',serif;letter-spacing:-0.01em}
+
+nav{position:sticky;top:0;z-index:50;background:rgba(250,246,240,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 36px;height:72px;display:flex;align-items:center;gap:18px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
+.logo-mark{width:42px;height:42px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(21,128,61,0.25)}
+.logo-text{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;letter-spacing:-0.02em}
+.logo-text span{color:var(--green);font-style:italic;font-weight:500}
+.nav-link{color:var(--text2);font-size:0.88rem;text-decoration:none;font-weight:500;padding:8px 14px;border-radius:999px;transition:all .15s}
+.nav-link:hover{background:var(--bg2);color:var(--text)}
+.nav-link.active{background:var(--green);color:#fff}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.help-link{font-size:0.84rem;color:var(--text2);text-decoration:underline;text-decoration-color:var(--border2);text-underline-offset:3px}
+.help-link:hover{color:var(--green);text-decoration-color:var(--green)}
+.user-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;background:#fff;border:1px solid var(--border);border-radius:999px;font-size:0.84rem;font-weight:500}
+.user-dot{width:24px;height:24px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.74rem;font-weight:700}
+
+.page{max-width:1240px;margin:0 auto;padding:48px 36px 80px}
+
+.hero{margin-bottom:40px;text-align:center}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:0.84rem;color:var(--green);background:var(--green-bg);padding:6px 14px;border-radius:999px;margin-bottom:18px}
+.hero h1{font-family:'Fraunces',serif;font-size:3.2rem;font-weight:700;letter-spacing:-0.03em;line-height:1.05;max-width:680px;margin:0 auto 14px}
+.hero h1 em{font-style:italic;color:var(--green);font-weight:600}
+.hero p{color:var(--text2);font-size:1.04rem;max-width:540px;margin:0 auto;line-height:1.7}
+
+.search-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:48px;box-shadow:0 4px 24px rgba(60,40,20,0.04)}
+.search-label{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;margin-bottom:6px;display:block}
+.search-sub{font-size:0.86rem;color:var(--text2);margin-bottom:22px}
+.search-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.fl{font-size:0.78rem;font-weight:600;color:var(--text);margin-bottom:7px}
+.input,.select{width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:inherit;font-size:0.9rem;color:var(--text);transition:all .15s}
+.input:focus,.select:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3px rgba(21,128,61,0.12)}
+.range{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+
+.search-actions{display:flex;justify-content:space-between;align-items:center;padding-top:22px;border-top:1px solid var(--border)}
+.note{font-size:0.84rem;color:var(--text2);font-style:italic}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:999px;font-size:0.92rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.btn-primary{background:var(--green);color:#fff;box-shadow:0 2px 12px rgba(21,128,61,0.25)}
+.btn-primary:hover{background:#166534;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text2)}
+.btn-ghost:hover{color:var(--text)}
+
+.bucket{margin-bottom:44px}
+.bucket-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.bucket-emoji{width:42px;height:42px;border-radius:50%;background:var(--orange-bg);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.bucket-emoji.b1{background:var(--green-bg)}
+.bucket-title{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600;letter-spacing:-0.02em}
+.bucket-sub{font-size:0.84rem;color:var(--text2);margin-top:2px}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(60,40,20,0.04)}
+.card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 8px 24px rgba(60,40,20,0.08)}
+.card-photo{aspect-ratio:16/10;background:var(--bg2);background-size:cover;position:relative}
+.card-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.2),transparent 50%)}
+.score{position:absolute;top:12px;right:12px;background:#fff;padding:5px 13px;border-radius:999px;font-size:0.82rem;font-weight:700;color:var(--green);box-shadow:0 2px 6px rgba(0,0,0,0.1);z-index:2;display:inline-flex;align-items:center;gap:5px}
+.score::before{content:"★";color:var(--orange)}
+.source{position:absolute;bottom:12px;left:12px;background:rgba(255,255,255,0.95);backdrop-filter:blur(4px);padding:4px 10px;border-radius:6px;font-size:0.7rem;font-weight:600;color:var(--text2);text-transform:capitalize;z-index:2}
+.card-body{padding:18px 20px 20px;flex:1;display:flex;flex-direction:column;gap:10px}
+.card-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;letter-spacing:-0.01em}
+.card-trim{font-size:0.82rem;color:var(--text2)}
+.price-row{display:flex;align-items:baseline;justify-content:space-between;margin-top:auto;padding-top:14px;border-top:1px dashed var(--border)}
+.price{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:700;letter-spacing:-0.02em}
+.market{font-size:0.76rem;font-weight:600;color:var(--green);background:var(--green-bg);padding:3px 9px;border-radius:5px}
+.meta{display:flex;gap:14px;font-size:0.82rem;color:var(--text2)}
+.meta span{display:inline-flex;align-items:center;gap:5px}
+
+@media(max-width:640px){.hero h1{font-size:2.2rem}nav{padding:0 20px}.page{padding:32px 20px 60px}}
+</style></head><body>
+
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 17h2a2 2 0 0 1 2-2v-3h10v3a2 2 0 0 1 2 2h2"/><circle cx="7" cy="17" r="1.5" fill="#fff"/><circle cx="17" cy="17" r="1.5" fill="#fff"/><path d="M5 12l1.5-4.5A2 2 0 0 1 8.5 6h7a2 2 0 0 1 2 1.5L19 12"/></svg>
+    </div>
+    <span class="logo-text">Auto<span>Command</span></span>
+  </a>
+  <a href="#" class="nav-link active">Browse</a>
+  <a href="#" class="nav-link">Trade-in</a>
+  <a href="#" class="nav-link">Shipping</a>
+  <a href="#" class="nav-link">About Us</a>
+  <div class="nav-right">
+    <a href="#" class="help-link">Need help?</a>
+    <div class="user-pill"><div class="user-dot">J</div>James</div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="hero">
+    <span class="hero-eyebrow">✨ AI-powered marketplace</span>
+    <h1>Your <em>next car,</em> without<br/>the dealer headache.</h1>
+    <p>We search every dealer feed, auction, and consignor in the Southeast — then hand-rank what's worth your time.</p>
+  </div>
+
+  <div class="search-card">
+    <span class="search-label serif">Tell us what you're looking for</span>
+    <p class="search-sub">We'll do the heavy lifting and only show you what makes sense.</p>
+    <div class="search-grid">
+      <div><div class="fl">Brand</div><select class="select"><option>Any brand</option><option>Toyota</option><option>Honda</option></select></div>
+      <div><div class="fl">Model</div><input class="input" placeholder="Any model"/></div>
+      <div><div class="fl">Body style</div><select class="select"><option>Any</option><option>SUV</option><option>Sedan</option></select></div>
+      <div><div class="fl">Drivetrain</div><select class="select"><option>Any</option><option>AWD</option><option>4WD</option></select></div>
+      <div><div class="fl">Year range</div><div class="range"><input class="input" placeholder="From"/><input class="input" placeholder="To"/></div></div>
+      <div><div class="fl">Budget</div><div class="range"><input class="input" placeholder="$ Min"/><input class="input" placeholder="$ Max"/></div></div>
+      <div><div class="fl">Max mileage</div><input class="input" placeholder="e.g. 60,000"/></div>
+      <div><div class="fl">Your location</div><select class="select"><option>Any state</option><option>NC</option></select></div>
+    </div>
+    <div class="search-actions">
+      <span class="note">No account needed to search — sign in when you find one you love.</span>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Show me cars
+      </button>
+    </div>
+  </div>
+
+  <div class="bucket">
+    <div class="bucket-head">
+      <div class="bucket-emoji b1">🌟</div>
+      <div>
+        <div class="bucket-title">Best Overall Match</div>
+        <div class="bucket-sub">Our picks if you can't decide — balanced across price, condition, and dealer trust.</div>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/dcfce7/15803d?text=2023+Highlander')">
+          <div class="source">From a dealer</div><div class="score">94.8</div>
+        </div>
+        <div class="card-body">
+          <div><div class="card-title">2023 Toyota Highlander</div><div class="card-trim">XLE · Magnetic Gray · AWD</div></div>
+          <div class="meta"><span>🛣️ 24,373 mi</span><span>📍 Charlotte, NC</span></div>
+          <div class="price-row"><div class="price">$29,600</div><div class="market">11.6% under market</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/dcfce7/15803d?text=2024+Santa+Fe')">
+          <div class="source">From a dealer</div><div class="score">89.1</div>
+        </div>
+        <div class="card-body">
+          <div><div class="card-title">2024 Hyundai Santa Fe</div><div class="card-trim">Limited · Pearl White · AWD</div></div>
+          <div class="meta"><span>🛣️ 18,200 mi</span><span>📍 Atlanta, GA</span></div>
+          <div class="price-row"><div class="price">$27,500</div><div class="market">5.2% under market</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/dcfce7/15803d?text=2022+CR-V')">
+          <div class="source">Consignment</div><div class="score">92.7</div>
+        </div>
+        <div class="card-body">
+          <div><div class="card-title">2022 Honda CR-V</div><div class="card-trim">EX-L · Lunar Rock · AWD</div></div>
+          <div class="meta"><span>🛣️ 35,612 mi</span><span>📍 Raleigh, NC</span></div>
+          <div class="price-row"><div class="price">$20,700</div><div class="market">13.2% under market</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bucket">
+    <div class="bucket-head">
+      <div class="bucket-emoji">💸</div>
+      <div>
+        <div class="bucket-title">Best Price vs Market</div>
+        <div class="bucket-sub">Genuine deals — these are priced well below what KBB says they're worth.</div>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/ffedd5/ea580c?text=2022+Equinox')">
+          <div class="source">From auction</div><div class="score">82.3</div>
+        </div>
+        <div class="card-body">
+          <div><div class="card-title">2022 Chevrolet Equinox</div><div class="card-trim">LT · Silver · AWD</div></div>
+          <div class="meta"><span>🛣️ 58,462 mi</span><span>📍 Charleston, SC</span></div>
+          <div class="price-row"><div class="price">$17,800</div><div class="market">19.1% under market</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/ffedd5/ea580c?text=2022+CX-5')">
+          <div class="source">From a dealer</div><div class="score">81.7</div>
+        </div>
+        <div class="card-body">
+          <div><div class="card-title">2022 Mazda CX-5</div><div class="card-trim">Carbon Edition · Polymetal Gray</div></div>
+          <div class="meta"><span>🛣️ 64,138 mi</span><span>📍 Tampa, FL</span></div>
+          <div class="price-row"><div class="price">$18,800</div><div class="market">18.3% under market</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-photo" style="background-image:url('https://placehold.co/640x400/ffedd5/ea580c?text=2024+Crosstrek')">
+          <div class="source">From a dealer</div><div class="score">85.7</div>
+        </div>
+        <div class="card-body">
+          <div><div class="card-title">2024 Subaru Crosstrek</div><div class="card-trim">Premium · Geyser Blue · AWD</div></div>
+          <div class="meta"><span>🛣️ 24,035 mi</span><span>📍 Tampa, FL</span></div>
+          <div class="price-row"><div class="price">$20,100</div><div class="market">18.0% under market</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body></html>

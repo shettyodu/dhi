@@ -1,0 +1,33 @@
+services:
+  urla-workflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mortgageq:latest
+    container_name: mortgageq
+    ports:
+      - "5005:5005"
+    environment:
+      # API keys (required) — set via shell env or .env file
+      OPENAI_API_KEY:    ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      # Model overrides (optional)
+      OPENAI_MODEL_NAME:    ${OPENAI_MODEL_NAME:-gpt-5.2}
+      ANTHROPIC_MODEL_NAME: ${ANTHROPIC_MODEL_NAME:-claude-opus-4-5-20251101}
+      # Login (static credentials — share with testers)
+      APP_USERNAME:      ${APP_USERNAME:-tester}
+      APP_PASSWORD:      ${APP_PASSWORD:-urla2026}
+      FLASK_SECRET_KEY:  ${FLASK_SECRET_KEY:-}
+      # Misc
+      OPENAI_AGENTS_DISABLE_TRACING: "1"
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./uploads:/app/workflow/uploads
+      - ./output:/app/workflow/output
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5005/healthz').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
