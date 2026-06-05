@@ -8,6 +8,7 @@
 !/.gitignore
 !/netlify.toml
 !/package.json
+!/CONTRIBUTING.md
 !/site/
 !/backend/
 !/WESCO_EDI_request_email.md
