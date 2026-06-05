@@ -498,6 +498,7 @@ const SERVICE_CONTENT = {
 
   "automotive.html": {
     partner: "",
+    heroLogo: "assets/img/acm-logo.png",
     lead:
       "AutoCommand AI Marketplace is a digital-first vehicle acquisition platform that helps customers locate, evaluate, finance, protect, purchase, and ship used vehicles through one coordinated, AI-powered system — combining market-wide digital search with a credible onsite dealership in the New Bern / Raleigh, North Carolina corridor.",
     highlights: [

@@ -125,7 +125,9 @@
         <span class="text-slate-200">${meta.title}</span>
       </nav>
       <div class="flex items-start gap-5">
-        <span class="hidden h-16 w-16 flex-none items-center justify-center rounded-2xl bg-cyan-600/20 text-cyan-300 sm:flex">${icon(meta.icon, "h-8 w-8")}</span>
+        ${data.heroLogo
+          ? `<span class="hidden h-16 flex-none items-center justify-center rounded-2xl bg-white px-4 shadow-sm sm:flex"><img src="${data.heroLogo}" alt="${meta.title}" class="max-h-12 w-auto object-contain" /></span>`
+          : `<span class="hidden h-16 w-16 flex-none items-center justify-center rounded-2xl bg-cyan-600/20 text-cyan-300 sm:flex">${icon(meta.icon, "h-8 w-8")}</span>`}
         <div>
           <p class="text-sm font-semibold uppercase tracking-wider text-cyan-300">DHI Vertical${data.partner ? " &middot; " + data.partner : ""}</p>
           <h1 class="mt-2 max-w-3xl text-4xl font-extrabold tracking-tight text-white sm:text-5xl">${meta.title}</h1>
