@@ -16,19 +16,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy package contents into /app/workflow/
-COPY __init__.py        ./workflow/__init__.py
-COPY config.py          ./workflow/config.py
-COPY logging_utils.py   ./workflow/logging_utils.py
-COPY providers.py       ./workflow/providers.py
-COPY schemas.py         ./workflow/schemas.py
-COPY tools.py           ./workflow/tools.py
-COPY workflow.py        ./workflow/workflow.py
-COPY api.py             ./workflow/api.py
-COPY prompts/           ./workflow/prompts/
-COPY templates/         ./workflow/templates/
-COPY static/            ./workflow/static/
-COPY fixtures/          ./workflow/fixtures/
+# Copy the entire workflow package into /app/workflow/ (all modules,
+# subpackages — db, agents, operations — prompts, templates, static, fixtures).
+COPY . ./workflow/
 
 # Runtime dirs (mountable as volumes for persistence)
 RUN mkdir -p /app/workflow/uploads /app/workflow/output
