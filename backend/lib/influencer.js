@@ -5,6 +5,7 @@
 
 const crypto = require("crypto");
 const { getStore } = require("@netlify/blobs");
+const hubspot = require("./hubspot");
 
 const STORE = "influencer-signups";
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL || "https://courageous-fairy-0b2d3c.netlify.app";
@@ -87,6 +88,10 @@ async function signUpInfluencer(body) {
     console.error("influencer blobs write failed:", e.message);
     return { status: 503, json: { error: "Sign-up is temporarily unavailable. Please email us to join the program." } };
   }
+
+  // Best-effort sync to HubSpot CRM — never blocks sign-up.
+  try { await hubspot.upsertInfluencer(record); }
+  catch (e) { console.error("hubspot influencer sync error:", e.message); }
 
   const landing = program === "automotive" ? "automotive.html" : "lighting-catalog.html";
   const link = `${PUBLIC_BASE}/${landing}?ref=${encodeURIComponent(code)}`;

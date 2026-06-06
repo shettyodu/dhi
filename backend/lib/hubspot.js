@@ -1,26 +1,29 @@
-/* Push captured leads into HubSpot CRM (free-tier friendly).
-   Upserts a contact by email and logs a note on the contact's timeline with the
-   full lead detail — so the sales team works the funnel + timeline in HubSpot.
+/* Push captured leads + creator applications into HubSpot CRM (free-tier friendly).
+   - Upserts a contact by email and logs a note on the contact's timeline.
+   - For customer leads, also creates a Deal in the default pipeline so the team
+     gets the sales-funnel board (pipeline/stage discovered at runtime — no
+     hard-coded IDs).
+   Everything is best-effort + time-boxed and never blocks the primary capture.
 
-   Config: HUBSPOT_TOKEN  (a HubSpot Private App access token, set in Netlify env)
-   - No-ops gracefully when the token is unset.
-   - Time-boxed and best-effort: never blocks or fails the primary lead capture.
-   Returns { ok } | { skipped } | { ok:false }. */
+   Config: HUBSPOT_TOKEN          HubSpot Private App token (Netlify env)
+           HUBSPOT_CREATE_DEALS   "false" to skip deal creation (default on)
+   No-ops gracefully when the token is unset. */
 
 const TOKEN = process.env.HUBSPOT_TOKEN || "";
 const BASE = "https://api.hubapi.com";
 const TIMEOUT_MS = Number(process.env.HUBSPOT_TIMEOUT_MS || 4000);
+const CREATE_DEALS = (process.env.HUBSPOT_CREATE_DEALS || "true").toLowerCase() !== "false";
 
 function isConfigured() { return !!TOKEN; }
 
-async function hsPost(path, body) {
+async function hsFetch(method, path, body) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
     const res = await fetch(`${BASE}${path}`, {
-      method: "POST",
+      method,
       headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: body ? JSON.stringify(body) : undefined,
       signal: ctrl.signal,
     });
     let json = null;
@@ -28,6 +31,8 @@ async function hsPost(path, body) {
     return { status: res.status, json };
   } finally { clearTimeout(timer); }
 }
+const hsPost = (p, b) => hsFetch("POST", p, b);
+const hsGet = (p) => hsFetch("GET", p);
 
 function splitName(name) {
   const n = String(name || "").trim();
@@ -36,7 +41,83 @@ function splitName(name) {
   return { firstname: parts[0], lastname: parts.slice(1).join(" ") };
 }
 
-const LABELS = {
+function parseAmount(str) {
+  const out = [];
+  const re = /(\d[\d,\.]*)\s*(k)?/gi; let m;
+  while ((m = re.exec(String(str || ""))) !== null) {
+    let v = parseFloat(m[1].replace(/,/g, "")); if (isNaN(v)) continue;
+    if (m[2]) v *= 1000; else if (v < 1000) v *= 1000;
+    out.push(v);
+  }
+  return out.length ? Math.max(...out) : null;
+}
+
+// Upsert a contact by email + log a timeline note. Returns { ok, contactId }.
+async function syncContact({ email, firstname, lastname, phone, company, lifecycle, leadStatus, noteBody }) {
+  const props = { email, firstname: firstname || "", lastname: lastname || "" };
+  if (phone) props.phone = phone;
+  if (company) props.company = company;
+  if (lifecycle) props.lifecyclestage = lifecycle;
+  if (leadStatus) props.hs_lead_status = leadStatus;
+
+  let contactId = null;
+  try {
+    const up = await hsPost("/crm/v3/objects/contacts/batch/upsert", { inputs: [{ idProperty: "email", id: email, properties: props }] });
+    contactId = up.json && up.json.results && up.json.results[0] && up.json.results[0].id;
+    if (!contactId) { console.error("hubspot upsert: no id", up.status, JSON.stringify(up.json || {}).slice(0, 240)); return { ok: false }; }
+  } catch (e) {
+    console.error("hubspot upsert error:", e.name === "AbortError" ? "timeout" : e.message);
+    return { ok: false };
+  }
+
+  if (noteBody) {
+    try {
+      await hsPost("/crm/v3/objects/notes", {
+        properties: { hs_note_body: noteBody, hs_timestamp: Date.now() },
+        associations: [{ to: { id: contactId }, types: [{ associationCategory: "HUBSPOT_DEFINED", associationTypeId: 202 }] }],
+      });
+    } catch (e) { console.error("hubspot note error:", e.name === "AbortError" ? "timeout" : e.message); }
+  }
+  return { ok: true, contactId };
+}
+
+// Discover the first stage of the default deal pipeline (cached) — avoids
+// hard-coding account-specific IDs.
+let _dealStage; // undefined = not fetched, null = unavailable
+async function firstDealStage() {
+  if (_dealStage !== undefined) return _dealStage;
+  try {
+    const r = await hsGet("/crm/v3/pipelines/deals");
+    const pipes = (r.json && r.json.results) || [];
+    if (!pipes.length) { _dealStage = null; return null; }
+    const pipe = pipes.find((p) => p.id === "default") || pipes.slice().sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))[0];
+    const stages = (pipe.stages || []).slice().sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    _dealStage = stages.length ? { pipelineId: pipe.id, stageId: stages[0].id } : null;
+  } catch (e) {
+    console.error("hubspot pipelines error:", e.name === "AbortError" ? "timeout" : e.message);
+    _dealStage = null;
+  }
+  return _dealStage;
+}
+
+async function createDeal({ contactId, dealname, amount }) {
+  const st = await firstDealStage();
+  if (!st) return { ok: false };
+  const properties = { dealname, pipeline: st.pipelineId, dealstage: st.stageId };
+  if (amount) properties.amount = String(Math.round(amount));
+  try {
+    const r = await hsPost("/crm/v3/objects/deals", {
+      properties,
+      associations: [{ to: { id: contactId }, types: [{ associationCategory: "HUBSPOT_DEFINED", associationTypeId: 3 }] }],
+    });
+    return { ok: !!(r.json && r.json.id), dealId: r.json && r.json.id };
+  } catch (e) {
+    console.error("hubspot deal error:", e.name === "AbortError" ? "timeout" : e.message);
+    return { ok: false };
+  }
+}
+
+const LEAD_LABELS = {
   make: "Make", model: "Model", body_style: "Body style", year: "Year",
   mileage: "Max mileage", price: "Price range", payment: "Monthly payment",
   down_payment: "Down payment", fuel: "Fuel", drivetrain: "Drivetrain",
@@ -45,11 +126,11 @@ const LABELS = {
   inv: "Inventory size", tier: "Tier of interest",
 };
 
-function noteBody(lead) {
+function leadNote(lead) {
   const d = lead.details || {};
   const lines = [`New ${lead.type || "lead"} from the AutoCommand website.`, ""];
-  for (const k of Object.keys(LABELS)) if (d[k]) lines.push(`${LABELS[k]}: ${d[k]}`);
-  for (const k of Object.keys(d)) if (!LABELS[k] && d[k]) lines.push(`${k}: ${d[k]}`);
+  for (const k of Object.keys(LEAD_LABELS)) if (d[k]) lines.push(`${LEAD_LABELS[k]}: ${d[k]}`);
+  for (const k of Object.keys(d)) if (!LEAD_LABELS[k] && d[k]) lines.push(`${k}: ${d[k]}`);
   if (lead.referral_code) lines.push(`Referral code: ${lead.referral_code}`);
   if (lead.id) lines.push(`Lead ref: ${lead.id}`);
   if (lead.submittedAt) lines.push(`Submitted: ${lead.submittedAt}`);
@@ -60,40 +141,39 @@ async function upsertLead(lead) {
   if (!isConfigured()) return { skipped: true };
   const email = String(lead.email || "").trim();
   if (!email) return { skipped: true };
-
   const { firstname, lastname } = splitName(lead.name);
-  const props = { email, firstname, lastname, lifecyclestage: "lead", hs_lead_status: "NEW" };
-  if (lead.phone) props.phone = lead.phone;
   const d = lead.details || {};
   const company = d.company || d.dealership || d.company_name;
-  if (company) props.company = company;
 
-  let contactId = null;
-  try {
-    const up = await hsPost("/crm/v3/objects/contacts/batch/upsert", {
-      inputs: [{ idProperty: "email", id: email, properties: props }],
-    });
-    contactId = up.json && up.json.results && up.json.results[0] && up.json.results[0].id;
-    if (!contactId) {
-      console.error("hubspot upsert: no contact id", up.status, JSON.stringify(up.json || {}).slice(0, 240));
-      return { ok: false };
-    }
-  } catch (e) {
-    console.error("hubspot upsert error:", e.name === "AbortError" ? "timeout" : e.message);
-    return { ok: false };
+  const c = await syncContact({ email, firstname, lastname, phone: lead.phone, company, lifecycle: "lead", leadStatus: "NEW", noteBody: leadNote(lead) });
+  if (!c.ok) return { ok: false };
+
+  // Customer leads are real buyers → put them on the sales-funnel board as a Deal.
+  if (CREATE_DEALS && lead.type === "customer") {
+    const vehicle = [d.year, d.make, d.model].filter(Boolean).join(" ").trim();
+    const dealname = `AutoCommand — ${vehicle || "vehicle"} (${lead.name || email})`;
+    await createDeal({ contactId: c.contactId, dealname, amount: parseAmount(d.price) });
   }
-
-  // Best-effort: log a note on the contact's timeline (note→contact assoc = 202).
-  try {
-    await hsPost("/crm/v3/objects/notes", {
-      properties: { hs_note_body: noteBody(lead), hs_timestamp: Date.now() },
-      associations: [{ to: { id: contactId }, types: [{ associationCategory: "HUBSPOT_DEFINED", associationTypeId: 202 }] }],
-    });
-  } catch (e) {
-    console.error("hubspot note error:", e.name === "AbortError" ? "timeout" : e.message);
-  }
-
-  return { ok: true, contactId };
+  return { ok: true, contactId: c.contactId };
 }
 
-module.exports = { upsertLead, isConfigured, noteBody, splitName };
+function influencerNote(rec) {
+  const lines = [`New creator / influencer application — AutoCommand ${rec.program || ""} program.`, ""];
+  if (rec.channel) lines.push(`Channel / handle: ${rec.channel}`);
+  if (rec.audience) lines.push(`Audience: ${rec.audience}`);
+  if (rec.code) lines.push(`Referral code: ${rec.code}`);
+  if (rec.payoutModel) lines.push(`Payout: ${rec.payoutModel}`);
+  if (rec.payoutNote) lines.push(`Notes: ${rec.payoutNote}`);
+  if (rec.signedUpAt) lines.push(`Applied: ${rec.signedUpAt}`);
+  return lines.join("\n");
+}
+
+async function upsertInfluencer(rec) {
+  if (!isConfigured()) return { skipped: true };
+  const email = String(rec.email || "").trim();
+  if (!email) return { skipped: true };
+  const { firstname, lastname } = splitName(rec.name);
+  return syncContact({ email, firstname, lastname, lifecycle: "other", leadStatus: "NEW", noteBody: influencerNote(rec) });
+}
+
+module.exports = { upsertLead, upsertInfluencer, isConfigured, leadNote, influencerNote, splitName, parseAmount };
