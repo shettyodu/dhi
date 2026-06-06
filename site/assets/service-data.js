@@ -575,7 +575,7 @@ const SERVICE_CONTENT = {
         type: "prose",
         heading: "Try the Vehicle Passport",
         paragraphs: [
-          "Issue and verify a blockchain-anchored vehicle passport in our pilot (on a test network). <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"automotive-passport.html\">Open the Vehicle Passport tool &rarr;</a>",
+          "Issue and verify a blockchain-anchored vehicle passport in our pilot (on a test network). <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"automotive-passport.html\">Open the Vehicle Passport tool &rarr;</a> &middot; <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"automotive-tokenization.html\">Explore the tokenization offering &rarr;</a>",
         ],
       },
       {

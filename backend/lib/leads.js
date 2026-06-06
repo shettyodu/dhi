@@ -9,7 +9,7 @@ const hubspot = require("./hubspot");
 
 const STORE = "automotive-leads";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-const TYPES = ["customer", "dealer", "supplier"];
+const TYPES = ["customer", "dealer", "supplier", "tokenization"];
 
 function store() {
   const siteID = process.env.NETLIFY_BLOBS_SITE_ID || process.env.BLOBS_SITE_ID;
