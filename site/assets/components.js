@@ -437,9 +437,83 @@ function countUp(el) {
   })(t0);
 }
 
+/* ---------------------------------------------------------------------------
+   Site-wide AI assistant — a floating chat widget backed by /chat.
+   Answers DHI/AutoCommand questions, routes to pages, nudges lead capture.
+   Degrades to a friendly "use a Request info form" message if the backend
+   isn't configured. Conversation lives in memory only.
+   --------------------------------------------------------------------------- */
+function initChatWidget() {
+  if (document.getElementById("dhi-chat-btn")) return;
+  const API_BASE = (new URLSearchParams(location.search).get("api") || localStorage.getItem("dhi_api_base") || "https://courageous-fairy-0b2d3c.netlify.app").replace(/\/+$/, "");
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  const btn = document.createElement("button");
+  btn.id = "dhi-chat-btn";
+  btn.setAttribute("aria-label", "Open DHI Assistant");
+  btn.className = "fixed bottom-5 right-5 z-[90] flex h-14 w-14 items-center justify-center rounded-full bg-cyan-600 text-white shadow-lg shadow-cyan-900/30 transition hover:bg-cyan-700";
+  btn.innerHTML = '<svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+
+  const panel = document.createElement("div");
+  panel.id = "dhi-chat-panel";
+  panel.className = "fixed bottom-24 right-5 z-[90] hidden w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl";
+  panel.style.height = "28rem"; panel.style.maxHeight = "70vh";
+  panel.innerHTML = `
+    <div class="flex items-center justify-between bg-brand-900 px-4 py-3 text-white">
+      <div><p class="text-sm font-semibold">DHI Assistant</p><p class="text-xs text-slate-300">Ask about our solutions</p></div>
+      <button id="dhi-chat-close" aria-label="Close" class="rounded-full p-1 text-slate-300 hover:bg-white/10 hover:text-white"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div id="dhi-chat-msgs" class="flex-1 space-y-3 overflow-y-auto p-4 text-sm"></div>
+    <form id="dhi-chat-form" class="flex items-center gap-2 border-t border-slate-200 p-3">
+      <input id="dhi-chat-in" autocomplete="off" placeholder="Ask a question…" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200" />
+      <button class="rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700">Send</button>
+    </form>`;
+  document.body.appendChild(btn);
+  document.body.appendChild(panel);
+
+  const msgs = panel.querySelector("#dhi-chat-msgs");
+  const input = panel.querySelector("#dhi-chat-in");
+  const convo = [];
+  let greeted = false;
+
+  function bubble(role, text) {
+    const wrap = document.createElement("div");
+    wrap.className = role === "user" ? "flex justify-end" : "flex justify-start";
+    const b = document.createElement("div");
+    b.className = (role === "user" ? "bg-cyan-600 text-white" : "bg-slate-100 text-slate-700") + " max-w-[85%] rounded-2xl px-3 py-2 leading-relaxed";
+    b.innerHTML = esc(text).replace(/\n/g, "<br>");
+    wrap.appendChild(b); msgs.appendChild(wrap); msgs.scrollTop = msgs.scrollHeight;
+    return b;
+  }
+  function toggle(open) {
+    const show = open === undefined ? panel.classList.contains("hidden") : open;
+    panel.classList.toggle("hidden", !show);
+    panel.classList.toggle("flex", show);
+    if (show && !greeted) { greeted = true; bubble("assistant", "Hi! I'm the DHI Assistant. Ask me about our verticals, AutoCommand, the Vehicle Passport, or how to get started."); input.focus(); }
+  }
+  btn.addEventListener("click", () => toggle());
+  panel.querySelector("#dhi-chat-close").addEventListener("click", () => toggle(false));
+
+  panel.querySelector("#dhi-chat-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = input.value.trim(); if (!text) return;
+    input.value = ""; bubble("user", text); convo.push({ role: "user", content: text });
+    const typing = bubble("assistant", "…");
+    try {
+      const r = await fetch(API_BASE + "/.netlify/functions/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: convo }) });
+      const d = await r.json().catch(() => ({}));
+      const reply = r.ok && d.reply ? d.reply : (d.error || "Sorry — I'm having trouble. Please use a Request information form or email steve@digitalhealthinternational.com.");
+      typing.innerHTML = esc(reply).replace(/\n/g, "<br>");
+      if (r.ok && d.reply) convo.push({ role: "assistant", content: d.reply });
+      msgs.scrollTop = msgs.scrollHeight;
+    } catch (err) { typing.textContent = "Network error — please try again."; }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   buildHeader();
   buildFooter();
   initHeroCarousel();
   initMotion();
+  initChatWidget();
 });
