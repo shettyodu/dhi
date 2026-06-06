@@ -109,8 +109,8 @@
   const others = VERTICALS.filter((v) => v.slug !== slug).slice(0, 3);
   const othersHtml = others
     .map(
-      (v) => `
-      <a href="${v.slug}" class="group flex flex-col rounded-2xl border border-slate-200 bg-white p-6 transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg">
+      (v, i) => `
+      <a href="${v.slug}" data-reveal="${i * 80}" class="group flex flex-col rounded-2xl border border-slate-200 bg-white p-6 transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg">
         <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-cyan-700 group-hover:bg-cyan-600 group-hover:text-white transition-colors">${icon(v.icon, "h-5 w-5")}</span>
         <h3 class="mt-4 font-semibold text-brand-900">${v.title}</h3>
         <p class="mt-2 flex-1 text-sm text-slate-600">${v.summary}</p>
@@ -154,8 +154,8 @@
         ${data.heroLogo
           ? `<span class="hidden h-16 flex-none items-center justify-center rounded-2xl bg-white px-4 shadow-sm sm:flex"><img src="${data.heroLogo}" alt="${meta.title}" class="max-h-12 w-auto object-contain" /></span>`
           : `<span class="hidden h-16 w-16 flex-none items-center justify-center rounded-2xl bg-cyan-600/20 text-cyan-300 sm:flex">${icon(meta.icon, "h-8 w-8")}</span>`}
-        <div>
-          <p class="text-sm font-semibold uppercase tracking-wider text-cyan-300">DHI Vertical${data.partner ? " &middot; " + data.partner : ""}</p>
+        <div data-reveal="0">
+          <p class="kicker text-sm font-semibold uppercase tracking-wider text-cyan-300">DHI Vertical${data.partner ? " &middot; " + data.partner : ""}</p>
           <h1 class="mt-2 max-w-3xl text-4xl font-extrabold tracking-tight text-white sm:text-5xl">${meta.title}</h1>
           <p class="mt-5 max-w-2xl text-lg leading-relaxed text-slate-300">${data.lead}</p>
         </div>
@@ -168,9 +168,9 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="grid gap-12 lg:grid-cols-3">
         <div class="space-y-12 lg:col-span-2">
-          ${data.sections.map(renderSection).join("")}
+          ${data.sections.map((s, i) => `<div data-reveal="${(i % 2) * 70}">${renderSection(s)}</div>`).join("")}
         </div>
-        <aside class="lg:col-span-1">
+        <aside class="lg:col-span-1" data-reveal="120">
           <div class="sticky top-24 space-y-6">
             <div class="rounded-2xl bg-brand-900 p-6 text-white">
               <h3 class="text-sm font-semibold uppercase tracking-wider text-cyan-300">At a glance</h3>
