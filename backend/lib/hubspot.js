@@ -118,19 +118,22 @@ async function createDeal({ contactId, dealname, amount }) {
 }
 
 const LEAD_LABELS = {
+  vertical: "Vertical", message: "Message", goal: "Goal", asset: "Asset",
   make: "Make", model: "Model", body_style: "Body style", year: "Year",
   mileage: "Max mileage", price: "Price range", payment: "Monthly payment",
   down_payment: "Down payment", fuel: "Fuel", drivetrain: "Drivetrain",
   credit: "Credit band", location: "Location", shipping: "Shipping",
   category: "Category", website: "Website", offer: "What they'd offer",
-  inv: "Inventory size", tier: "Tier of interest",
+  inv: "Inventory size", tier: "Tier of interest", interest: "Interested in",
+  accredited: "Accredited investor", role: "Role",
 };
 
 function leadNote(lead) {
   const d = lead.details || {};
-  const lines = [`New ${lead.type || "lead"} from the AutoCommand website.`, ""];
+  const src = (d.source || "").trim() || "the DHI website";
+  const lines = [`New ${lead.type || "lead"} from ${src}.`, ""];
   for (const k of Object.keys(LEAD_LABELS)) if (d[k]) lines.push(`${LEAD_LABELS[k]}: ${d[k]}`);
-  for (const k of Object.keys(d)) if (!LEAD_LABELS[k] && d[k]) lines.push(`${k}: ${d[k]}`);
+  for (const k of Object.keys(d)) if (!LEAD_LABELS[k] && d[k] && k !== "source") lines.push(`${k}: ${d[k]}`);
   if (lead.referral_code) lines.push(`Referral code: ${lead.referral_code}`);
   if (lead.id) lines.push(`Lead ref: ${lead.id}`);
   if (lead.submittedAt) lines.push(`Submitted: ${lead.submittedAt}`);

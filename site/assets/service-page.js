@@ -18,6 +18,7 @@
   const infoIcon =
     '<svg class="h-5 w-5 flex-none text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>';
   const explainers = []; // collected from "explainers" sections; opened in a shared modal
+  const IN = "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200";
 
   // ----- Sections -----
   function renderSection(s) {
@@ -189,6 +190,24 @@
     </div>
   </section>
 
+  <!-- REQUEST INFO -->
+  <section class="border-t border-slate-100 bg-white py-16" data-reveal="0">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <p class="kicker text-sm font-semibold uppercase tracking-wider text-cyan-700">Get started</p>
+      <h2 class="mt-2 text-2xl font-bold tracking-tight text-brand-900 sm:text-3xl">Bring ${meta.title} to your organization</h2>
+      <p class="mt-2 text-slate-600">Tell us about your needs and our team will follow up with options and pricing.</p>
+      <form id="vp-inq" class="mt-6 grid gap-3 sm:grid-cols-2">
+        <label class="block"><span class="text-sm font-medium text-slate-700">Name</span><input id="vp-name" class="${IN}" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Email</span><input id="vp-email" type="email" class="${IN}" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Organization <span class="text-slate-400">(optional)</span></span><input id="vp-company" class="${IN}" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Phone <span class="text-slate-400">(optional)</span></span><input id="vp-phone" class="${IN}" /></label>
+        <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">What are you looking for?</span><textarea id="vp-msg" rows="3" class="${IN}" placeholder="Goals, timeline, scale…"></textarea></label>
+        <div class="sm:col-span-2"><button id="vp-submit" type="submit" class="rounded-md bg-cyan-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Request information</button><span id="vp-status" class="ml-3 text-sm"></span></div>
+      </form>
+      <div id="vp-result" class="mt-4 hidden"></div>
+    </div>
+  </section>
+
   <!-- OTHER VERTICALS -->
   <section class="bg-slate-50 py-16">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -235,6 +254,35 @@
     modal.querySelectorAll("[data-exp-close]").forEach((el) => el.addEventListener("click", close));
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
   }
+
+  // ----- Per-vertical "Request information" → submit-lead (Blobs + HubSpot) -----
+  (function () {
+    const form = document.getElementById("vp-inq");
+    if (!form) return;
+    const API_BASE = (new URLSearchParams(location.search).get("api") || localStorage.getItem("dhi_api_base") || "https://courageous-fairy-0b2d3c.netlify.app").replace(/\/+$/, "");
+    const g = (id) => document.getElementById(id);
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = g("vp-name").value.trim(), email = g("vp-email").value.trim();
+      const status = g("vp-status"), btn = g("vp-submit"), result = g("vp-result");
+      if (!name || !email) { status.className = "ml-3 text-sm text-red-600"; status.textContent = "Name and email are required."; return; }
+      btn.disabled = true; status.className = "ml-3 text-sm text-slate-500"; status.textContent = "Sending…";
+      try {
+        const r = await fetch(API_BASE + "/.netlify/functions/submit-lead", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "inquiry", name, email, phone: g("vp-phone").value.trim(), company: g("vp-company").value.trim(), message: g("vp-msg").value.trim(), vertical: meta.title, source: "DHI · " + meta.title }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.ok) {
+          status.textContent = ""; form.classList.add("hidden");
+          result.className = "mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-slate-700";
+          result.innerHTML = `<p class="font-semibold text-emerald-700">Thanks — we'll be in touch.</p><p class="mt-1">Reference: <span class="font-mono text-xs">${d.id}</span></p>`;
+          result.classList.remove("hidden");
+        } else { status.className = "ml-3 text-sm text-red-600"; status.textContent = d.error || ("Couldn't send (HTTP " + r.status + ")."); }
+      } catch (err) { status.className = "ml-3 text-sm text-red-600"; status.textContent = "Network error — please try again."; }
+      finally { btn.disabled = false; }
+    });
+  })();
 
   // Set document title dynamically
   document.title = `${meta.title} — Digital Health International Inc.`;
