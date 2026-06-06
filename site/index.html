@@ -42,8 +42,8 @@
     <div class="absolute inset-0 bg-gradient-to-t from-brand-950/80 via-transparent to-transparent"></div>
 
     <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
-      <div class="max-w-3xl">
-        <span class="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cyan-300">
+      <div class="max-w-3xl" data-reveal="0">
+        <span class="kicker inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cyan-300">
           <span class="h-1.5 w-1.5 rounded-full bg-cyan-400"></span> Global Outreach &middot; Twelve Verticals &middot; One Platform
         </span>
         <p class="mt-6 text-xl font-semibold italic tracking-tight text-cyan-300 sm:text-2xl">Where Health Meets Innovation</p>
@@ -63,8 +63,8 @@
     <!-- Stat strip -->
     <div class="relative border-t border-white/10 bg-white/5 backdrop-blur">
       <div class="mx-auto grid max-w-7xl grid-cols-2 gap-px px-4 sm:px-6 lg:grid-cols-4 lg:px-8">
-        <div class="px-4 py-6 text-center sm:text-left"><div class="text-3xl font-bold text-white">12</div><div class="mt-1 text-sm text-slate-400">Integrated verticals</div></div>
-        <div class="px-4 py-6 text-center sm:text-left"><div class="text-3xl font-bold text-white">1,200+</div><div class="mt-1 text-sm text-slate-400">Medical equipment products</div></div>
+        <div class="px-4 py-6 text-center sm:text-left"><div class="text-3xl font-bold text-white" data-countup>12</div><div class="mt-1 text-sm text-slate-400">Integrated verticals</div></div>
+        <div class="px-4 py-6 text-center sm:text-left"><div class="text-3xl font-bold text-white" data-countup>1,200+</div><div class="mt-1 text-sm text-slate-400">Medical equipment products</div></div>
         <div class="px-4 py-6 text-center sm:text-left"><div class="text-3xl font-bold text-white">Global</div><div class="mt-1 text-sm text-slate-400">Sourcing &amp; outreach</div></div>
         <div class="px-4 py-6 text-center sm:text-left"><div class="text-3xl font-bold text-white">SAM.gov</div><div class="mt-1 text-sm text-slate-400">Registered contractor</div></div>
       </div>
@@ -75,8 +75,8 @@
   <section class="py-20 sm:py-24">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="grid items-center gap-12 lg:grid-cols-2">
-        <div>
-          <p class="text-sm font-semibold uppercase tracking-wider text-cyan-700">The DHI Platform, Defined</p>
+        <div data-reveal="0">
+          <p class="kicker text-sm font-semibold uppercase tracking-wider text-cyan-700">The DHI Platform, Defined</p>
           <h2 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">A vertically integrated healthcare &amp; wellness platform</h2>
           <p class="mt-5 text-lg leading-relaxed text-slate-600">
             DHI aligns technology, security, and care delivery for hospitals, employers, payers, governments, and NGOs. The platform connects multiple specialized verticals into one integrated ecosystem — letting clients combine exactly what they need and scale over time.
@@ -89,11 +89,11 @@
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="rounded-2xl bg-brand-50 p-6"><div class="text-cyan-700"><svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7.5l9-5 9 5-9 5-9-5zm0 9l9 5 9-5"/></svg></div><h3 class="mt-3 font-semibold text-brand-900">Modular by design</h3><p class="mt-1 text-sm text-slate-600">Open APIs connect hospitals, payers, employers, and government systems.</p></div>
-          <div class="mt-6 rounded-2xl bg-brand-900 p-6 text-white"><div class="text-cyan-300"><svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg></div><h3 class="mt-3 font-semibold">Secure to the core</h3><p class="mt-1 text-sm text-slate-300">Compliance and cybersecurity built into every layer.</p></div>
-          <div class="rounded-2xl bg-cyan-600 p-6 text-white"><div class="text-cyan-100"><svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg></div><h3 class="mt-3 font-semibold">Data-driven</h3><p class="mt-1 text-sm text-cyan-50">AI decision support and analytics across the ecosystem.</p></div>
-          <div class="-mt-6 rounded-2xl bg-brand-50 p-6"><div class="text-cyan-700"><svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21c-4-1.5-7-4.5-7-9V6l7-3 7 3v6c0 4.5-3 7.5-7 9z"/><path d="M2 12h20"/></svg></div><h3 class="mt-3 font-semibold text-brand-900">Globally sourced</h3><p class="mt-1 text-sm text-slate-600">Field-tested operations and world-class provider partnerships.</p></div>
+        <div class="grid grid-cols-2 gap-4" data-reveal="120">
+          <div class="rounded-2xl bg-brand-50 p-6 transition-transform hover:-translate-y-1"><div class="text-cyan-700"><svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7.5l9-5 9 5-9 5-9-5zm0 9l9 5 9-5"/></svg></div><h3 class="mt-3 font-semibold text-brand-900">Modular by design</h3><p class="mt-1 text-sm text-slate-600">Open APIs connect hospitals, payers, employers, and government systems.</p></div>
+          <div class="mt-6 rounded-2xl bg-brand-900 p-6 text-white transition-transform hover:-translate-y-1"><div class="text-cyan-300"><svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg></div><h3 class="mt-3 font-semibold">Secure to the core</h3><p class="mt-1 text-sm text-slate-300">Compliance and cybersecurity built into every layer.</p></div>
+          <div class="rounded-2xl bg-cyan-600 p-6 text-white transition-transform hover:-translate-y-1"><div class="text-cyan-100"><svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg></div><h3 class="mt-3 font-semibold">Data-driven</h3><p class="mt-1 text-sm text-cyan-50">AI decision support and analytics across the ecosystem.</p></div>
+          <div class="-mt-6 rounded-2xl bg-brand-50 p-6 transition-transform hover:-translate-y-1"><div class="text-cyan-700"><svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21c-4-1.5-7-4.5-7-9V6l7-3 7 3v6c0 4.5-3 7.5-7 9z"/><path d="M2 12h20"/></svg></div><h3 class="mt-3 font-semibold text-brand-900">Globally sourced</h3><p class="mt-1 text-sm text-slate-600">Field-tested operations and world-class provider partnerships.</p></div>
         </div>
       </div>
     </div>
@@ -102,8 +102,8 @@
   <!-- ====================== VERTICALS GRID ====================== -->
   <section class="bg-slate-50 py-20 sm:py-24">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl text-center">
-        <p class="text-sm font-semibold uppercase tracking-wider text-cyan-700">The DHI Vertical Ecosystem</p>
+      <div class="mx-auto max-w-2xl text-center" data-reveal="0">
+        <p class="kicker text-sm font-semibold uppercase tracking-wider text-cyan-700">The DHI Vertical Ecosystem</p>
         <h2 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">Twelve verticals of transformation</h2>
         <p class="mt-4 text-lg text-slate-600">Spanning healthcare, technology, infrastructure, and sustainability — designed to function independently yet interconnect as one.</p>
       </div>
@@ -113,22 +113,22 @@
 
   <!-- ========================= IMPACT =========================== -->
   <section class="bg-brand-950 py-16">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <p class="text-center text-sm font-semibold uppercase tracking-wider text-cyan-300">Our impact</p>
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" data-reveal="0">
+      <p class="kicker text-center text-sm font-semibold uppercase tracking-wider text-cyan-300">Our impact</p>
       <h2 class="mt-2 text-center text-2xl font-bold text-white sm:text-3xl">Empowering global wellbeing through innovation</h2>
       <div class="mx-auto mt-10 grid max-w-5xl grid-cols-2 gap-8 text-center lg:grid-cols-4">
-        <div><div class="font-display text-4xl font-extrabold text-white">10+</div><div class="mt-1 text-sm text-slate-400">Countries served</div></div>
-        <div><div class="font-display text-4xl font-extrabold text-white">1M+</div><div class="mt-1 text-sm text-slate-400">People reached</div></div>
-        <div><div class="font-display text-4xl font-extrabold text-white">30%</div><div class="mt-1 text-sm text-slate-400">Faster response for underserved populations</div></div>
-        <div><div class="font-display text-4xl font-extrabold text-white">100%</div><div class="mt-1 text-sm text-slate-400">HIPAA &amp; GDPR data-privacy compliance</div></div>
+        <div><div class="font-display text-4xl font-extrabold text-white" data-countup>10+</div><div class="mt-1 text-sm text-slate-400">Countries served</div></div>
+        <div><div class="font-display text-4xl font-extrabold text-white" data-countup>1M+</div><div class="mt-1 text-sm text-slate-400">People reached</div></div>
+        <div><div class="font-display text-4xl font-extrabold text-white" data-countup>30%</div><div class="mt-1 text-sm text-slate-400">Faster response for underserved populations</div></div>
+        <div><div class="font-display text-4xl font-extrabold text-white" data-countup>100%</div><div class="mt-1 text-sm text-slate-400">HIPAA &amp; GDPR data-privacy compliance</div></div>
       </div>
     </div>
   </section>
 
   <!-- ======================== PARTNERS ========================== -->
   <section class="py-20">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <p class="text-center text-sm font-semibold uppercase tracking-wider text-slate-400">Powered by globally recognized partners</p>
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" data-reveal="0">
+      <p class="kicker text-center text-sm font-semibold uppercase tracking-wider text-slate-400">Powered by globally recognized partners</p>
       <div class="mx-auto mt-8 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <div class="flex h-20 items-center justify-center rounded-xl border border-slate-200 bg-white p-4"><img src="assets/img/partners/gpdi.png" alt="GPDI" class="max-h-10 w-auto object-contain" /></div>
         <div class="flex h-20 items-center justify-center rounded-xl border border-slate-200 bg-white p-4"><img src="assets/img/partners/manhattanlife.png" alt="Manhattan Life" class="max-h-9 w-auto object-contain" /></div>
@@ -147,7 +147,7 @@
   <!-- =========================== CTA ============================ -->
   <section class="bg-brand-900">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-      <div class="flex flex-col items-center justify-between gap-6 text-center lg:flex-row lg:text-left">
+      <div class="flex flex-col items-center justify-between gap-6 text-center lg:flex-row lg:text-left" data-reveal="0">
         <div>
           <h2 class="text-2xl font-bold text-white sm:text-3xl">Build with a single, integrated platform.</h2>
           <p class="mt-2 text-slate-300">Governments, hospitals, employers, and institutions partner with DHI for end-to-end solutions.</p>
@@ -167,14 +167,16 @@
       const grid = document.getElementById("vert-grid");
       if (!grid) return;
       grid.innerHTML = VERTICALS.map(
-        (v) => `
-        <a href="${v.slug}" class="group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg">
+        (v, i) => `
+        <a href="${v.slug}" data-reveal="${(i % 3) * 90}" class="group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg">
           <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-cyan-700 group-hover:bg-cyan-600 group-hover:text-white transition-colors">${icon(v.icon, "h-6 w-6")}</span>
           <h3 class="mt-5 text-lg font-semibold text-brand-900">${v.title}</h3>
           <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600">${v.summary}</p>
           <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-cyan-700">Learn more <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
         </a>`
       ).join("");
+      // cards carry [data-reveal]; the shared initMotion() (run on DOMContentLoaded,
+      // after this inline script) picks them up and animates them in.
     })();
 
     // Hero background image carousel — crossfade through the 3 banners.

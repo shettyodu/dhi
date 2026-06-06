@@ -370,8 +370,76 @@ function initHeroCarousel() {
   }, 6000);
 }
 
+/* ---------------------------------------------------------------------------
+   Motion system (global, opt-in, no-JS-safe):
+   - elements with [data-reveal] fade/rise in on scroll (stagger via the value, ms)
+   - elements with [data-countup] animate their number when scrolled into view
+   - a `.kicker` class renders mono-accent eyebrow labels
+   Content is fully visible if JS is off or prefers-reduced-motion is set.
+   --------------------------------------------------------------------------- */
+function initMotion() {
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!document.getElementById("dhi-motion-style")) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap";
+    document.head.appendChild(link);
+    const st = document.createElement("style");
+    st.id = "dhi-motion-style";
+    st.textContent =
+      ".kicker{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}" +
+      "html.reveal-on [data-reveal]{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);will-change:opacity,transform}" +
+      "html.reveal-on [data-reveal].in{opacity:1;transform:none}" +
+      "@media (prefers-reduced-motion:reduce){html.reveal-on [data-reveal]{opacity:1;transform:none;transition:none}}";
+    document.head.appendChild(st);
+  }
+
+  const reveals = [...document.querySelectorAll("[data-reveal]")];
+  const counts = [...document.querySelectorAll("[data-countup]")];
+
+  if (reduce || !("IntersectionObserver" in window)) {
+    reveals.forEach((el) => el.classList.add("in"));
+    return;
+  }
+
+  document.documentElement.classList.add("reveal-on");
+  const ro = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      e.target.style.transitionDelay = (parseFloat(e.target.getAttribute("data-reveal")) || 0) + "ms";
+      e.target.classList.add("in");
+      ro.unobserve(e.target);
+    });
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+  reveals.forEach((el) => ro.observe(el));
+
+  const co = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { countUp(e.target); co.unobserve(e.target); } });
+  }, { threshold: 0.5 });
+  counts.forEach((el) => co.observe(el));
+}
+
+function countUp(el) {
+  const raw = (el.getAttribute("data-countup") || el.textContent || "").trim();
+  const m = raw.match(/^(\D*)([\d,.]+)(.*)$/);
+  if (!m) return;
+  const prefix = m[1], suffix = m[3];
+  const target = parseFloat(m[2].replace(/,/g, ""));
+  if (isNaN(target)) return;
+  const big = target >= 1000, dur = 1100, t0 = performance.now();
+  const fmt = (n) => (big ? Math.round(n).toLocaleString("en-US") : Math.round(n).toString());
+  (function tick(now) {
+    const p = Math.min(1, (now - t0) / dur);
+    el.textContent = prefix + fmt(target * (1 - Math.pow(1 - p, 3))) + suffix;
+    if (p < 1) requestAnimationFrame(tick);
+    else el.textContent = prefix + fmt(target) + suffix;
+  })(t0);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   buildHeader();
   buildFooter();
   initHeroCarousel();
+  initMotion();
 });
