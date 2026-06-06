@@ -441,6 +441,18 @@ def admin_reseed():
 if __name__ == "__main__":
     from workflow.db import init_db
     init_db()
+    # Auto-seed inventory on boot when empty. Free-tier hosts (e.g. Render) use
+    # ephemeral disks, so the SQLite DB is wiped on every container recycle;
+    # this keeps the marketplace populated without a manual reseed.
+    try:
+        with session_scope() as _s:
+            _count = _s.exec(select(func.count(Vehicle.vehicle_id))).one()
+        if not _count:
+            from workflow.fixtures.seed import cmd_reset
+            cmd_reset()
+            log_info("api.autoseed.done")
+    except Exception as exc:
+        log_error("api.autoseed.error", exc=exc)
     port = int(os.getenv("PORT", 5005))
     log_info("api.start", port=port)
     serve(app, host="0.0.0.0", port=port)
