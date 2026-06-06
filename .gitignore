@@ -9,11 +9,17 @@
 !/netlify.toml
 !/package.json
 !/CONTRIBUTING.md
+!/tailwind.config.js
+!/tailwind.input.css
+!/package-lock.json
 !/site/
 !/backend/
 !/WESCO_EDI_request_email.md
 # AutoCommand workflow drop (separate Python service)
 !/autocommand-workflow/
+
+# root build deps (Tailwind precompile) — never commit node_modules
+/node_modules/
 
 # 3) never commit secrets, dependencies, build output, or OS cruft
 marketing/            # internal marketing/outreach docs — keep local, never publish
