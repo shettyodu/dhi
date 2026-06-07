@@ -24,6 +24,8 @@
 
   let lastProfile = null;
   let lastBuckets = [];
+  let curBucket = 0;
+  let dealFilter = "all", photosOnly = false, sortBy = "match"; // on-results refine state
   const selected = new Map(); // vehicle_id -> vehicle
 
   // ---------- parse free-text form fields into structured /search params ----------
@@ -142,6 +144,7 @@
   function renderResults(d) {
     const results = $("results");
     selected.clear(); updateCmpBar(); // fresh search → reset compare selection
+    dealFilter = "all"; photosOnly = false; sortBy = "match"; curBucket = 0; // fresh search → reset refine
     const r = d.results || {};
     lastBuckets = Array.isArray(r.buckets) ? r.buckets.filter((b) => b.vehicles && b.vehicles.length) : [];
     const total = r.total_count != null ? r.total_count : 0;
@@ -163,18 +166,55 @@
       </div>
       ${interpreted(d.profile)}
       <div class="mt-5 flex gap-2 overflow-x-auto no-scrollbar pb-1">${tabs}</div>
+      <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
+        <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">Deal</span>
+        <div class="flex gap-1.5">
+          <button data-deal="all" class="deal-chip active rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">All</button>
+          <button data-deal="great" class="deal-chip rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">Great</button>
+          <button data-deal="good" class="deal-chip rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">Good+</button>
+        </div>
+        <label class="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-slate-600"><input id="photos-only" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-cyan-600" /> Has photos</label>
+        <div class="ml-auto flex items-center gap-2">
+          <span id="refine-count" class="text-xs text-slate-400"></span>
+          <label class="flex items-center gap-1.5 text-xs font-medium text-slate-600">Sort
+            <select id="sortby" class="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-700 focus:border-cyan-500 focus:outline-none">
+              <option value="match">Best match</option>
+              <option value="deal">Best deal</option>
+              <option value="price-asc">Price: low → high</option>
+              <option value="price-desc">Price: high → low</option>
+              <option value="mileage-asc">Mileage: low → high</option>
+              <option value="year-desc">Year: newest</option>
+            </select>
+          </label>
+        </div>
+      </div>
       <div id="bucket-grid" class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"></div>`;
     results.querySelectorAll(".bucket-tab").forEach((btn) => btn.addEventListener("click", () => {
       results.querySelectorAll(".bucket-tab").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       showBucket(parseInt(btn.dataset.i, 10));
     }));
+    results.querySelectorAll(".deal-chip").forEach((btn) => btn.addEventListener("click", () => {
+      results.querySelectorAll(".deal-chip").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      dealFilter = btn.dataset.deal;
+      showBucket(curBucket);
+    }));
+    const po = $("photos-only"); if (po) po.addEventListener("change", () => { photosOnly = po.checked; showBucket(curBucket); });
+    const sb = $("sortby"); if (sb) sb.addEventListener("change", () => { sortBy = sb.value; showBucket(curBucket); });
     showBucket(0);
   }
 
   function showBucket(i) {
+    curBucket = i;
     const grid = $("bucket-grid"); if (!grid || !lastBuckets[i]) return;
-    grid.innerHTML = lastBuckets[i].vehicles.map(vehicleCard).join("");
+    const list = applyRefine(lastBuckets[i].vehicles);
+    const cnt = $("refine-count"); if (cnt) cnt.textContent = list.length + " shown";
+    if (!list.length) {
+      grid.innerHTML = `<div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">No vehicles in this group match those filters. Try <strong>All</strong> or another tab.</div>`;
+      return;
+    }
+    grid.innerHTML = list.map(vehicleCard).join("");
     grid.querySelectorAll("[data-cmp]").forEach((cb) => cb.addEventListener("change", onCompareToggle));
   }
 
@@ -193,9 +233,42 @@
     return `<span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">At market</span>`;
   }
 
+  // CarGurus-style deal rating from the asking price vs. estimated market value.
+  // price_vs_market_pct is negative when the car is priced below market (a better deal).
+  function dealRating(sc) {
+    const p = sc && sc.price_vs_market_pct;
+    if (p == null || isNaN(p)) return null;
+    if (p <= -8) return { key: "great", label: "Great Deal", badge: "bg-emerald-600 text-white", rank: 5 };
+    if (p <= -2) return { key: "good",  label: "Good Deal",  badge: "bg-green-600 text-white",   rank: 4 };
+    if (p < 5)   return { key: "fair",  label: "Fair Deal",  badge: "bg-sky-600 text-white",     rank: 3 };
+    if (p < 12)  return { key: "high",  label: "High Price", badge: "bg-amber-500 text-white",   rank: 2 };
+    return            { key: "over",  label: "Overpriced", badge: "bg-rose-600 text-white",    rank: 1 };
+  }
+
+  // Filter + sort the active bucket's vehicles per the on-results refine controls.
+  function applyRefine(list) {
+    let out = list.slice();
+    if (photosOnly) out = out.filter((v) => v.photos && v.photos[0]);
+    if (dealFilter === "great") out = out.filter((v) => { const d = dealRating(v.score || {}); return d && d.key === "great"; });
+    else if (dealFilter === "good") out = out.filter((v) => { const d = dealRating(v.score || {}); return d && d.rank >= 4; });
+    const price = (v) => (v.asking_price == null ? Infinity : Number(v.asking_price));
+    const miles = (v) => (v.mileage == null ? Infinity : Number(v.mileage));
+    const mkt = (v) => (v.score && v.score.price_vs_market_pct != null ? Number(v.score.price_vs_market_pct) : 0);
+    const cmp = {
+      "price-asc": (a, b) => price(a) - price(b),
+      "price-desc": (a, b) => price(b) - price(a),
+      "mileage-asc": (a, b) => miles(a) - miles(b),
+      "year-desc": (a, b) => (Number(b.year) || 0) - (Number(a.year) || 0),
+      "deal": (a, b) => { const da = dealRating(a.score || {}), db = dealRating(b.score || {}); const r = (db ? db.rank : 0) - (da ? da.rank : 0); return r !== 0 ? r : mkt(a) - mkt(b); },
+    }[sortBy];
+    if (cmp) out.sort(cmp);
+    return out;
+  }
+
   function vehicleCard(v) {
     const sc = v.score || {};
     const score = sc.overall_score != null ? Number(sc.overall_score).toFixed(0) : null;
+    const dr = dealRating(sc);
     const id = esc(v.vehicle_id);
     const checked = selected.has(v.vehicle_id) ? "checked" : "";
     const why = [];
@@ -205,7 +278,8 @@
     if (v.accident_count != null) why.push(v.accident_count === 0 ? "no accidents" : v.accident_count + " accident(s)");
     return `<div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
       <div class="relative">${photoHtml(v)}
-        ${score ? `<span class="absolute right-2 top-2 rounded-full bg-brand-900/90 px-2 py-0.5 text-xs font-bold text-white">${score}</span>` : ""}
+        ${dr ? `<span class="absolute left-2 top-2 rounded-md ${dr.badge} px-2 py-0.5 text-xs font-bold shadow">${dr.label}</span>` : ""}
+        ${score ? `<span class="absolute right-2 top-2 rounded-full bg-brand-900/90 px-2 py-0.5 text-xs font-bold text-white" title="Match score">${score}</span>` : ""}
       </div>
       <div class="p-4">
         <h3 class="font-semibold text-brand-900">${esc(v.year)} ${esc(v.make)} ${esc(v.model)}${v.trim ? " " + esc(v.trim) : ""}</h3>
@@ -294,6 +368,7 @@
       ["Body", (v) => esc(v.body_style || "—")],
       ["Drive / Fuel", (v) => esc((v.drivetrain || "—") + " / " + (v.fuel_type || "—"))],
       ["Location", (v) => esc((v.location_city || "") + (v.location_city ? ", " : "") + (v.location_state || ""))],
+      ["Deal", (v) => { const d = dealRating(v.score || {}); return d ? `<span class="rounded ${d.badge} px-1.5 py-0.5 text-xs font-semibold">${d.label}</span>` : "—"; }],
       ["vs market", (v) => v.score && v.score.price_vs_market_pct != null ? (v.score.price_vs_market_pct).toFixed(0) + "%" : "—"],
       ["Dealer", (v) => v.score && v.score.dealer_reliability != null ? Math.round(v.score.dealer_reliability * 100) + "%" : "—"],
       ["Title", (v) => v.score && v.score.title_risk ? esc(v.title_status || "review") : "clean"],
