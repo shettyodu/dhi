@@ -5,7 +5,7 @@
   const API_BASE =
     new URLSearchParams(location.search).get("api") ||
     localStorage.getItem("dhi_api_base") ||
-    "https://courageous-fairy-0b2d3c.netlify.app";
+    "";
   const ENDPOINT = API_BASE + "/.netlify/functions/admin-leads";
   const SKEY = "dhi_admin_secret";
 

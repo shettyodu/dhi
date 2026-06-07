@@ -19,7 +19,12 @@ const API_URL = (process.env.AUTOCOMMAND_API_URL || "").replace(/\/+$/, "");
 const API_KEY = process.env.AUTOCOMMAND_API_KEY || "";
 const APP_USER = process.env.AUTOCOMMAND_APP_USER || "";
 const APP_PASS = process.env.AUTOCOMMAND_APP_PASS || "";
-const TIMEOUT_MS = Number(process.env.AUTOCOMMAND_TIMEOUT_MS || 9000);
+// Default 30s — large enough for the compare-narrative LLM call (typically
+// 5-20s on gpt-5/gpt-4o, faster on gpt-4o-mini). In Netlify production this is
+// capped by the function's own timeout (10s on free tier, 26s on Pro) — set
+// AUTOCOMMAND_TIMEOUT_MS lower there so the proxy aborts with a clean error
+// before Netlify kills it.
+const TIMEOUT_MS = Number(process.env.AUTOCOMMAND_TIMEOUT_MS || 30000);
 
 const COOKIE_TTL = 9 * 60 * 1000;
 let _cookie = null;

@@ -11,7 +11,7 @@
 */
 (function () {
   const qs = new URLSearchParams(location.search);
-  const API_BASE = (qs.get("api") || localStorage.getItem("dhi_api_base") || "https://courageous-fairy-0b2d3c.netlify.app").replace(/\/+$/, "");
+  const API_BASE = (qs.get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
   const PHOTO_BASE = (qs.get("photobase") || localStorage.getItem("acm_photo_base") || "").replace(/\/+$/, "");
   const FN = (n) => API_BASE + "/.netlify/functions/" + n;
   const ref = (qs.get("ref") || "").slice(0, 64);

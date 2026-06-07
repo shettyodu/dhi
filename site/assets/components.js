@@ -445,7 +445,7 @@ function countUp(el) {
    --------------------------------------------------------------------------- */
 function initChatWidget() {
   if (document.getElementById("dhi-chat-btn")) return;
-  const API_BASE = (new URLSearchParams(location.search).get("api") || localStorage.getItem("dhi_api_base") || "https://courageous-fairy-0b2d3c.netlify.app").replace(/\/+$/, "");
+  const API_BASE = (new URLSearchParams(location.search).get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   const btn = document.createElement("button");

@@ -3,7 +3,7 @@
    Blobs + HubSpot. Informational/lead-gen only — no offer, no transaction. */
 (function () {
   const qs = new URLSearchParams(location.search);
-  const API_BASE = (qs.get("api") || localStorage.getItem("dhi_api_base") || "https://courageous-fairy-0b2d3c.netlify.app").replace(/\/+$/, "");
+  const API_BASE = (qs.get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
   const ENDPOINT = API_BASE + "/.netlify/functions/submit-lead";
   const ref = (qs.get("ref") || "").slice(0, 64);
   const $ = (id) => document.getElementById(id);

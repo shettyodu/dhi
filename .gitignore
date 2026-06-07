@@ -24,6 +24,7 @@
 # 3) never commit secrets, dependencies, build output, or OS cruft
 marketing/            # internal marketing/outreach docs — keep local, never publish
 backend/node_modules/
+backend/package-lock.json
 backend/.env
 # Smart-contract subproject: commit source only, never deps/build output/keys
 backend/blockchain/node_modules/

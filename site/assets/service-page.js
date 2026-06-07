@@ -259,7 +259,7 @@
   (function () {
     const form = document.getElementById("vp-inq");
     if (!form) return;
-    const API_BASE = (new URLSearchParams(location.search).get("api") || localStorage.getItem("dhi_api_base") || "https://courageous-fairy-0b2d3c.netlify.app").replace(/\/+$/, "");
+    const API_BASE = (new URLSearchParams(location.search).get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
     const g = (id) => document.getElementById(id);
     form.addEventListener("submit", async (e) => {
       e.preventDefault();

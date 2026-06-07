@@ -37,7 +37,7 @@
     // OPTIONAL: when you deploy a serverless function that creates a Stripe
     // PaymentIntent and returns { clientSecret }, set its URL here to upgrade
     // from "validate/tokenize card" to a full real charge — no other changes.
-    paymentIntentEndpoint: "https://courageous-fairy-0b2d3c.netlify.app/.netlify/functions/create-payment-intent",
+    paymentIntentEndpoint: "/.netlify/functions/create-payment-intent",
     poThreshold: 2500,        // orders >= this can pay by PO / net terms
     freeShipThreshold: 2500,  // free parcel freight at/above this subtotal
     originState: "NC",

@@ -5,7 +5,7 @@
   const API_BASE =
     new URLSearchParams(location.search).get("api") ||
     localStorage.getItem("dhi_api_base") ||
-    "https://courageous-fairy-0b2d3c.netlify.app";
+    "";
   const SIGNUP = API_BASE + "/.netlify/functions/sign-up-influencer";
   const STORE = "dhi_influencer_signup";
 

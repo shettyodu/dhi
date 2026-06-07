@@ -7,7 +7,7 @@
   const API_BASE =
     new URLSearchParams(location.search).get("api") ||
     localStorage.getItem("dhi_api_base") ||
-    "https://courageous-fairy-0b2d3c.netlify.app";
+    "";
   const CREATE = API_BASE + "/.netlify/functions/create-vehicle-passport";
   const VERIFY = API_BASE + "/.netlify/functions/verify-vehicle-passport";
   const STORE = "dhi_vehicle_passports";
