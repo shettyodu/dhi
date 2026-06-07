@@ -156,7 +156,7 @@
     ].filter(Boolean).join(" ");
     return `
       <div class="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
-        ${p.img ? `<div class="mb-3 flex h-32 items-center justify-center rounded-lg bg-slate-50 p-2"><img src="${p.img}" alt="${p.id}" loading="lazy" class="max-h-28 w-auto object-contain" /></div>` : ""}
+        <div class="mb-3 h-32 overflow-hidden rounded-lg bg-slate-50">${window.SKUPhoto ? SKUPhoto.svg(p) : (p.img ? `<div class="flex h-full items-center justify-center p-2"><img src="${p.img}" alt="${p.id}" loading="lazy" class="max-h-28 w-auto object-contain" /></div>` : "")}</div>
         <div class="flex items-start justify-between gap-2">
           <div>
             <span class="inline-block rounded bg-brand-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-cyan-700">${p.cat}</span>

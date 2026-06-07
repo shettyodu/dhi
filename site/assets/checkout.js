@@ -133,7 +133,7 @@
     const li = priced().map((l) => `
       <li class="flex items-start justify-between gap-3 py-3">
         <div class="min-w-0">
-          ${l.p.img ? `<img src="${l.p.img}" alt="" class="mb-1 h-10 w-auto object-contain"/>` : ""}
+          ${window.SKUPhoto ? `<span class="mb-1 block h-10 w-10 overflow-hidden rounded bg-slate-50">${SKUPhoto.svg(l.p, { variant: "thumb" })}</span>` : (l.p.img ? `<img src="${l.p.img}" alt="" class="mb-1 h-10 w-auto object-contain"/>` : "")}
           ${l.p.t ? `<p class="text-sm font-semibold text-brand-900">${l.p.t}</p><p class="font-mono text-[11px] text-slate-400">${l.id}</p>` : `<p class="font-mono text-xs font-semibold text-brand-900 break-all">${l.id}</p>`}
           <p class="text-xs text-slate-500">${money(l.p.p)} ea</p>
           <div class="mt-1 inline-flex items-center rounded-md border border-slate-300">
