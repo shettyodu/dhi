@@ -438,21 +438,34 @@ def admin_reseed():
 # ── Entry point ──────────────────────────────────────────────────────────────
 
 
-if __name__ == "__main__":
-    from workflow.db import init_db
-    init_db()
-    # Auto-seed inventory on boot when empty. Free-tier hosts (e.g. Render) use
-    # ephemeral disks, so the SQLite DB is wiped on every container recycle;
-    # this keeps the marketplace populated without a manual reseed.
+def _ensure_seeded() -> None:
+    """Create tables and seed demo inventory when the DB is empty.
+
+    Runs at *import* time so it fires under any launcher — ``python -m
+    workflow.api``, gunicorn, waitress-serve, etc. — not only when this module is
+    the ``__main__`` entry point. Free-tier hosts (e.g. Render) use ephemeral
+    disks, so the SQLite DB is wiped on every container recycle; seeding here
+    keeps the marketplace populated without a manual reseed.
+    """
     try:
+        from workflow.db import init_db
+        init_db()
         with session_scope() as _s:
             _count = _s.exec(select(func.count(Vehicle.vehicle_id))).one()
         if not _count:
             from workflow.fixtures.seed import cmd_reset
             cmd_reset()
             log_info("api.autoseed.done")
-    except Exception as exc:
+    except Exception as exc:  # never block app startup on a seeding failure
         log_error("api.autoseed.error", exc=exc)
+
+
+# Seed on import (skip with AUTOCOMMAND_NO_AUTOSEED=1, e.g. for tests/CLI).
+if os.getenv("AUTOCOMMAND_NO_AUTOSEED", "").lower() not in ("1", "true", "yes"):
+    _ensure_seeded()
+
+
+if __name__ == "__main__":
     port = int(os.getenv("PORT", 5005))
     log_info("api.start", port=port)
     serve(app, host="0.0.0.0", port=port)
