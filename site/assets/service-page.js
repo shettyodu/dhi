@@ -46,6 +46,37 @@
           </div>
         </div>`;
     }
+    if (s.type === "pricing") {
+      const flat = s.flat
+        ? `<div class="mt-6 flex flex-wrap items-baseline gap-x-4 gap-y-2 rounded-2xl border border-cyan-200 bg-cyan-50 p-6">
+             <span class="text-3xl font-extrabold tracking-tight text-brand-900">${s.flat}</span>
+             ${s.flatNote ? `<span class="text-sm leading-relaxed text-slate-600">${s.flatNote}</span>` : ""}
+           </div>`
+        : "";
+      const table = (s.columns && s.rows)
+        ? `<div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
+             <table class="w-full border-collapse text-left" style="min-width:540px">
+               <thead><tr class="bg-slate-50">
+                 <th class="px-4 py-3 text-sm font-semibold text-slate-500">Organization size</th>
+                 ${s.columns.map((c) => `<th class="px-4 py-3 text-sm font-bold text-brand-900">${c}</th>`).join("")}
+               </tr></thead>
+               <tbody>
+                 ${s.rows.map((r) => `<tr class="border-t border-slate-100">
+                   <td class="px-4 py-3 text-sm font-semibold text-brand-900">${r.label}</td>
+                   ${r.cells.map((c) => `<td class="px-4 py-3 text-sm text-slate-700">${c}</td>`).join("")}
+                 </tr>`).join("")}
+               </tbody>
+             </table>
+           </div>`
+        : "";
+      return `
+        <div>
+          <h2 class="${HSIZE} font-bold tracking-tight text-brand-900">${s.heading}</h2>
+          ${s.intro ? `<p class="mt-3 text-lg leading-relaxed text-slate-600">${s.intro}</p>` : ""}
+          ${flat}${table}
+          ${s.footnote ? `<p class="mt-3 text-xs leading-relaxed text-slate-400">${s.footnote}</p>` : ""}
+        </div>`;
+    }
     if (s.type === "list") {
       const colCls = s.cols2 ? "sm:grid-cols-2" : "sm:grid-cols-1";
       return `

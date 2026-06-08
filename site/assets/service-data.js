@@ -81,6 +81,13 @@ const SERVICE_CONTENT = {
         ],
       },
       {
+        type: "pricing",
+        heading: "PipIQ pricing — one flat rate",
+        intro: "Private, branded AI protection with simple, predictable pricing — no surprises.",
+        flat: "$995 / month",
+        flatNote: "One flat rate for your entire organization (up to 1,000 employees). No per-employee charges, no hidden costs, and no add-on fees — every PipIQ feature included.",
+      },
+      {
         type: "prose",
         heading: "Healthcare-grade protection at any scale",
         paragraphs: [
@@ -113,8 +120,20 @@ const SERVICE_CONTENT = {
         items: [
           { title: "Basic", desc: "Core monitoring, endpoint protection, and compliance-aligned reporting for small teams." },
           { title: "Standard", desc: "Adds proactive threat detection, email/cloud coverage, and a dedicated representative." },
-          { title: "Premium", desc: "Full-surface managed protection with priority response — multi-tenant single dashboard, white-label, and bundled coverage. Request pricing for your size." },
+          { title: "Premium", desc: "Full-surface managed protection with priority response — multi-tenant single dashboard, white-label, and bundled coverage." },
         ],
+      },
+      {
+        type: "pricing",
+        heading: "CyberFortify pricing",
+        intro: "Enterprise-grade managed security at predictable monthly rates, scaled to your organization.",
+        columns: ["Basic", "Standard", "Premium"],
+        rows: [
+          { label: "Small (10 users)", cells: ["$1,750 / mo", "$2,250 / mo", "$2,750 / mo"] },
+          { label: "Medium (50 users)", cells: ["$7,750 / mo", "$10,250 / mo", "$12,750 / mo"] },
+          { label: "Large (100 users)", cells: ["$14,500 / mo", "$19,500 / mo", "$24,500 / mo"] },
+        ],
+        footnote: "Volume discounts available for larger organizations. For reference, a single in-house security hire typically costs $72,000–$100,000/year plus benefits — without the same tools or 24/7 coverage.",
       },
       {
         type: "prose",
