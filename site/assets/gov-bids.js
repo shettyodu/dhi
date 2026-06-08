@@ -6,6 +6,7 @@
   const qs = new URLSearchParams(location.search);
   const API_BASE = (qs.get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
   const FN = API_BASE + "/.netlify/functions/gov-bids";
+  const FN_REFRESH = API_BASE + "/.netlify/functions/gov-bids-refresh";
   const SKEY = "dhi_admin_secret";
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -176,6 +177,16 @@
     $("prop-close").addEventListener("click", () => $("prop-modal").classList.add("hidden"));
     $("prop-backdrop").addEventListener("click", () => $("prop-modal").classList.add("hidden"));
     $("prop-copy").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("prop-text").value); $("prop-copied").textContent = "Copied"; } catch (e) { $("prop-copied").textContent = "Select & copy manually"; } });
+    const rb = $("refresh");
+    if (rb) rb.addEventListener("click", async () => {
+      const st = $("refresh-status"); st.textContent = "Refreshing from SAM.gov…"; rb.disabled = true;
+      try {
+        const r = await fetch(FN_REFRESH, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: "{}" });
+        const d = await r.json().catch(() => ({}));
+        st.textContent = r.ok && d.ok ? `Updated — ${d.count} opportunities cached.` : (d.error || "Refresh failed.");
+      } catch (e) { st.textContent = "Refresh failed — try again."; }
+      finally { rb.disabled = false; }
+    });
   }
   if (document.readyState !== "loading") init(); else document.addEventListener("DOMContentLoaded", init);
 })();

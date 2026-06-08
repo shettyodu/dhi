@@ -3,6 +3,8 @@
    Auth: header  x-dhi-admin: <ADMIN_SECRET>   (fail-closed, same as admin-leads)
    Body: { action: "search", query?, vertical?, daysBack? } | { action: "verticals" } */
 const { searchBids, listVerticals } = require("../../lib/govbids");
+const { searchFromCache } = require("../../lib/govcache");
+const { connectLambda } = require("@netlify/blobs");
 
 const cors = {
   "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
@@ -11,6 +13,7 @@ const cors = {
 };
 
 exports.handler = async (event) => {
+  try { connectLambda(event); } catch (e) { /* auto-context fallback */ }
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: cors, body: JSON.stringify({ error: "Method not allowed" }) };
 
@@ -26,8 +29,10 @@ exports.handler = async (event) => {
     if (body.action === "verticals") {
       return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, verticals: listVerticals() }) };
     }
-    const r = await searchBids({ query: body.query, vertical: body.vertical, daysBack: body.daysBack });
-    return { statusCode: r.status, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify(r.json) };
+    // Prefer the daily cache (no live API call); fall back to a live/sample search.
+    const cached = await searchFromCache({ query: body.query, vertical: body.vertical }).catch(() => null);
+    const json = cached || (await searchBids({ query: body.query, vertical: body.vertical, daysBack: body.daysBack })).json;
+    return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify(json) };
   } catch (e) {
     console.error("gov-bids error:", e.message);
     return { statusCode: 500, headers: cors, body: JSON.stringify({ error: "Bid search failed" }) };

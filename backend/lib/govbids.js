@@ -190,4 +190,4 @@ function listVerticals() {
   return Object.entries(VERTICALS).map(([key, v]) => ({ key, label: v.label, naics: v.naics }));
 }
 
-module.exports = { searchBids, listVerticals, interpret, scoreOpportunity, VERTICALS };
+module.exports = { searchBids, listVerticals, interpret, scoreOpportunity, VERTICALS, fetchSam, normalizeSam, fmtDate };

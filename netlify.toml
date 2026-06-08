@@ -14,3 +14,7 @@
 [functions]
   node_bundler = "esbuild"
   included_files = ["backend/data/prices.json"]
+
+# Daily refresh of the Government bid-opportunity cache (SAM.gov → Netlify Blobs).
+[functions."gov-bids-refresh"]
+  schedule = "@daily"
