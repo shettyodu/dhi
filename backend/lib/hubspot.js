@@ -154,6 +154,7 @@ const LEAD_LABELS = {
   category: "Category", website: "Website", offer: "What they'd offer",
   inv: "Inventory size", tier: "Tier of interest", interest: "Interested in",
   accredited: "Accredited investor", role: "Role",
+  audience: "Covering", products: "Products of interest",
 };
 
 function leadNote(lead) {

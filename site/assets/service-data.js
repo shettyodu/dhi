@@ -213,6 +213,19 @@ const SERVICE_CONTENT = {
     ],
     sections: [
       {
+        type: "finder",
+        heading: "Find my coverage",
+        intro: "Tell us who you're covering and we'll match the right protection — a licensed advisor follows up. No obligation.",
+        source: "DHI · Insurance — Find my coverage",
+        audiences: [
+          { id: "individual", label: "Individual", products: ["Accident", "Dental, Vision & Hearing", "Hospital Indemnity", "Short-Term Care", "Critical Illness, Cancer & Stroke", "Out-of-Pocket (GAP)"] },
+          { id: "family", label: "Family", products: ["Accident", "Dental, Vision & Hearing", "Hospital Indemnity", "Critical Illness & Cancer", "Term Life", "Whole Life"] },
+          { id: "senior", label: "Senior", products: ["Home Health Care", "Hospital Indemnity", "Short-Term Care", "Dental, Vision & Hearing", "Whole Life", "Fixed Indexed Annuity"] },
+          { id: "employer", label: "Employer / Group", products: ["Group Accident", "Critical Illness & Cancer", "Disability", "Hospital Indemnity", "Group GAP", "Group Life"] },
+          { id: "traveler", label: "Traveler", products: ["Single-trip medical", "Annual multi-trip", "Adventure & sports", "Trip cancellation", "Medical evacuation"] },
+        ],
+      },
+      {
         type: "prose",
         heading: "Employer group benefits — ManhattanLife",
         paragraphs: [
@@ -248,6 +261,48 @@ const SERVICE_CONTENT = {
         ],
       },
       {
+        type: "explainers",
+        heading: "Confusing coverage, explained",
+        intro: "Plain-English explainers on the products people ask about most — tap any to learn what it is and why it matters.",
+        items: [
+          {
+            title: "Out-of-Pocket (GAP)", tag: "Supplemental",
+            what: "GAP coverage helps pay the difference between what your primary health plan covers and what you actually owe — deductibles, copays, and coinsurance — so a covered medical event doesn't blow up your budget.",
+            covers: ["Hospital deductibles & copays", "Coinsurance after your plan pays", "Out-of-pocket maximums on covered care"],
+            why: "High-deductible plans are everywhere; GAP cushions the out-of-pocket hit so a single ER visit or surgery doesn't become a financial emergency.",
+            video: "",
+          },
+          {
+            title: "Hospital Indemnity", tag: "Supplemental",
+            what: "Pays a fixed cash benefit directly to you for covered hospital stays and related services — regardless of what your health plan pays.",
+            covers: ["Daily / admission cash benefits", "ICU & surgery benefits", "Cash paid directly to you, to use anywhere"],
+            why: "Cash you can spend on anything — rent, travel, childcare — while you're not working and the bills pile up.",
+            video: "",
+          },
+          {
+            title: "Critical Illness, Cancer & Stroke", tag: "Supplemental",
+            what: "Pays a lump-sum cash benefit on diagnosis of a covered serious condition such as cancer, heart attack, or stroke.",
+            covers: ["Lump-sum on covered diagnosis", "Use it for treatment, travel, or living costs", "Often available with no medical exam"],
+            why: "Major diagnoses bring costs your health plan never touches — lost income, travel to specialists, experimental care. A lump sum gives you options.",
+            video: "",
+          },
+          {
+            title: "Short-Term Care", tag: "Senior & family",
+            what: "Covers temporary care needs — recovery after surgery, illness, or injury — bridging the gap before long-term care would apply.",
+            covers: ["Home health & nursing care", "Assisted-living & facility stays", "Recovery & rehabilitation support"],
+            why: "Most people need help recovering long before they need lifelong care — short-term care is more affordable and easier to qualify for.",
+            video: "",
+          },
+          {
+            title: "Fixed Indexed Annuity", tag: "Retirement",
+            what: "A retirement product that grows tax-deferred, linked to a market index, with a floor that protects your principal from market losses.",
+            covers: ["Principal protected from market drops", "Tax-deferred growth", "Optional guaranteed lifetime income"],
+            why: "It aims for more upside than a CD with downside protection a stock account can't promise — useful for turning savings into reliable retirement income. Not a security; guarantees are backed by the issuing carrier.",
+            video: "",
+          },
+        ],
+      },
+      {
         type: "prose",
         heading: "Trip coverage for every adventure",
         paragraphs: [
@@ -264,6 +319,19 @@ const SERVICE_CONTENT = {
           { title: "2 · We design the program", desc: "DHI matches carriers and products — ManhattanLife, SquareMouth, Acrisure and others — into a tailored, analytics-informed plan." },
           { title: "3 · Review & enroll", desc: "Compare options side by side with clear benefits, limits, and pricing, then enroll with guided support." },
           { title: "4 · Ongoing service", desc: "Claims help, renewals, and plan adjustments as needs change — integrated with DHI wellness and care management where relevant." },
+        ],
+      },
+      // TODO (Todd / compliance): confirm specific licensing for the trust strip —
+      // states licensed, agency/agent NPN, and carrier appointments — before adding exact figures.
+      {
+        type: "cards",
+        heading: "Licensed, transparent & on your side",
+        intro: "How DHI keeps insurance simple and trustworthy:",
+        items: [
+          { title: "Through licensed carriers & brokers", desc: "Coverage is placed with established, licensed partners — including ManhattanLife, Acrisure, and SquareMouth — never an unlicensed middleman." },
+          { title: "A request, not a binding quote", desc: "Everything starts as a no-obligation request; a licensed advisor confirms eligibility, benefits, limits, and pricing before anything is bound." },
+          { title: "Your information is protected", desc: "Personal and health details are handled with privacy and security by design across the DHI platform." },
+          { title: "Availability varies by state", desc: "Products, benefits, and pricing differ by state and carrier; your advisor confirms what's available where you live." },
         ],
       },
     ],

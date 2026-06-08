@@ -77,6 +77,31 @@
           ${s.footnote ? `<p class="mt-3 text-xs leading-relaxed text-slate-400">${s.footnote}</p>` : ""}
         </div>`;
     }
+    if (s.type === "finder") {
+      return `
+        <div id="cov-finder">
+          <h2 class="${HSIZE} font-bold tracking-tight text-brand-900">${s.heading}</h2>
+          ${s.intro ? `<p class="mt-3 text-lg leading-relaxed text-slate-600">${s.intro}</p>` : ""}
+          <p class="mt-6 text-sm font-semibold text-slate-700">Who are you covering?</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            ${s.audiences.map((a) => `<button type="button" data-aud="${a.id}" class="cov-aud rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:border-cyan-400">${a.label}</button>`).join("")}
+          </div>
+          <div id="cov-products" class="mt-5 hidden">
+            <p class="text-sm font-semibold text-slate-700">What protection interests you? <span class="font-normal text-slate-400">(optional — pick any)</span></p>
+            <div id="cov-product-list" class="mt-3 flex flex-wrap gap-2"></div>
+          </div>
+          <form id="cov-form" class="mt-6 hidden grid gap-3 sm:grid-cols-2">
+            <label class="block"><span class="text-sm font-medium text-slate-700">Name</span><input id="cov-name" class="${IN}" /></label>
+            <label class="block"><span class="text-sm font-medium text-slate-700">Email</span><input id="cov-email" type="email" class="${IN}" /></label>
+            <label class="block"><span class="text-sm font-medium text-slate-700">Phone <span class="text-slate-400">(optional)</span></span><input id="cov-phone" class="${IN}" /></label>
+            <label class="block"><span class="text-sm font-medium text-slate-700">State / ZIP</span><input id="cov-loc" class="${IN}" placeholder="NC / 27504" /></label>
+            <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Anything else? <span class="text-slate-400">(budget, timing, who's covered)</span></span><textarea id="cov-msg" rows="2" class="${IN}"></textarea></label>
+            <div class="sm:col-span-2"><button id="cov-submit" type="submit" class="rounded-md bg-cyan-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Get matched</button><span id="cov-status" class="ml-3 text-sm"></span></div>
+          </form>
+          <div id="cov-result" class="mt-4 hidden"></div>
+          <p class="mt-3 text-xs leading-relaxed text-slate-400">This is a request, not a binding quote. A licensed advisor confirms eligibility, benefits, and pricing. Availability varies by state.</p>
+        </div>`;
+    }
     if (s.type === "list") {
       const colCls = s.cols2 ? "sm:grid-cols-2" : "sm:grid-cols-1";
       return `
@@ -308,6 +333,56 @@
           status.textContent = ""; form.classList.add("hidden");
           result.className = "mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-slate-700";
           result.innerHTML = `<p class="font-semibold text-emerald-700">Thanks — we'll be in touch.</p><p class="mt-1">Reference: <span class="font-mono text-xs">${d.id}</span></p>`;
+          result.classList.remove("hidden");
+        } else { status.className = "ml-3 text-sm text-red-600"; status.textContent = d.error || ("Couldn't send (HTTP " + r.status + ")."); }
+      } catch (err) { status.className = "ml-3 text-sm text-red-600"; status.textContent = "Network error — please try again."; }
+      finally { btn.disabled = false; }
+    });
+  })();
+
+  // ----- "Find my coverage" finder (for "finder" sections) → submit-lead -----
+  (function () {
+    const root = document.getElementById("cov-finder");
+    const finder = (data.sections || []).find((s) => s.type === "finder");
+    if (!root || !finder) return;
+    const API_BASE = (new URLSearchParams(location.search).get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
+    const g = (id) => document.getElementById(id);
+    let audience = null;
+    const selected = new Set();
+    const audBtns = root.querySelectorAll(".cov-aud");
+    audBtns.forEach((btn) => btn.addEventListener("click", () => {
+      audience = btn.dataset.aud;
+      audBtns.forEach((b) => { const on = b === btn; b.classList.toggle("bg-brand-900", on); b.classList.toggle("text-white", on); b.classList.toggle("border-brand-900", on); });
+      const a = finder.audiences.find((x) => x.id === audience) || { products: [] };
+      selected.clear();
+      const list = g("cov-product-list");
+      list.innerHTML = (a.products || []).map((p) => `<button type="button" data-prod="${encodeURIComponent(p)}" class="cov-prod rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 transition-colors hover:border-cyan-400">${p}</button>`).join("");
+      list.querySelectorAll(".cov-prod").forEach((pb) => pb.addEventListener("click", () => {
+        const label = decodeURIComponent(pb.dataset.prod);
+        if (selected.has(label)) { selected.delete(label); pb.classList.remove("bg-cyan-600", "text-white", "border-cyan-600"); }
+        else { selected.add(label); pb.classList.add("bg-cyan-600", "text-white", "border-cyan-600"); }
+      }));
+      g("cov-products").classList.remove("hidden");
+      g("cov-form").classList.remove("hidden");
+    }));
+    g("cov-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = g("cov-name").value.trim(), email = g("cov-email").value.trim();
+      const status = g("cov-status"), btn = g("cov-submit"), result = g("cov-result");
+      if (!audience) { status.className = "ml-3 text-sm text-red-600"; status.textContent = "Pick who you're covering first."; return; }
+      if (!name || !email) { status.className = "ml-3 text-sm text-red-600"; status.textContent = "Name and email are required."; return; }
+      btn.disabled = true; status.className = "ml-3 text-sm text-slate-500"; status.textContent = "Sending…";
+      const audLabel = (finder.audiences.find((x) => x.id === audience) || {}).label || audience;
+      try {
+        const r = await fetch(API_BASE + "/.netlify/functions/submit-lead", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "inquiry", name, email, phone: g("cov-phone").value.trim(), location: g("cov-loc").value.trim(), message: g("cov-msg").value.trim(), vertical: meta.title, audience: audLabel, products: [...selected].join(", "), source: finder.source || ("DHI · " + meta.title + " — Find my coverage") }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.ok) {
+          g("cov-form").classList.add("hidden"); g("cov-products").classList.add("hidden"); status.textContent = "";
+          result.className = "mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-slate-700";
+          result.innerHTML = `<p class="font-semibold text-emerald-700">Thanks — a licensed advisor will follow up with options.</p><p class="mt-1">Reference: <span class="font-mono text-xs">${d.id}</span></p>`;
           result.classList.remove("hidden");
         } else { status.className = "ml-3 text-sm text-red-600"; status.textContent = d.error || ("Couldn't send (HTTP " + r.status + ")."); }
       } catch (err) { status.className = "ml-3 text-sm text-red-600"; status.textContent = "Network error — please try again."; }
