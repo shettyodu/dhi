@@ -13,8 +13,34 @@ const TOKEN = process.env.HUBSPOT_TOKEN || "";
 const BASE = "https://api.hubapi.com";
 const TIMEOUT_MS = Number(process.env.HUBSPOT_TIMEOUT_MS || 4000);
 const CREATE_DEALS = (process.env.HUBSPOT_CREATE_DEALS || "true").toLowerCase() !== "false";
+// Write the per-vertical custom property `dhi_vertical`. OFF by default so we
+// never send an unknown property (which would 400 the whole upsert) before the
+// property exists in HubSpot. Flip HUBSPOT_VERTICAL_PROP=true once it's created.
+const WRITE_VERTICAL_PROP = ["true", "1", "yes"].includes((process.env.HUBSPOT_VERTICAL_PROP || "").toLowerCase());
 
 function isConfigured() { return !!TOKEN; }
+
+// ---- Per-vertical tagging (Phase 1) ------------------------------------------
+// Every contact/deal is labelled with the DHI vertical it belongs to. The label
+// goes on the timeline note always (visible today, no extra scope) and into the
+// `dhi_vertical` property once it exists (gated by WRITE_VERTICAL_PROP).
+const VERTICAL_BY_LEAD_TYPE = {
+  customer: "AutoCommand AI Marketplace",
+  dealer: "AutoCommand AI Marketplace",
+  supplier: "AutoCommand AI Marketplace",
+  tokenization: "AutoCommand AI Marketplace",
+};
+const VERTICAL_BY_PROGRAM = {
+  automotive: "AutoCommand AI Marketplace",
+  lighting: "Lighting & Energy Efficiency",
+};
+function deriveVertical(lead) {
+  const d = (lead && lead.details) || {};
+  return d.vertical || VERTICAL_BY_LEAD_TYPE[lead && lead.type] || "";
+}
+function deriveInfluencerVertical(rec) {
+  return VERTICAL_BY_PROGRAM[rec && rec.program] || (rec && rec.program) || "";
+}
 
 async function hsFetch(method, path, body) {
   const ctrl = new AbortController();
@@ -53,12 +79,13 @@ function parseAmount(str) {
 }
 
 // Upsert a contact by email + log a timeline note. Returns { ok, contactId }.
-async function syncContact({ email, firstname, lastname, phone, company, lifecycle, leadStatus, noteBody }) {
+async function syncContact({ email, firstname, lastname, phone, company, lifecycle, leadStatus, noteBody, vertical }) {
   const props = { email, firstname: firstname || "", lastname: lastname || "" };
   if (phone) props.phone = phone;
   if (company) props.company = company;
   if (lifecycle) props.lifecyclestage = lifecycle;
   if (leadStatus) props.hs_lead_status = leadStatus;
+  if (vertical && WRITE_VERTICAL_PROP) props.dhi_vertical = vertical;
 
   let contactId = null;
   try {
@@ -100,11 +127,12 @@ async function firstDealStage() {
   return _dealStage;
 }
 
-async function createDeal({ contactId, dealname, amount }) {
+async function createDeal({ contactId, dealname, amount, vertical }) {
   const st = await firstDealStage();
   if (!st) return { ok: false };
   const properties = { dealname, pipeline: st.pipelineId, dealstage: st.stageId };
   if (amount) properties.amount = String(Math.round(amount));
+  if (vertical && WRITE_VERTICAL_PROP) properties.dhi_vertical = vertical;
   try {
     const r = await hsPost("/crm/v3/objects/deals", {
       properties,
@@ -146,22 +174,26 @@ async function upsertLead(lead) {
   if (!email) return { skipped: true };
   const { firstname, lastname } = splitName(lead.name);
   const d = lead.details || {};
+  const vertical = deriveVertical(lead);
+  if (vertical && !d.vertical) d.vertical = vertical; // surface it in the timeline note today
   const company = d.company || d.dealership || d.company_name;
 
-  const c = await syncContact({ email, firstname, lastname, phone: lead.phone, company, lifecycle: "lead", leadStatus: "NEW", noteBody: leadNote(lead) });
+  const c = await syncContact({ email, firstname, lastname, phone: lead.phone, company, lifecycle: "lead", leadStatus: "NEW", noteBody: leadNote(lead), vertical });
   if (!c.ok) return { ok: false };
 
   // Customer leads are real buyers → put them on the sales-funnel board as a Deal.
   if (CREATE_DEALS && lead.type === "customer") {
     const vehicle = [d.year, d.make, d.model].filter(Boolean).join(" ").trim();
     const dealname = `AutoCommand — ${vehicle || "vehicle"} (${lead.name || email})`;
-    await createDeal({ contactId: c.contactId, dealname, amount: parseAmount(d.price) });
+    await createDeal({ contactId: c.contactId, dealname, amount: parseAmount(d.price), vertical });
   }
   return { ok: true, contactId: c.contactId };
 }
 
 function influencerNote(rec) {
   const lines = [`New creator / influencer application — AutoCommand ${rec.program || ""} program.`, ""];
+  const v = deriveInfluencerVertical(rec);
+  if (v) lines.push(`Vertical: ${v}`);
   if (rec.channel) lines.push(`Channel / handle: ${rec.channel}`);
   if (rec.audience) lines.push(`Audience: ${rec.audience}`);
   if (rec.code) lines.push(`Referral code: ${rec.code}`);
@@ -176,7 +208,7 @@ async function upsertInfluencer(rec) {
   const email = String(rec.email || "").trim();
   if (!email) return { skipped: true };
   const { firstname, lastname } = splitName(rec.name);
-  return syncContact({ email, firstname, lastname, lifecycle: "other", leadStatus: "NEW", noteBody: influencerNote(rec) });
+  return syncContact({ email, firstname, lastname, lifecycle: "other", leadStatus: "NEW", noteBody: influencerNote(rec), vertical: deriveInfluencerVertical(rec) });
 }
 
-module.exports = { upsertLead, upsertInfluencer, isConfigured, leadNote, influencerNote, splitName, parseAmount };
+module.exports = { upsertLead, upsertInfluencer, isConfigured, leadNote, influencerNote, splitName, parseAmount, deriveVertical, deriveInfluencerVertical };
