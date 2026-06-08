@@ -412,13 +412,13 @@ const SERVICE_CONTENT = {
   },
 
   "supplies.html": {
-    partner: "Hospital-grade textiles, drapes & PPE",
+    partner: "Sterile surgical disposables · textiles · PPE",
     lead:
-      "DHI offers hospital-grade textiles, surgical drape packs, gowns, and consumables with a focus on quality, durability, and infection control — sterile and non-sterile, with standardized specifications. Bulk purchasing helps organizations reduce cost and complexity.",
+      "DHI supplies sterile, single-use surgical gowns, drapes, OT packs, and sterilization wraps — plus hospital-grade textiles, linens, and PPE — from globally certified manufacturing partners. Quality, durability, and infection control with standardized specifications; bulk and OEM options reduce cost and complexity.",
     highlights: [
-      { k: "Catalog", v: "20+ product categories" },
-      { k: "Drapes", v: "Specialty-specific packs" },
-      { k: "Standards", v: "AAMI-rated · sterile & non-sterile" },
+      { k: "Range", v: "Gowns · drapes · OT packs · wraps" },
+      { k: "Drapes", v: "Specialty-specific OT packs" },
+      { k: "Standards", v: "CE · ISO 13485 · USFDA · MDSAP" },
     ],
     sections: [
       {
@@ -430,28 +430,37 @@ const SERVICE_CONTENT = {
       },
       {
         type: "cards",
-        heading: "Surgical drape packs by specialty",
+        heading: "Surgical OT packs & drapes by specialty",
+        intro: "Procedure-ready sterile packs and drapes across every major specialty — single-use, standardized, and customizable:",
         items: [
-          { title: "General & laparoscopy", desc: "ENT, general surgery, laparoscopy, and laparotomy drape packs." },
-          { title: "Orthopedic", desc: "Arthroscopy, shoulder, extremity, hand, and hip drape packs." },
-          { title: "Cardiology", desc: "Angiography drapes — femoral, radial, and transparent-panel options." },
-          { title: "Gynaecology & urology", desc: "Caesarean, delivery, gynaecology, cystoscopy, T.U.R., and PCNL packs." },
-          { title: "Neurosurgery", desc: "Craniotomy and laminectomy (vertebra) drape packs." },
-          { title: "Ophthalmic", desc: "Ophthalmic drapes and complete drape packs." },
+          { title: "General surgery", desc: "Major & Minor OT packs, Laparoscopy, Laparotomy, Lithotomy, ENT, ICU/CVP line, Universal, and kidney-transplant donor/recipient packs." },
+          { title: "Cardiac", desc: "CVTS (adult / pediatric / infant), CABG, Angioplasty, Pacemaker/PPI, and Angiography / Cathlab packs — plus femoral & radial drapes." },
+          { title: "Orthopedic", desc: "TKR & THR packs, knee & shoulder arthroscopy, lamino-spinal, and Knee-O / Hip-U / Split-U / Bilateral Knee-O drapes." },
+          { title: "OB/GYN", desc: "Cesarean, normal-delivery, hysterectomy, hysteroscopy, and perineal packs, with baby receiving/wiping drapes." },
+          { title: "Urology & neuro", desc: "TURP packs and drapes; craniotomy and lamino-spinal neuro packs." },
+          { title: "Ophthalmic", desc: "Ophthalmic drapes and complete eye-surgery OT packs." },
+        ],
+      },
+      {
+        type: "prose",
+        heading: "Sterile surgical disposables — globally certified",
+        paragraphs: [
+          "DHI sources sterile, single-use surgical gowns, drapes, OT packs, and sterilization wraps from globally certified manufacturing partners — including <strong class=\"text-brand-900\">Amaryllis Healthcare</strong> and <strong class=\"text-brand-900\">Mediprro</strong> (Sivshree Medittex) — built to international quality and infection-control standards.",
+          "Products are SMS / SMMMS non-woven, AAMI Level 1–4 rated, ultrasonically welded, and EO-sterile, carrying <strong class=\"text-brand-900\">CE (EU MDR 2017/745), ISO 13485, USFDA registration, MDSAP, GMP, and EN 13795</strong> certifications. Gowns and drape kits can be custom-designed by dimension, fabric, and packing, with OEM, white-label, and bulk options.",
         ],
       },
       {
         type: "list",
         heading: "Gowns, scrubs & protective apparel",
-        intro: "Sterile and non-sterile garments for staff and patients:",
+        intro: "Sterile and non-sterile garments for staff and patients (AAMI Level 1–4, EN 13795):",
         cols2: true,
         items: [
-          "Surgical gowns (sterile & non-sterile)",
-          "Level-1/Level-2 isolation gowns",
-          "Reinforced (L-4) & chemotherapy gowns",
-          "Doctor scrubs & lab coats",
+          "OT surgeon gowns — standard, reinforced & ultrasoft reinforced",
+          "Cathlab, anaesthesia & ophthalmic gowns",
+          "Isolation gowns (AAMI Level 1–4) & chemotherapy gowns",
+          "Scrub suit sets, clean-air suits & lab coats",
           "AAMI Level 3 coveralls (Type 3-B/4-B, 5-B/6-B)",
-          "Patient gowns & disposable jackets/trousers",
+          "Patient gowns, feeding gowns & disposable jackets/trousers",
         ],
       },
       {
@@ -473,6 +482,7 @@ const SERVICE_CONTENT = {
           "Bouffants, headcovers, oversleeves & gloves",
           "Hand sanitizer (bottles, refills, wipes, sticks)",
           "Disposable underpads & spunbond blankets",
+          "Sterilization wraps (SMS, multiple sizes) & scrim hand towels",
           "Equipment covers (camera, fluoroscopy, diathermy)",
         ],
       },
