@@ -1,0 +1,178 @@
+/* Government bid match-maker (Phase 1: federal + defense via SAM.gov).
+   - LIVE when SAM_GOV_API_KEY is set → queries the SAM.gov Get Opportunities
+     API (https://api.sam.gov/opportunities/v2/search).
+   - Otherwise returns curated SAMPLE opportunities so the rep tool is fully
+     demoable before the (free, ~10-business-day) API key is approved.
+   - Maps DHI verticals → NAICS codes; turns plain-English queries into the
+     right verticals/NAICS + a title term; scores each opportunity for fit.
+   Returns { status, json }. Never throws to the caller. */
+
+const SAM_API_KEY = process.env.SAM_GOV_API_KEY || "";
+const SAM_URL = "https://api.sam.gov/opportunities/v2/search";
+const TIMEOUT_MS = Number(process.env.SAM_GOV_TIMEOUT_MS || 8000);
+
+// DHI vertical → NAICS codes (for SAM filtering) + keywords (for NL matching).
+const VERTICALS = {
+  "lighting": { label: "Lighting & Energy Efficiency", naics: ["335110", "335129", "335139", "238210"], kw: ["light", "lighting", "led", "lamp", "fixture", "luminaire", "energy efficien", "retrofit"] },
+  "medical-equipment": { label: "Medical Equipment & Technology", naics: ["339112", "334510", "423450"], kw: ["medical equipment", "ultrasound", "x-ray", "x ray", "imaging", "patient monitor", "diagnostic", "ventilator", "ecg", "defibrillator"] },
+  "cybersecurity": { label: "Cybersecurity & Infrastructure", naics: ["541512", "541519", "541513", "517311"], kw: ["cyber", "cybersecurity", "security operations", "soc", "infosec", "information security", "endpoint", "ransomware", "zero trust"] },
+  "decentralized-software": { label: "Decentralized Software", naics: ["541511", "541512", "518210"], kw: ["software", "ehr", "emr", "health record", "application development", "custom programming", "blockchain", "informatics"] },
+  "data-analytics": { label: "Data & Analytics", naics: ["518210", "541511", "541512"], kw: ["data", "analytics", "artificial intelligence", "ai ", "interoperability", "cloud", "machine learning"] },
+  "supplies": { label: "Supplies, Textiles & Linens", naics: ["339113", "423450", "322291", "314999"], kw: ["ppe", "gown", "drape", "surgical mask", "glove", "medical supplies", "textile", "linen", "consumable", "respirator", "n95"] },
+  "clinics": { label: "Clinics & Modules", naics: ["236220", "339112", "621498"], kw: ["modular clinic", "mobile unit", "mobile medical", "prefab", "field hospital", "containerized"] },
+  "wellness": { label: "Wellness & Digital Care", naics: ["621999", "621498", "541511"], kw: ["telehealth", "telemedicine", "remote patient monitoring", "behavioral health", "cognitive", "wellness"] },
+  "insurance": { label: "Insurance & Risk Solutions", naics: ["524210", "524292", "523930"], kw: ["insurance", "benefits administration", "risk", "claims administration"] },
+  "automotive": { label: "AutoCommand (vehicles & fleet)", naics: ["441110", "441120", "336111", "532112"], kw: ["vehicle", "automobile", "fleet", "passenger car", "light truck", "vehicle leasing"] },
+};
+
+const FAVORABLE_SETASIDE = /small business|sdvosb|service-disabled|8\(a\)|8a|wosb|edwosb|hubzone|veteran/i;
+
+function num(s) { const n = Number(s); return isNaN(n) ? null : n; }
+function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+function daysUntil(iso) {
+  if (!iso) return null;
+  const d = new Date(iso); if (isNaN(d)) return null;
+  return Math.round((d.getTime() - Date.now()) / 86400000);
+}
+function fmtDate(d) { const p = (x) => String(x).padStart(2, "0"); return `${p(d.getMonth() + 1)}/${p(d.getDate())}/${d.getFullYear()}`; }
+
+// ---- Plain-English → { verticals[], naics[], title } -------------------------
+function interpret(query, vertical) {
+  const out = { verticals: [], naics: [], title: "", matchedKw: [] };
+  if (vertical && VERTICALS[vertical]) {
+    out.verticals = [vertical];
+    out.naics = VERTICALS[vertical].naics.slice();
+    return out;
+  }
+  const q = String(query || "").toLowerCase();
+  for (const [key, v] of Object.entries(VERTICALS)) {
+    const hit = v.kw.find((k) => q.includes(k));
+    if (hit) { out.verticals.push(key); out.matchedKw.push(hit); v.naics.forEach((n) => { if (!out.naics.includes(n)) out.naics.push(n); }); }
+  }
+  // a title term helps SAM's (title-only) text search; use the longest matched keyword
+  out.title = (out.matchedKw.sort((a, b) => b.length - a.length)[0] || "").trim();
+  return out;
+}
+
+// ---- Scoring -----------------------------------------------------------------
+function scoreOpportunity(opp, naicsSet) {
+  let s = 50; const why = [];
+  if (opp.naics && naicsSet.has(String(opp.naics))) { s += 25; why.push("NAICS match"); }
+  const d = daysUntil(opp.deadline);
+  if (d != null) {
+    if (d < 0) { s -= 40; why.push("deadline passed"); }
+    else if (d <= 3) { s -= 5; why.push("closes very soon"); }
+    else if (d <= 60) { s += 15; why.push(`${d} days to respond`); }
+    else { s += 5; why.push("ample lead time"); }
+  }
+  if (FAVORABLE_SETASIDE.test(opp.setAside || "")) { s += 10; why.push("favorable set-aside"); }
+  return { score: clamp(Math.round(s), 0, 100), why };
+}
+
+// ---- SAM.gov live fetch ------------------------------------------------------
+async function fetchSam(params) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  try {
+    const url = SAM_URL + "?" + new URLSearchParams(params).toString();
+    const r = await fetch(url, { headers: { Accept: "application/json" }, signal: ctrl.signal });
+    if (!r.ok) return { ok: false, status: r.status };
+    const j = await r.json().catch(() => ({}));
+    return { ok: true, data: j };
+  } catch (e) {
+    return { ok: false, status: e.name === "AbortError" ? 504 : 502, error: e.message };
+  } finally { clearTimeout(timer); }
+}
+
+function normalizeSam(o) {
+  return {
+    id: o.noticeId || o.solicitationNumber || (o.title || "").slice(0, 40),
+    title: o.title || "(untitled)",
+    agency: o.fullParentPathName || o.organizationName || o.department || "",
+    naics: o.naicsCode || (Array.isArray(o.naics) && o.naics[0] && o.naics[0].code) || "",
+    type: o.type || o.baseType || "",
+    posted: o.postedDate || "",
+    deadline: o.responseDeadLine || o.responseDeadline || "",
+    setAside: o.typeOfSetAside || o.typeOfSetAsideDescription || "",
+    place: (o.placeOfPerformance && (o.placeOfPerformance.state && o.placeOfPerformance.state.name)) || "",
+    solicitation: o.solicitationNumber || "",
+    link: o.uiLink || (o.noticeId ? `https://sam.gov/opp/${o.noticeId}/view` : "https://sam.gov/search/"),
+    source: "SAM.gov",
+  };
+}
+
+async function searchLive(interp, daysBack) {
+  const to = new Date();
+  const from = new Date(Date.now() - (daysBack || 90) * 86400000);
+  const base = { api_key: SAM_API_KEY, postedFrom: fmtDate(from), postedTo: fmtDate(to), limit: "25", ptype: "o,p,k" };
+  if (interp.title) base.title = interp.title;
+  const naicsList = interp.naics.length ? interp.naics.slice(0, 5) : [null];
+  const seen = new Set(); const out = [];
+  for (const nc of naicsList) {
+    const params = Object.assign({}, base);
+    if (nc) params.ncode = nc;
+    const r = await fetchSam(params);
+    if (!r.ok) { if (!out.length && nc === naicsList[0]) return { error: true, status: r.status }; continue; }
+    const rows = (r.data && r.data.opportunitiesData) || [];
+    for (const o of rows) { const n = normalizeSam(o); if (!seen.has(n.id)) { seen.add(n.id); out.push(n); } }
+  }
+  return { error: false, opportunities: out };
+}
+
+// ---- Sample data (used until SAM_GOV_API_KEY is set) -------------------------
+function sampleOpportunities() {
+  const day = (n) => { const d = new Date(Date.now() + n * 86400000); return d.toISOString(); };
+  return [
+    { id: "SAMPLE-1", title: "LED Lighting Retrofit — VA Medical Center", agency: "Dept. of Veterans Affairs", naics: "335110", type: "Solicitation", posted: day(-6), deadline: day(21), setAside: "Service-Disabled Veteran-Owned Small Business", place: "North Carolina", solicitation: "36C24725R0123", link: "https://sam.gov/search/", source: "SAMPLE" },
+    { id: "SAMPLE-2", title: "Portable Ultrasound & Patient Monitors — Field Medical Units", agency: "Defense Logistics Agency", naics: "339112", type: "Combined Synopsis/Solicitation", posted: day(-3), deadline: day(34), setAside: "Total Small Business", place: "TX", solicitation: "SPE2DH25T0456", link: "https://sam.gov/search/", source: "SAMPLE" },
+    { id: "SAMPLE-3", title: "Managed Cybersecurity Services (SOC) — Civilian Agency", agency: "Dept. of Health & Human Services", naics: "541512", type: "Presolicitation", posted: day(-9), deadline: day(48), setAside: "8(a)", place: "DC", solicitation: "HHS-25-SOC-009", link: "https://sam.gov/search/", source: "SAMPLE" },
+    { id: "SAMPLE-4", title: "Surgical Gowns, Drapes & PPE — IDIQ", agency: "Veterans Health Administration", naics: "339113", type: "Solicitation", posted: day(-1), deadline: day(12), setAside: "Total Small Business", place: "Multiple", solicitation: "36C10X25Q0777", link: "https://sam.gov/search/", source: "SAMPLE" },
+    { id: "SAMPLE-5", title: "EHR Modernization & Health-Data Interoperability", agency: "Indian Health Service", naics: "541511", type: "Sources Sought", posted: day(-12), deadline: day(57), setAside: "", place: "AZ", solicitation: "IHS-25-EHR-RFI", link: "https://sam.gov/search/", source: "SAMPLE" },
+    { id: "SAMPLE-6", title: "Telehealth & Remote Patient Monitoring Platform", agency: "Dept. of Defense — DHA", naics: "621999", type: "Solicitation", posted: day(-4), deadline: day(2), setAside: "HUBZone", place: "VA", solicitation: "DHA-25-TELE-014", link: "https://sam.gov/search/", source: "SAMPLE" },
+  ];
+}
+
+// ---- Public entry ------------------------------------------------------------
+async function searchBids({ query, vertical, daysBack } = {}) {
+  const interp = interpret(query, vertical);
+  const naicsSet = new Set(interp.naics);
+  let opportunities, live = false, note = "";
+
+  if (SAM_API_KEY) {
+    const r = await searchLive(interp, daysBack);
+    if (r.error) { note = "SAM.gov is unavailable right now — try again shortly."; opportunities = []; }
+    else { opportunities = r.opportunities; live = true; }
+  } else {
+    // demo mode: filter the sample set by matched NAICS (or show all if no match)
+    const all = sampleOpportunities();
+    opportunities = naicsSet.size ? all.filter((o) => naicsSet.has(String(o.naics))) : all;
+    if (!opportunities.length) opportunities = all; // never return empty in demo
+    note = "Showing sample opportunities — connect a SAM.gov API key to go live.";
+  }
+
+  const scored = opportunities
+    .map((o) => Object.assign({}, o, scoreOpportunity(o, naicsSet)))
+    .sort((a, b) => b.score - a.score);
+
+  return {
+    status: 200,
+    json: {
+      ok: true,
+      live,
+      note,
+      interpreted: {
+        verticals: interp.verticals.map((k) => VERTICALS[k].label),
+        naics: interp.naics,
+        title: interp.title,
+      },
+      count: scored.length,
+      opportunities: scored,
+    },
+  };
+}
+
+function listVerticals() {
+  return Object.entries(VERTICALS).map(([key, v]) => ({ key, label: v.label, naics: v.naics }));
+}
+
+module.exports = { searchBids, listVerticals, interpret, scoreOpportunity, VERTICALS };
