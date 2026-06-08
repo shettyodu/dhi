@@ -396,6 +396,7 @@ const SERVICE_CONTENT = {
           { title: "Diagnostics & monitoring", desc: "Imaging, monitoring, surgical, and ancillary equipment." },
           { title: "Compliant catalogs", desc: "Global sourcing with public-procurement–ready offerings." },
           { title: "Service & maintenance", desc: "Installation, commissioning, training, and maintenance." },
+          { title: "Shipping & delivery", desc: "Coordinated global freight — air, ocean, and door-to-door — with a trusted carrier handling customs clearance and on-site delivery." },
         ],
       },
       {

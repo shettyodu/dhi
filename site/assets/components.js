@@ -44,14 +44,6 @@ const VERTICALS = [
     icon: "heart",
   },
   {
-    slug: "nutrition.html",
-    title: "Nutrition & Supplements",
-    menu: "Nutrition & Supplements",
-    summary:
-      "Custom-branded supplements, diagnostic lab kits, and corporate wellness plans — plus consumables and field supplies for clinics and programs worldwide.",
-    icon: "leaf",
-  },
-  {
     slug: "insurance.html",
     title: "Insurance & Risk Solutions",
     menu: "Insurance & Risk Solutions",
@@ -127,7 +119,7 @@ const VERTICAL_CATEGORIES = [
 ];
 const VERTICAL_CAT_BY_SLUG = {
   "decentralized-software.html": "tech", "cybersecurity.html": "tech", "data-analytics.html": "tech",
-  "wellness.html": "medical", "nutrition.html": "medical", "insurance.html": "medical",
+  "wellness.html": "medical", "insurance.html": "medical",
   "medical-equipment.html": "medical", "clinics.html": "medical", "supplies.html": "medical",
   "lighting.html": "energy", "automotive.html": "energy",
   "government.html": "gov",
