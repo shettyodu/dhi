@@ -49,8 +49,14 @@ function interpret(query, vertical) {
     const hit = v.kw.find((k) => q.includes(k));
     if (hit) { out.verticals.push(key); out.matchedKw.push(hit); v.naics.forEach((n) => { if (!out.naics.includes(n)) out.naics.push(n); }); }
   }
-  // a title term helps SAM's (title-only) text search; use the longest matched keyword
-  out.title = (out.matchedKw.sort((a, b) => b.length - a.length)[0] || "").trim();
+  // When a vertical matched, filter by its NAICS only (combining NAICS + a title
+  // term over-narrows SAM's title-only text search). When nothing matched, fall
+  // back to a keyword title search on the query with stopwords stripped.
+  if (!out.naics.length) {
+    const STOP = new Set("are there any open bid bids opportunity opportunities for the a an and of to in on do does we i have has is it me find show get all current available new federal government defense commercial contract contracts solicitation solicitations rfp rfq rfi sources sought".split(" "));
+    const words = q.replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter((w) => w && !STOP.has(w));
+    out.title = words.slice(0, 4).join(" ");
+  }
   return out;
 }
 
@@ -105,8 +111,9 @@ async function searchLive(interp, daysBack) {
   const to = new Date();
   const from = new Date(Date.now() - (daysBack || 90) * 86400000);
   const base = { api_key: SAM_API_KEY, postedFrom: fmtDate(from), postedTo: fmtDate(to), limit: "25", ptype: "o,p,k" };
-  if (interp.title) base.title = interp.title;
-  const naicsList = interp.naics.length ? interp.naics.slice(0, 5) : [null];
+  // Use a title term only when no vertical/NAICS matched (NAICS + title over-narrows).
+  if (!interp.naics.length && interp.title) base.title = interp.title;
+  const naicsList = interp.naics.length ? interp.naics.slice(0, 3) : [null]; // cap calls to protect the daily quota
   const seen = new Set(); const out = [];
   for (const nc of naicsList) {
     const params = Object.assign({}, base);
@@ -140,8 +147,16 @@ async function searchBids({ query, vertical, daysBack } = {}) {
 
   if (SAM_API_KEY) {
     const r = await searchLive(interp, daysBack);
-    if (r.error) { note = "SAM.gov is unavailable right now — try again shortly."; opportunities = []; }
-    else { opportunities = r.opportunities; live = true; }
+    if (r.error) {
+      // SAM.gov unavailable / daily quota (429) → fall back to sample so the tool
+      // is never empty, clearly labeled. (A daily cache, below, removes this.)
+      const all = sampleOpportunities();
+      opportunities = naicsSet.size ? all.filter((o) => naicsSet.has(String(o.naics))) : all;
+      if (!opportunities.length) opportunities = all;
+      note = r.status === 429
+        ? "SAM.gov's daily quota was reached — showing sample opportunities. Live results resume after the quota resets."
+        : "SAM.gov is unavailable right now — showing sample opportunities.";
+    } else { opportunities = r.opportunities; live = true; }
   } else {
     // demo mode: filter the sample set by matched NAICS (or show all if no match)
     const all = sampleOpportunities();
