@@ -34,7 +34,7 @@
         <span class="kicker inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cyan-300">
           <span class="h-1.5 w-1.5 rounded-full bg-cyan-400"></span> Global Outreach &middot; Twelve Verticals &middot; One Platform
         </span>
-        <p class="mt-6 text-xl font-semibold italic tracking-tight text-cyan-300 sm:text-2xl">Where Health Meets Innovation</p>
+        <p class="mt-6 text-xl font-semibold italic tracking-tight text-cyan-300 sm:text-2xl">Where Health Meets Innovation… and Beyond</p>
         <h1 class="mt-3 text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
           Twelve Verticals.<br /><span class="bg-gradient-to-r from-cyan-300 to-brand-200 bg-clip-text text-transparent">One Global Platform.</span>
         </h1>
@@ -59,20 +59,15 @@
     </div>
   </section>
 
-  <!-- ===================== AUDIENCE ROUTING ===================== -->
+  <!-- ===================== CATEGORY INDEX ===================== -->
   <section class="border-b border-slate-100 bg-white py-14">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="text-center" data-reveal="0">
         <p class="kicker text-sm font-semibold uppercase tracking-wider text-cyan-700">Find your path</p>
-        <h2 class="mt-2 text-2xl font-bold tracking-tight text-brand-900 sm:text-3xl">I'm a…</h2>
+        <h2 class="mt-2 text-2xl font-bold tracking-tight text-brand-900 sm:text-3xl">Explore by category</h2>
+        <p class="mt-2 text-slate-600">Pick a category to see the verticals within it.</p>
       </div>
-      <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <a href="government.html" data-reveal="0" class="group rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg"><h3 class="font-semibold text-brand-900">Government</h3><p class="mt-1 text-sm text-slate-600">SAM.gov-ready procurement &amp; modernization.</p><span class="mt-3 inline-block text-sm font-semibold text-cyan-700 group-hover:underline">Public sector &rarr;</span></a>
-        <a href="clinics.html" data-reveal="60" class="group rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg"><h3 class="font-semibold text-brand-900">Hospital / Clinic</h3><p class="mt-1 text-sm text-slate-600">Equipment, telehealth, supplies, mobile care.</p><span class="mt-3 inline-block text-sm font-semibold text-cyan-700 group-hover:underline">Healthcare &rarr;</span></a>
-        <a href="automotive.html" data-reveal="120" class="group rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg"><h3 class="font-semibold text-brand-900">Auto dealer / buyer</h3><p class="mt-1 text-sm text-slate-600">AI marketplace, financing, vehicle passport.</p><span class="mt-3 inline-block text-sm font-semibold text-cyan-700 group-hover:underline">AutoCommand &rarr;</span></a>
-        <a href="wellness.html" data-reveal="180" class="group rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg"><h3 class="font-semibold text-brand-900">Employer</h3><p class="mt-1 text-sm text-slate-600">Wellness, cognitive, telehealth &amp; risk.</p><span class="mt-3 inline-block text-sm font-semibold text-cyan-700 group-hover:underline">Workforce &rarr;</span></a>
-        <a href="automotive-tokenization.html" data-reveal="240" class="group rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg"><h3 class="font-semibold text-brand-900">Investor</h3><p class="mt-1 text-sm text-slate-600">Tokenized vehicle ownership &amp; provenance.</p><span class="mt-3 inline-block text-sm font-semibold text-cyan-700 group-hover:underline">Tokenization &rarr;</span></a>
-      </div>
+      <div id="cat-index" class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"></div>
     </div>
   </section>
 
@@ -112,7 +107,8 @@
         <h2 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">Twelve verticals of transformation</h2>
         <p class="mt-4 text-lg text-slate-600">Spanning healthcare, technology, infrastructure, and sustainability — designed to function independently yet interconnect as one.</p>
       </div>
-      <div id="vert-grid" class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+      <div id="vert-filters" class="mt-10 flex flex-wrap justify-center gap-2"></div>
+      <div id="vert-grid" class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
     </div>
   </section>
 
@@ -238,19 +234,70 @@
 
   <script src="assets/components.js"></script>
   <script>
-    // Render the verticals grid from shared data.
+    // Render the category index + filterable verticals grid from shared data.
     (function () {
       const grid = document.getElementById("vert-grid");
       if (!grid) return;
+      const cats = (typeof VERTICAL_CATEGORIES !== "undefined") ? VERTICAL_CATEGORIES : [];
+      const catOf = (slug) => (typeof VERTICAL_CAT_BY_SLUG !== "undefined" && VERTICAL_CAT_BY_SLUG[slug]) || "other";
+      const catLabel = (id) => (cats.find((c) => c.id === id) || {}).label || "Other";
+      const countOf = (id) => VERTICALS.filter((v) => catOf(v.slug) === id).length;
+
+      // 1) Category index cards
+      const idx = document.getElementById("cat-index");
+      if (idx) {
+        idx.innerHTML = cats.map((c, i) => `
+          <button type="button" data-gocat="${c.id}" data-reveal="${(i % 4) * 70}" class="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 text-left transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg">
+            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-cyan-700 group-hover:bg-cyan-600 group-hover:text-white transition-colors">${icon(c.icon, "h-6 w-6")}</span>
+            <h3 class="mt-4 font-semibold text-brand-900">${c.label}</h3>
+            <p class="mt-1 flex-1 text-sm leading-relaxed text-slate-600">${c.blurb}</p>
+            <span class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-cyan-700">${countOf(c.id)} vertical${countOf(c.id) === 1 ? "" : "s"} <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </button>`).join("");
+      }
+
+      // 2) Filter chips (All + each category)
+      const filters = document.getElementById("vert-filters");
+      const chipCls = "vert-chip whitespace-nowrap rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:border-cyan-400";
+      if (filters) {
+        filters.innerHTML =
+          `<button type="button" data-cat="all" class="${chipCls}">All <span class="opacity-60">${VERTICALS.length}</span></button>` +
+          cats.map((c) => `<button type="button" data-cat="${c.id}" class="${chipCls}">${c.label} <span class="opacity-60">${countOf(c.id)}</span></button>`).join("");
+      }
+
+      // 3) Vertical cards (each tagged with its category)
       grid.innerHTML = VERTICALS.map(
         (v, i) => `
-        <a href="${v.slug}" data-reveal="${(i % 3) * 90}" class="group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg">
+        <a href="${v.slug}" data-cat="${catOf(v.slug)}" data-reveal="${(i % 3) * 90}" class="vert-card group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-cyan-300 hover:shadow-lg">
           <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-cyan-700 group-hover:bg-cyan-600 group-hover:text-white transition-colors">${icon(v.icon, "h-6 w-6")}</span>
           <h3 class="mt-5 text-lg font-semibold text-brand-900">${v.title}</h3>
           <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600">${v.summary}</p>
           <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-cyan-700">Learn more <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
         </a>`
       ).join("");
+
+      // 4) Filtering + active-chip state
+      let active = "all";
+      function applyFilter(cat) {
+        active = cat;
+        grid.querySelectorAll(".vert-card").forEach((card) => {
+          card.style.display = (cat === "all" || card.getAttribute("data-cat") === cat) ? "" : "none";
+        });
+        (filters ? filters.querySelectorAll(".vert-chip") : []).forEach((chip) => {
+          const on = chip.getAttribute("data-cat") === cat;
+          chip.classList.toggle("bg-brand-900", on);
+          chip.classList.toggle("text-white", on);
+          chip.classList.toggle("border-brand-900", on);
+          chip.classList.toggle("text-slate-600", !on);
+        });
+      }
+      if (filters) filters.querySelectorAll(".vert-chip").forEach((chip) =>
+        chip.addEventListener("click", () => applyFilter(chip.getAttribute("data-cat"))));
+      if (idx) idx.querySelectorAll("[data-gocat]").forEach((b) =>
+        b.addEventListener("click", () => {
+          applyFilter(b.getAttribute("data-gocat"));
+          document.getElementById("vert-filters").scrollIntoView({ behavior: "smooth", block: "start" });
+        }));
+      applyFilter("all");
       // cards carry [data-reveal]; the shared initMotion() (run on DOMContentLoaded,
       // after this inline script) picks them up and animates them in.
     })();

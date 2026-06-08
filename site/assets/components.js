@@ -117,6 +117,22 @@ const VERTICALS = [
   },
 ];
 
+/* Parent categories used as an index into the twelve verticals (home page).
+   Each vertical maps to exactly one category via VERTICAL_CAT_BY_SLUG. */
+const VERTICAL_CATEGORIES = [
+  { id: "medical", label: "Medical & Care", blurb: "Clinics, equipment, supplies, wellness, nutrition & insurance — for hospitals, GPOs, associations & buying groups.", icon: "pulse" },
+  { id: "tech", label: "Technology & Data", blurb: "Decentralized software, cybersecurity & infrastructure, and data & analytics.", icon: "cube" },
+  { id: "energy", label: "Energy & Mobility", blurb: "Lighting & energy efficiency and the AutoCommand AI vehicle marketplace.", icon: "bolt" },
+  { id: "gov", label: "Government & Procurement", blurb: "SAM.gov-ready contracting and public-sector modernization.", icon: "building" },
+];
+const VERTICAL_CAT_BY_SLUG = {
+  "decentralized-software.html": "tech", "cybersecurity.html": "tech", "data-analytics.html": "tech",
+  "wellness.html": "medical", "nutrition.html": "medical", "insurance.html": "medical",
+  "medical-equipment.html": "medical", "clinics.html": "medical", "supplies.html": "medical",
+  "lighting.html": "energy", "automotive.html": "energy",
+  "government.html": "gov",
+};
+
 /* Minimal inline SVG icon set (Heroicons-style, stroke-based). */
 const ICONS = {
   cube: '<path d="M21 7.5l-9-5-9 5m18 0l-9 5m9-5v9l-9 5m0-9L3 7.5m9 5v9m0-9L21 7.5"/>',
