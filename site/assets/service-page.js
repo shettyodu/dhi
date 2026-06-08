@@ -239,6 +239,7 @@
               <p class="mt-2 text-sm text-slate-600">Deploy it independently or combine it with other DHI verticals as one integrated solution.</p>
               <a href="contact.html" class="mt-4 block rounded-md bg-cyan-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-cyan-700">Request a consultation</a>
               <a href="services.html" class="mt-2 block rounded-md border border-slate-200 px-4 py-2.5 text-center text-sm font-semibold text-brand-800 hover:bg-slate-50">All verticals</a>
+              <p class="mt-4 border-t border-slate-100 pt-4 text-sm text-slate-600">Buying at volume? <a href="contact.html?interest=${encodeURIComponent("Volume pricing — " + meta.title)}" class="font-semibold text-cyan-700 hover:underline">Request volume pricing &rarr;</a> for bulk discounts.</p>
             </div>
           </div>
         </aside>
