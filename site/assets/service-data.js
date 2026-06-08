@@ -74,10 +74,11 @@ const SERVICE_CONTENT = {
       },
       {
         type: "prose",
-        heading: "PipIQ — AI cybersecurity for small & mid-size business",
+        heading: "PipIQ — your private intelligence platform",
         paragraphs: [
-          "PipIQ is DHI's AI-driven cybersecurity platform purpose-built for small and mid-size businesses — bringing enterprise-grade protection across users, email, endpoints, cloud workloads, and networks without an enterprise budget or an in-house security team.",
-          "Delivered fully managed, white-label, or OEM through the DHI platform, PipIQ pairs with CyberFortify and the Titan data layer for full-surface coverage, continuous monitoring, and compliance-aligned reporting.",
+          "PipIQ is a private, branded AI platform purpose-built for small and mid-size businesses — trained exclusively on your own policies, handbooks, and playbooks so your team gets accurate, on-brand answers without sending sensitive data to public AI tools.",
+          "It directly addresses the hidden risk of “shadow AI”: industry research shows most employees already use AI at work, many without authorization, and nearly half have uploaded sensitive company data to public platforms. PipIQ keeps that intelligence private by design.",
+          "Delivered fully managed, white-label, or OEM through the DHI platform, PipIQ pairs with CyberFortify and the Titan data layer for full-surface protection across users, email, endpoints, cloud workloads, and networks — with continuous monitoring and compliance-aligned reporting.",
         ],
       },
       {
