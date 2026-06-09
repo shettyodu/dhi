@@ -7,6 +7,7 @@
   const API_BASE = (qs.get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
   const FN = API_BASE + "/.netlify/functions/gov-bids";
   const FN_REFRESH = API_BASE + "/.netlify/functions/gov-bids-refresh";
+  const FN_PROPOSAL = API_BASE + "/.netlify/functions/gov-proposal";
   const SKEY = "dhi_admin_secret";
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -161,10 +162,24 @@
       `[Draft outline — human review and final content required before submission.]`,
     ].join("\n");
   }
-  function openProposal(o) {
-    $("prop-text").value = proposalText(o);
+  async function openProposal(o) {
     $("prop-copied").textContent = "";
+    $("prop-text").value = "Generating a complete draft proposal from DHI's capabilities and partner catalog…";
     $("prop-modal").classList.remove("hidden");
+    try {
+      const r = await fetch(FN_PROPOSAL, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: JSON.stringify({ opportunity: o }) });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.ok && d.proposal) {
+        $("prop-text").value = d.proposal;
+        $("prop-copied").textContent = (d.ai ? "AI-generated" : "Template") + " draft · review before submitting";
+      } else {
+        $("prop-text").value = proposalText(o); // graceful fallback to the local outline
+        $("prop-copied").textContent = (d && d.error) ? d.error : "Generated a local outline (server unavailable).";
+      }
+    } catch (e) {
+      $("prop-text").value = proposalText(o);
+      $("prop-copied").textContent = "Generated a local outline (network error).";
+    }
   }
 
   // ---------- wire up ----------
