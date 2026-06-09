@@ -221,8 +221,29 @@ const SERVICE_CONTENT = {
           { id: "individual", label: "Individual", products: ["Accident", "Dental, Vision & Hearing", "Hospital Indemnity", "Short-Term Care", "Critical Illness, Cancer & Stroke", "Out-of-Pocket (GAP)"] },
           { id: "family", label: "Family", products: ["Accident", "Dental, Vision & Hearing", "Hospital Indemnity", "Critical Illness & Cancer", "Term Life", "Whole Life"] },
           { id: "senior", label: "Senior", products: ["Home Health Care", "Hospital Indemnity", "Short-Term Care", "Dental, Vision & Hearing", "Whole Life", "Fixed Indexed Annuity"] },
-          { id: "employer", label: "Employer / Group", products: ["Group Accident", "Critical Illness & Cancer", "Disability", "Hospital Indemnity", "Group GAP", "Group Life"] },
+          { id: "employer", label: "Employer / Group", products: ["SmartCare group medical (2+ employees)", "Group Accident", "Critical Illness & Cancer", "Disability", "Hospital Indemnity", "Group GAP", "Group Life"] },
           { id: "traveler", label: "Traveler", products: ["Single-trip medical", "Annual multi-trip", "Adventure & sports", "Trip cancellation", "Medical evacuation"] },
+        ],
+      },
+      {
+        type: "prose",
+        heading: "SmartCare — group medical for small business",
+        paragraphs: [
+          "Through our partner <strong class=\"text-brand-900\">InsurTech Hub</strong>, DHI offers <strong class=\"text-brand-900\">SmartCare</strong> — a group medical plan built for small businesses with as few as <strong class=\"text-brand-900\">2 employees</strong>, available in all <strong class=\"text-brand-900\">50 states</strong>. SmartCare uses a <strong class=\"text-brand-900\">debt-free design</strong>: no deductibles and no coinsurance, so members avoid surprise out-of-pocket bills.",
+          "It's engineered to cost less than comparable traditional major-carrier group plans — often in the <strong class=\"text-brand-900\">20–30%</strong> range in like-for-like comparisons. <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"contact.html?interest=SmartCare%20group%20medical%20quote\">Request a SmartCare group quote &rarr;</a>",
+          "<span class=\"text-sm text-slate-500\">SmartCare is offered through licensed partners (InsurTech Hub). Plan availability, benefits, and pricing are subject to eligibility and underwriting and are confirmed by a licensed advisor; savings vary by group and are not guaranteed. This is a request for information, not an offer of coverage.</span>",
+        ],
+      },
+      {
+        type: "cards",
+        heading: "Why SmartCare",
+        items: [
+          { title: "Debt-free design", desc: "No deductibles and no coinsurance — members aren't hit with surprise out-of-pocket costs." },
+          { title: "Built for small business", desc: "Group coverage for as few as 2 employees." },
+          { title: "Nationwide", desc: "Available across all 50 states." },
+          { title: "Designed to save", desc: "Engineered to cost less than comparable traditional-carrier group plans (savings vary by group)." },
+          { title: "Guided setup", desc: "A licensed advisor handles quoting and enrollment end to end." },
+          { title: "Integrated benefits", desc: "Pairs with DHI wellness, supplemental, and analytics for a complete program." },
         ],
       },
       {
