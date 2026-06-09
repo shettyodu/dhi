@@ -103,6 +103,7 @@ function normalizeSam(o) {
     place: (o.placeOfPerformance && (o.placeOfPerformance.state && o.placeOfPerformance.state.name)) || "",
     solicitation: o.solicitationNumber || "",
     link: o.uiLink || (o.noticeId ? `https://sam.gov/opp/${o.noticeId}/view` : "https://sam.gov/search/"),
+    descriptionLink: o.description || "", // SAM URL to the full solicitation text (fetched at proposal time)
     source: "SAM.gov",
   };
 }

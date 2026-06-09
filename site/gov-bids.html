@@ -71,8 +71,11 @@
         <h3 class="font-display text-lg font-bold text-brand-900">Proposal outline</h3>
         <button id="prop-close" class="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
-      <p class="mt-1 text-sm text-slate-500">Starter outline — edit, then copy into your proposal document. Human review required before submission.</p>
-      <textarea id="prop-text" rows="18" class="g-in mt-4 font-mono text-xs"></textarea>
+      <p class="mt-1 text-sm text-slate-500">Complete draft package — switch volumes, edit, then copy into your submission. Human review required before submitting.</p>
+      <label class="mt-3 block"><span class="text-xs font-semibold uppercase tracking-wide text-slate-400">Document</span>
+        <select id="prop-part" class="g-in"></select>
+      </label>
+      <textarea id="prop-text" rows="18" class="g-in mt-3 font-mono text-xs"></textarea>
       <div class="mt-3 flex gap-2">
         <button id="prop-copy" class="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700">Copy</button>
         <span id="prop-copied" class="self-center text-sm text-emerald-600"></span>
