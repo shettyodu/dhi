@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartCare Group Medical — DHI Insurance</title>
+  <meta name="description" content="SmartCare group medical for small business — a debt-free plan with no deductible or coinsurance, built on major networks. Request a no-obligation group quote." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}
+    .s-in{margin-top:.25rem;width:100%;border-radius:.5rem;border:1px solid #cbd5e1;padding:.6rem .75rem;font-size:.95rem}
+    .s-in:focus{outline:none;border-color:#06b6d4;box-shadow:0 0 0 2px rgba(6,182,212,.25)}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <section class="relative overflow-hidden bg-brand-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
+      <nav class="mb-5 flex items-center gap-2 text-sm text-slate-400">
+        <a href="index.html" class="hover:text-cyan-300">Home</a><span>/</span>
+        <a href="insurance.html" class="hover:text-cyan-300">Insurance</a><span>/</span>
+        <span class="text-slate-200">SmartCare</span>
+      </nav>
+      <p class="kicker text-sm font-semibold uppercase tracking-wider text-cyan-300">Group medical · via InsurTech Hub</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Health coverage without the debt</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">SmartCare is a self-funded group medical plan for small businesses — <strong class="text-white">no deductible, no coinsurance</strong> — built on major national networks. For teams as small as 2, in all 50 states.</p>
+      <div class="mt-7 flex flex-wrap gap-3 text-sm">
+        <span class="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-1.5 font-semibold text-cyan-200">No deductible · no coinsurance</span>
+        <span class="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-1.5 font-semibold text-cyan-200">~$699 / employee · 2-yr rate lock</span>
+        <span class="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-1.5 font-semibold text-cyan-200">UnitedHealthcare &amp; Cigna networks</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid gap-10 lg:grid-cols-2">
+      <!-- WHY -->
+      <div>
+        <h2 class="font-display text-2xl font-bold text-brand-900">Why SmartCare</h2>
+        <p class="mt-3 leading-relaxed text-slate-600">Roughly <strong class="text-brand-900">60% of U.S. personal bankruptcies</strong> involve medical debt. By removing deductibles and coinsurance, SmartCare keeps a covered medical event from becoming medical debt — while typically costing <strong class="text-brand-900">20–30% less</strong> than comparable traditional group plans.</p>
+        <ul class="mt-6 space-y-3">
+          <li class="flex gap-3 rounded-xl bg-white border border-slate-200 px-4 py-3"><span class="text-cyan-600 font-bold">✓</span><span><strong class="text-brand-900">Debt-free design</strong> — no deductibles, no coinsurance.</span></li>
+          <li class="flex gap-3 rounded-xl bg-white border border-slate-200 px-4 py-3"><span class="text-cyan-600 font-bold">✓</span><span><strong class="text-brand-900">Built for small business</strong> — as few as 2 employees, all 50 states.</span></li>
+          <li class="flex gap-3 rounded-xl bg-white border border-slate-200 px-4 py-3"><span class="text-cyan-600 font-bold">✓</span><span><strong class="text-brand-900">Stable &amp; predictable</strong> — major networks, stop-loss/reinsurance, 2-year rate lock.</span></li>
+          <li class="flex gap-3 rounded-xl bg-white border border-slate-200 px-4 py-3"><span class="text-cyan-600 font-bold">✓</span><span><strong class="text-brand-900">Guided, digital</strong> — a licensed advisor and digital enrollment, end to end.</span></li>
+        </ul>
+        <p class="mt-6 text-xs leading-relaxed text-slate-400">SmartCare is offered through InsurTech Hub and licensed representatives. Rates are illustrative; benefits, eligibility, and pricing are confirmed at underwriting, and savings vary by group. This is a request for information, not an offer of coverage.</p>
+      </div>
+
+      <!-- QUOTE / ENROLLMENT REQUEST -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <h2 class="font-display text-xl font-bold text-brand-900">Request a group quote</h2>
+        <p class="mt-1 text-sm text-slate-500">Tell us about your team — a licensed advisor follows up with options. No obligation.</p>
+        <form id="sc-form" class="mt-5 grid gap-3 sm:grid-cols-2">
+          <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Business name</span><input id="sc-company" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Your name</span><input id="sc-name" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Email</span><input id="sc-email" type="email" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Phone <span class="text-slate-400">(optional)</span></span><input id="sc-phone" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">State</span><input id="sc-state" class="s-in" placeholder="NC" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700"># of employees</span><input id="sc-employees" inputmode="numeric" class="s-in" placeholder="e.g. 8" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Current coverage?</span>
+            <select id="sc-coverage" class="s-in"><option value="">Select…</option><option>No coverage today</option><option>Have coverage — shopping</option><option>Renewing soon</option></select></label>
+          <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Anything else? <span class="text-slate-400">(target start date, budget)</span></span><textarea id="sc-notes" rows="2" class="s-in"></textarea></label>
+          <div class="sm:col-span-2">
+            <button id="sc-submit" type="submit" class="rounded-lg bg-cyan-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Request my group quote</button>
+            <span id="sc-status" class="ml-3 text-sm"></span>
+          </div>
+        </form>
+        <div id="sc-result" class="mt-4 hidden"></div>
+        <p class="mt-4 text-xs text-slate-400">By submitting, you agree a licensed advisor may contact you about coverage. We don't collect employee health details here.</p>
+      </div>
+    </div>
+  </main>
+
+  <p class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-8 text-xs text-slate-400">DHI staff · <a href="insurance-ops.html" class="font-semibold text-slate-500 hover:text-cyan-700">SmartCare AI ops tool &rarr;</a></p>
+
+  <script src="assets/components.js"></script>
+  <script src="assets/smartcare.js"></script>
+</body>
+</html>

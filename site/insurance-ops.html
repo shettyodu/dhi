@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Insurance Ops — SmartCare AI (internal)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}
+    .o-in{margin-top:.25rem;width:100%;border-radius:.5rem;border:1px solid #cbd5e1;padding:.55rem .7rem;font-size:.9rem}
+    .o-in:focus{outline:none;border-color:#06b6d4;box-shadow:0 0 0 2px rgba(6,182,212,.25)}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <section class="relative overflow-hidden bg-brand-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+      <p class="kicker text-sm font-semibold uppercase tracking-wider text-cyan-300">Insurance vertical · Internal tool</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">SmartCare AI — proposals &amp; outreach</h1>
+      <p class="mt-3 max-w-2xl text-slate-300">Generate grounded SmartCare proposals and compliant outreach drafts. All output is a <strong class="text-white">draft for licensed/compliance review</strong> — nothing is sent.</p>
+    </div>
+  </section>
+
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+    <!-- GATE -->
+    <div id="gate" class="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+      <h2 class="font-display text-xl font-bold text-brand-900">Staff access</h2>
+      <p class="mt-2 text-sm text-slate-600">Enter the access passcode to continue.</p>
+      <input id="gate-secret" type="password" class="o-in mt-4" placeholder="Access passcode" />
+      <button id="gate-go" class="mt-3 w-full rounded-lg bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700">Unlock</button>
+      <p id="gate-note" class="mt-2 text-sm text-red-600"></p>
+    </div>
+
+    <!-- TOOL -->
+    <div id="tool" class="hidden grid gap-6 lg:grid-cols-2">
+      <!-- PROPOSAL -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="font-display text-lg font-bold text-brand-900">SmartCare group proposal</h2>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Business name</span><input id="p-company" class="o-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700"># employees</span><input id="p-employees" inputmode="numeric" class="o-in" placeholder="8" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">State</span><input id="p-state" class="o-in" placeholder="NC" /></label>
+          <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Current coverage / notes</span><input id="p-notes" class="o-in" /></label>
+        </div>
+        <button id="p-go" class="mt-4 rounded-lg bg-cyan-600 px-5 py-2 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Generate proposal</button>
+        <textarea id="p-out" rows="14" class="o-in mt-4 font-mono text-xs"></textarea>
+        <button id="p-copy" class="mt-2 text-sm font-semibold text-cyan-700 hover:underline">Copy</button>
+        <span id="p-note" class="ml-2 text-xs text-slate-400"></span>
+      </div>
+
+      <!-- OUTREACH -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="font-display text-lg font-bold text-brand-900">Compliant outreach email</h2>
+        <div class="mt-4 grid gap-3">
+          <label class="block"><span class="text-sm font-medium text-slate-700">Audience / segment</span><input id="o-segment" class="o-in" placeholder="e.g. 2–25 employee firms in NC" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Tone</span><input id="o-tone" class="o-in" placeholder="professional, warm, concise" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Call to action</span><input id="o-cta" class="o-in" placeholder="Request a no-obligation group quote" /></label>
+        </div>
+        <button id="o-go" class="mt-4 rounded-lg bg-cyan-600 px-5 py-2 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Generate draft</button>
+        <textarea id="o-out" rows="14" class="o-in mt-4 font-mono text-xs"></textarea>
+        <button id="o-copy" class="mt-2 text-sm font-semibold text-cyan-700 hover:underline">Copy</button>
+        <span id="o-note" class="ml-2 text-xs text-slate-400"></span>
+        <p class="mt-3 text-xs text-amber-700">Draft only — must be reviewed/approved by compliance (Leo) and a licensed rep (Julia) before any send. Sending must comply with CAN-SPAM/TCPA and state rules.</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/components.js"></script>
+  <script src="assets/insurance-ops.js"></script>
+</body>
+</html>

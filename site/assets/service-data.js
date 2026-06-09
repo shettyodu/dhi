@@ -221,8 +221,29 @@ const SERVICE_CONTENT = {
           { id: "individual", label: "Individual", products: ["Accident", "Dental, Vision & Hearing", "Hospital Indemnity", "Short-Term Care", "Critical Illness, Cancer & Stroke", "Out-of-Pocket (GAP)"] },
           { id: "family", label: "Family", products: ["Accident", "Dental, Vision & Hearing", "Hospital Indemnity", "Critical Illness & Cancer", "Term Life", "Whole Life"] },
           { id: "senior", label: "Senior", products: ["Home Health Care", "Hospital Indemnity", "Short-Term Care", "Dental, Vision & Hearing", "Whole Life", "Fixed Indexed Annuity"] },
-          { id: "employer", label: "Employer / Group", products: ["Group Accident", "Critical Illness & Cancer", "Disability", "Hospital Indemnity", "Group GAP", "Group Life"] },
+          { id: "employer", label: "Employer / Group", products: ["SmartCare group medical (2+ employees)", "Group Accident", "Critical Illness & Cancer", "Disability", "Hospital Indemnity", "Group GAP", "Group Life"] },
           { id: "traveler", label: "Traveler", products: ["Single-trip medical", "Annual multi-trip", "Adventure & sports", "Trip cancellation", "Medical evacuation"] },
+        ],
+      },
+      {
+        type: "prose",
+        heading: "SmartCare — group medical for small business",
+        paragraphs: [
+          "Through our partner <strong class=\"text-brand-900\">InsurTech Hub</strong>, DHI offers <strong class=\"text-brand-900\">SmartCare</strong> — a <strong class=\"text-brand-900\">self-funded</strong> group medical plan for small businesses with as few as <strong class=\"text-brand-900\">2 employees</strong>, available in all <strong class=\"text-brand-900\">50 states</strong>. SmartCare is <strong class=\"text-brand-900\">debt-free by design</strong>: no deductibles and no coinsurance. It's built on major national networks (<strong class=\"text-brand-900\">UnitedHealthcare</strong> and <strong class=\"text-brand-900\">Cigna</strong>) and backed by stop-loss and reinsurance for stability — at approximately <strong class=\"text-brand-900\">$699 per employee / month</strong> with a <strong class=\"text-brand-900\">2-year rate lock</strong>.",
+          "Roughly <strong class=\"text-brand-900\">60% of U.S. personal bankruptcies</strong> involve medical debt. By removing deductibles and coinsurance, SmartCare keeps a covered medical event from becoming medical debt — while typically costing <strong class=\"text-brand-900\">20–30% less</strong> than comparable traditional group plans. <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"smartcare.html\">See SmartCare &amp; request a group quote &rarr;</a>",
+          "<span class=\"text-sm text-slate-500\">SmartCare is offered through InsurTech Hub and licensed representatives. Plan availability, benefits, and pricing are subject to eligibility and underwriting; rates are illustrative and confirmed by a licensed advisor, and savings vary by group. This is a request for information, not an offer of coverage.</span>",
+        ],
+      },
+      {
+        type: "cards",
+        heading: "Why SmartCare",
+        items: [
+          { title: "Debt-free design", desc: "No deductibles and no coinsurance — a covered event won't turn into medical debt." },
+          { title: "$699 / employee · 2-year rate lock", desc: "Predictable pricing locked for two years (illustrative; confirmed at underwriting)." },
+          { title: "Built for small business", desc: "Group coverage for as few as 2 employees, in all 50 states." },
+          { title: "Major networks", desc: "Built on UnitedHealthcare and Cigna, with stop-loss and reinsurance for stability." },
+          { title: "Designed to save", desc: "Typically 20–30% less than comparable traditional group plans (savings vary by group)." },
+          { title: "Guided, digital setup", desc: "A licensed advisor plus digital enrollment handle quoting and setup end to end." },
         ],
       },
       {
