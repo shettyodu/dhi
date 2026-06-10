@@ -1,8 +1,13 @@
 /* Netlify Function: POST /.netlify/functions/gov-proposal
-   Generate a complete draft proposal for a matched bid opportunity, grounded in
-   DHI's capabilities + partner-catalog products (capabilities.js → proposal.js).
-   Auth: header x-dhi-admin: <ADMIN_SECRET> (fail-closed). Body: { opportunity } */
-const { generateProposal } = require("../../lib/proposal");
+   Generate an evaluation-ready proposal package for a matched bid, GROUNDED in
+   DHI capabilities + partner catalog. The front-end orchestrates a few calls so
+   each stays within the function timeout while the total volume meets the page
+   limit:
+     { action: "scope",   opportunity }                       → { scopeText }
+     { action: "section", opportunity, section, scopeText, pageLimit } → one volume section
+     { action: "static",  opportunity }                       → { price, forms }
+   Auth: header x-dhi-admin: <ADMIN_SECRET> (fail-closed). */
+const { fetchScope, generateSection, staticVolumes } = require("../../lib/proposal");
 
 const cors = {
   "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
@@ -18,11 +23,25 @@ exports.handler = async (event) => {
 
   let body = {};
   try { body = JSON.parse(event.body || "{}"); } catch (e) { /* ignore */ }
+  const o = body.opportunity || {};
+  const json = (status, obj) => ({ statusCode: status, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify(obj) });
+
   try {
-    const r = await generateProposal(body.opportunity || body);
-    return { statusCode: r.status, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify(r.json) };
+    if (body.action === "scope") {
+      const scopeText = await fetchScope(o.descriptionLink);
+      return json(200, { ok: true, scopeText, scopeUsed: !!scopeText });
+    }
+    if (body.action === "static") {
+      const r = staticVolumes(o);
+      return json(r.status, r.json);
+    }
+    if (body.action === "section") {
+      const r = await generateSection(o, body.section, body.scopeText || "", body.pageLimit);
+      return json(r.status, r.json);
+    }
+    return json(400, { error: "Unknown action (use scope | section | static)" });
   } catch (e) {
     console.error("gov-proposal error:", e.message);
-    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: "Proposal generation failed" }) };
+    return json(500, { error: "Proposal generation failed" });
   }
 };

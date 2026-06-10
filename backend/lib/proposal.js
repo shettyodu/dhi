@@ -1,13 +1,17 @@
 /* AI proposal generator for the Government Bid Match-Maker.
-   Produces a near-submission-ready package GROUNDED in real DHI facts + partner
-   catalog (capabilities.js):
-     A) Ingests the actual SAM.gov solicitation text so the Understanding +
-        Technical Approach are tailored to the real scope (not just the title).
-     B) Splits the output into volumes (Technical & Management, Past Performance)
-        + a Price volume + a Forms & Compliance checklist.
-     C) Pricing scaffold — a line-item price table seeded from our partner catalog.
-   The model is told not to invent certifications, past performance, customers,
-   or prices; unknowns become [BRACKETED PLACEHOLDERS]. Returns { status, json }. */
+   Produces an evaluation-ready, page-limit-aware proposal package GROUNDED in
+   real DHI facts + partner catalog (capabilities.js).
+
+   Because a single serverless call can't emit 12–15 pages within the function
+   timeout, the Technical & Management volume is generated SECTION BY SECTION —
+   each section is a focused, in-depth call sized to its page budget. The
+   front-end orchestrates: fetch scope once → generate each section → append the
+   code-built Price volume + Forms checklist → assemble the full package.
+
+   Compliance/quality: tailored to the ingested solicitation scope; a requirements
+   cross-walk in the technical section; LEAN staffing (no over-committed labor/FTE
+   obligations, per Steven Burch); unknowns become [BRACKETED PLACEHOLDERS]; the
+   model invents no certifications, past performance, customers, or prices. */
 
 const { CORP, profileFor } = require("./capabilities");
 const { VERTICALS } = require("./govbids");
@@ -17,6 +21,7 @@ const MODEL = process.env.OPENAI_MODEL_NAME || "gpt-4o-mini";
 const BASE = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
 const TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 28000);
 const SAM_API_KEY = process.env.SAM_GOV_API_KEY || "";
+const WORDS_PER_PAGE = 500;
 
 function verticalForNaics(naics) {
   const n = String(naics || "");
@@ -24,7 +29,42 @@ function verticalForNaics(naics) {
   return null;
 }
 
-// ---- A) ingest the actual solicitation text ---------------------------------
+// Volume sections + default page weights (default total ≈ 13 pages of narrative).
+const SECTIONS = [
+  { key: "exec", title: "Cover Letter, Executive Summary & Understanding", pages: 2,
+    ask: "Write the Cover Letter, an Executive Summary, and a DETAILED Understanding of the Requirement. Tie the Understanding to the solicitation scope's specific objectives, tasks, constraints, and evaluation focus. State 2–3 concrete win themes / discriminators for DHI. Substantive, not generic." },
+  { key: "technical", title: "Technical Approach", pages: 5,
+    ask: "Write a DETAILED Technical Approach — the heart of the volume. First, a brief REQUIREMENTS COMPLIANCE CROSS-WALK (table: requirement → how DHI complies → reference). Then break the approach down BY the specific tasks/requirements in the solicitation scope and address EACH with: our proposed solution, methodology/steps, the specific DHI products/partners/standards used (from the facts), inputs/outputs, deliverables, and acceptance criteria. It must read as evaluation-ready and traceable to the scope — never generic filler." },
+  { key: "management", title: "Management, Schedule & Transition", pages: 3,
+    ask: "Write the Management Approach: program organization & governance; a phased SCHEDULE with milestones and a transition-in plan; communications, status reporting, and deliverable management; subcontractor/partner management. Keep STAFFING LEAN — describe how DHI plus partners deliver the outcomes WITHOUT over-committing to specific FTE counts, labor categories, or staffing obligations. Do not create unnecessary staffing complexity." },
+  { key: "riskqa", title: "Risk Management & Quality Assurance", pages: 2,
+    ask: "Write Risk Management (a concise table of key risks → likelihood/impact → mitigation) and Quality Assurance (QA/QC methodology, a quality surveillance & performance-metrics approach, and how compliance with applicable standards — e.g., HIPAA/NIST 800-53/CE/ISO as relevant — is verified)." },
+  { key: "pastperf", title: "Past Performance & Key Personnel", pages: 2,
+    ask: "Write Past Performance (2–3 relevant examples framed to THIS requirement, using [BRACKETED PLACEHOLDERS] for client names, contract values, periods of performance, and references — invent no specific contracts) and Key Personnel (roles, responsibilities, and qualifications mapped to the requirements; use [PLACEHOLDERS] for names/résumés)." },
+];
+const DEFAULT_TOTAL_PAGES = SECTIONS.reduce((a, s) => a + s.pages, 0);
+
+function profileAndVertical(o) {
+  const vKey = o.vertical || verticalForNaics(o.naics);
+  return { vKey, profile: profileFor(vKey) };
+}
+function factSheet(p) {
+  const L = [];
+  if (p.partners && p.partners.length) L.push("Partners: " + p.partners.join("; "));
+  if (p.offerings) L.push("Offerings/products:\n  - " + p.offerings.join("\n  - "));
+  if (p.quality && p.quality.length) L.push("Quality: " + p.quality.join("; "));
+  if (p.standards && p.standards.length) L.push("Standards/certifications: " + p.standards.join("; "));
+  if (p.differentiators && p.differentiators.length) L.push("Differentiators: " + p.differentiators.join("; "));
+  return L.join("\n");
+}
+function corpSheet() {
+  return [`Company: ${CORP.name} — HQ ${CORP.hq}.`, `Positioning: ${CORP.positioning}`, `Leadership: ${CORP.leadership}`, `Registrations: ${CORP.registrations.join("; ")}.`, `Contracting: ${CORP.contracting}`].join("\n");
+}
+function oppSheet(o) {
+  return [`Title: ${o.title || "(untitled)"}`, `Agency: ${o.agency || "—"}`, `Solicitation #: ${o.solicitation || "—"}`, `NAICS: ${o.naics || "—"}    Type: ${o.type || "—"}`, `Set-aside: ${o.setAside || "Full & open"}`, `Place of performance: ${o.place || "—"}`, `Response deadline: ${o.deadline || "—"}`].join("\n");
+}
+
+// ---- A) ingest the actual solicitation text (once) --------------------------
 async function fetchScope(link) {
   if (!link || !SAM_API_KEY) return "";
   const ctrl = new AbortController();
@@ -37,90 +77,19 @@ async function fetchScope(link) {
     let text = "";
     if (ct.includes("json")) { const j = await res.json().catch(() => null); text = (j && (j.description || j.body)) || (typeof j === "string" ? j : ""); }
     else text = await res.text().catch(() => "");
-    return String(text).replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/\s+/g, " ").trim().slice(0, 6000);
+    return String(text).replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/\s+/g, " ").trim().slice(0, 9000);
   } catch (e) { return ""; } finally { clearTimeout(timer); }
 }
 
-function corpSheet() {
-  return [
-    `Company: ${CORP.name} — HQ ${CORP.hq}.`, `Positioning: ${CORP.positioning}`,
-    `Leadership: ${CORP.leadership}`, `Registrations: ${CORP.registrations.join("; ")}.`,
-    `Contracting: ${CORP.contracting}`,
-  ].join("\n");
-}
-function factSheet(p) {
-  const L = [];
-  if (p.partners && p.partners.length) L.push("Partners: " + p.partners.join("; "));
-  if (p.offerings) L.push("Offerings/products:\n  - " + p.offerings.join("\n  - "));
-  if (p.quality && p.quality.length) L.push("Quality: " + p.quality.join("; "));
-  if (p.standards && p.standards.length) L.push("Standards/certifications: " + p.standards.join("; "));
-  if (p.differentiators && p.differentiators.length) L.push("Differentiators: " + p.differentiators.join("; "));
-  return L.join("\n");
-}
-function oppSheet(o) {
-  return [
-    `Title: ${o.title || "(untitled)"}`, `Agency: ${o.agency || "—"}`,
-    `Solicitation #: ${o.solicitation || "—"}`, `NAICS: ${o.naics || "—"}    Type: ${o.type || "—"}`,
-    `Set-aside: ${o.setAside || "Full & open"}`, `Place of performance: ${o.place || "—"}`,
-    `Response deadline: ${o.deadline || "—"}`,
-  ].join("\n");
-}
-
-// ---- C) pricing scaffold (Volume III) ---------------------------------------
-function pricingVolume(profile, o) {
-  const rows = (profile.offerings || []).map((off, i) =>
-    `${String(i + 1).padStart(2, " ")}. ${off}\n     Partner: ${(profile.partners || ["—"])[0]}   Qty: [QTY]   Unit: [QUOTE]   Extended: [QUOTE]`);
-  return [
-    `VOLUME III — PRICE / COST PROPOSAL`,
-    `Opportunity: ${o.title || ""}  (Sol. ${o.solicitation || "—"})`,
-    ``,
-    `Line items (seeded from DHI's ${profile.label} partner catalog — confirm quantities and obtain partner quotes):`,
-    ``,
-    ...rows,
-    ``,
-    `Subtotal: [SUBTOTAL]    Freight/Install (if applicable): [QUOTE]    TOTAL: [TOTAL]`,
-    ``,
-    `Notes: Volume discounts available for large procurements. All pricing is subject to partner quotes and confirmation of the solicitation's CLIN structure and period of performance.`,
-  ].join("\n");
-}
-
-// ---- B) forms & compliance checklist ----------------------------------------
-function formsChecklist(o) {
-  const type = String(o.type || "").toLowerCase();
-  const sa = String(o.setAside || "");
-  const items = ["Active SAM.gov registration + UEI (verify not expired)", "Representations & Certifications — complete/confirm in SAM.gov"];
-  if (/rfq|request for qu/.test(type)) items.push("SF-18 (Request for Quotations) response");
-  else if (/combined|commercial|solicitation/.test(type)) items.push("SF-1449 (Solicitation/Contract — Commercial Items), blocks completed & signed");
-  else items.push("SF-33 (Solicitation, Offer and Award), blocks completed & signed");
-  if (sa) items.push(`Set-aside eligibility evidence for: ${sa} (e.g., SBA/VetCert/8(a)/HUBZone certification)`);
-  items.push("Acknowledge all amendments to the solicitation (SF-30)");
-  items.push("Technical & Management volume (Vol I–II) — attached");
-  items.push("Price volume (Vol III) with completed CLIN pricing — attached");
-  items.push("Any solicitation-specific attachments / required forms");
-  items.push("Submit via the portal before the response deadline" + (o.deadline ? ` (${String(o.deadline).slice(0, 10)})` : ""));
-  return ["FORMS & COMPLIANCE CHECKLIST", "", ...items.map((s, i) => `[ ] ${s}`)].join("\n");
-}
-
-// ---- AI narrative (Volumes I–II), tailored to the real scope ----------------
-async function callOpenAI(o, profile, scopeText) {
+async function callOpenAI(system, user, maxTokens) {
+  if (!API_KEY) return null;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
-    const system =
-      "You are an expert U.S. Government proposal writer for Digital Health International Inc. (DHI). " +
-      "Write the Technical & Management narrative (Volumes I–II) of a proposal responding to the solicitation. " +
-      "Use ONLY the DHI facts, partners, products, and standards provided — do NOT invent certifications, past performance, customers, or specific prices. " +
-      (scopeText ? "Tailor the 'Understanding of the Requirement' and 'Technical Approach' specifically to the SOLICITATION SCOPE provided (reference its actual tasks/requirements). " : "") +
-      "Where specifics are unknown, insert clearly-marked [BRACKETED PLACEHOLDERS]. Begin with a note that it is an AI-generated draft requiring human review. Use numbered section headings.";
-    const user =
-      `SOLICITATION\n${oppSheet(o)}\n\n` +
-      (scopeText ? `SOLICITATION SCOPE (verbatim excerpt — tailor to this)\n${scopeText}\n\n` : "") +
-      `DHI CORPORATE FACTS\n${corpSheet()}\n\nMATCHED CAPABILITY — ${profile.label}\n${factSheet(profile)}\n\n` +
-      `Write: 1) Cover Letter & Executive Summary, 2) Understanding of the Requirement, 3) Technical Approach (cite our specific products/partners/standards above; map them to the scope's tasks), 4) Management Approach, 5) Past Performance & Capabilities, 6) Key Personnel. Concise, realistic, grounded only in the facts above. (The Price volume and forms checklist are produced separately — do not write them.)`;
     const res = await fetch(`${BASE}/chat/completions`, {
       method: "POST",
       headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: MODEL, messages: [{ role: "system", content: system }, { role: "user", content: user }], temperature: 0.4, max_tokens: 2000 }),
+      body: JSON.stringify({ model: MODEL, messages: [{ role: "system", content: system }, { role: "user", content: user }], temperature: 0.4, max_tokens: maxTokens }),
       signal: ctrl.signal,
     });
     if (!res.ok) return null;
@@ -129,45 +98,60 @@ async function callOpenAI(o, profile, scopeText) {
   } catch (e) { return null; } finally { clearTimeout(timer); }
 }
 
-// fact-based fallback narrative (no AI)
-function templateNarrative(o, profile, scopeText) {
-  return [
-    `DRAFT — Technical & Management (Vols I–II). AI-generated draft requires human review.`,
-    ``, `1. COVER LETTER & EXECUTIVE SUMMARY`,
-    `${CORP.name}, ${CORP.hq} (SAM.gov-registered), responds to "${o.title || "this solicitation"}" for ${o.agency || "the agency"}. We deliver ${profile.label} via ${(profile.partners || []).join(", ") || "vetted partners"}.`,
-    ``, `2. UNDERSTANDING OF THE REQUIREMENT`,
-    scopeText ? `Per the solicitation scope: ${scopeText.slice(0, 600)}…  [Summarize and confirm.]` : `[Summarize the agency's need from the solicitation scope.]`,
-    ``, `3. TECHNICAL APPROACH`, ...(profile.offerings || []).map((x) => `  - ${x}`),
-    profile.quality && profile.quality.length ? `Quality: ${profile.quality.join("; ")}.` : "",
-    ``, `4. MANAGEMENT APPROACH`, `[Roles, timeline/milestones, QA.]`,
-    ``, `5. PAST PERFORMANCE & CAPABILITIES`, `[Relevant prior engagements & references.] Differentiators: ${(profile.differentiators || []).join("; ")}.`,
-    ``, `6. KEY PERSONNEL`, `${CORP.leadership} [Add project key personnel.]`,
-  ].filter((l) => l !== "").join("\n");
-}
-
-async function generateProposal(opportunity) {
+// ---- generate ONE volume section (sized to its page budget) -----------------
+async function generateSection(opportunity, sectionKey, scopeText, pageLimit) {
   const o = opportunity || {};
-  const vKey = o.vertical || verticalForNaics(o.naics);
-  const profile = profileFor(vKey);
-  if (!profile) return { status: 422, json: { ok: false, error: "No DHI vertical matches this opportunity's NAICS — proposal generation is for matched verticals only." } };
+  const { profile } = profileAndVertical(o);
+  if (!profile) return { status: 422, json: { ok: false, error: "No DHI vertical matches this opportunity's NAICS." } };
+  const section = SECTIONS.find((s) => s.key === sectionKey);
+  if (!section) return { status: 400, json: { ok: false, error: "Unknown section" } };
 
-  const scopeText = await fetchScope(o.descriptionLink);
-  let narrative = null, ai = false;
-  if (API_KEY) { narrative = await callOpenAI(o, profile, scopeText); ai = !!narrative; }
-  if (!narrative) narrative = templateNarrative(o, profile, scopeText);
+  const limit = Math.max(6, Math.min(40, parseInt(pageLimit, 10) || DEFAULT_TOTAL_PAGES));
+  const pageBudget = Math.max(1, Math.round(section.pages * (limit / DEFAULT_TOTAL_PAGES)));
+  const maxTokens = Math.min(2400, Math.round(pageBudget * WORDS_PER_PAGE * 1.4)); // ~1.4 tokens/word; capped to fit the function timeout (each section is a separate call)
 
-  const price = pricingVolume(profile, o);
-  const forms = formsChecklist(o);
+  const system =
+    "You are a senior U.S. Government proposal writer for Digital Health International Inc. (DHI). Write ONE section of a formal proposal at the depth and rigor a source-selection board expects. " +
+    "Use ONLY the DHI facts, partners, products, and standards provided — invent NO certifications, past performance, customers, or specific prices. " +
+    (scopeText ? "Tailor the content specifically to the SOLICITATION SCOPE provided and make it traceable to its requirements. " : "") +
+    "Use [BRACKETED PLACEHOLDERS] for unknowns. Use clear headings/sub-headings, tables where useful, and complete paragraphs — substantive, no filler or padding.";
+  const user =
+    `WRITE ONLY THIS SECTION: ${section.title}\nTarget length: about ${pageBudget} page(s) (~${pageBudget * WORDS_PER_PAGE} words) — be thorough but do not pad.\nSECTION INSTRUCTIONS: ${section.ask}\n\n` +
+    `SOLICITATION\n${oppSheet(o)}\n\n` +
+    (scopeText ? `SOLICITATION SCOPE (verbatim excerpt — tailor to this)\n${scopeText}\n\n` : "") +
+    `DHI CORPORATE FACTS\n${corpSheet()}\n\nMATCHED CAPABILITY — ${profile.label}\n${factSheet(profile)}\n`;
 
-  const parts = [
-    { name: "Technical & Management (Vol I–II)", content: narrative },
-    { name: "Price (Vol III)", content: price },
-    { name: "Forms & Compliance Checklist", content: forms },
-  ];
-  const header = `PROPOSAL PACKAGE — ${CORP.name}\nRE: ${o.title || "Solicitation"} — ${o.agency || ""} (Sol. ${o.solicitation || "—"})\n${scopeText ? "Tailored to the live SAM.gov solicitation scope." : "Based on opportunity metadata (full solicitation text unavailable)."}\n` + "=".repeat(70);
-  const full = [header, "", ...parts.map((p) => `\n========== ${p.name.toUpperCase()} ==========\n\n${p.content}`)].join("\n");
-
-  return { status: 200, json: { ok: true, ai, vertical: profile.label, scopeUsed: !!scopeText, parts, proposal: full } };
+  let content = await callOpenAI(system, user, maxTokens);
+  if (!content) content = `## ${section.title}\n[Draft unavailable — generate again. Section: ${section.ask}]`;
+  return { status: 200, json: { ok: true, ai: !!API_KEY, key: section.key, title: section.title, pages: pageBudget, content } };
 }
 
-module.exports = { generateProposal, verticalForNaics };
+// ---- C) pricing scaffold (Volume III) — code-built ---------------------------
+function pricingVolume(profile, o) {
+  const rows = (profile.offerings || []).map((off, i) => `${String(i + 1).padStart(2, " ")}. ${off}\n     Partner: ${(profile.partners || ["—"])[0]}   Qty: [QTY]   Unit: [QUOTE]   Extended: [QUOTE]`);
+  return [`VOLUME III — PRICE / COST PROPOSAL`, `Opportunity: ${o.title || ""}  (Sol. ${o.solicitation || "—"})`, ``,
+    `Line items (seeded from DHI's ${profile.label} partner catalog — confirm quantities and obtain partner quotes; map to the solicitation's CLIN structure):`, ``,
+    ...rows, ``, `Subtotal: [SUBTOTAL]    Freight/Install (if applicable): [QUOTE]    TOTAL: [TOTAL]`, ``,
+    `Notes: Volume discounts available for large procurements. Pricing subject to partner quotes and the CLIN structure / period of performance.`].join("\n");
+}
+
+// ---- B) forms & compliance checklist — code-built ----------------------------
+function formsChecklist(o) {
+  const type = String(o.type || "").toLowerCase(); const sa = String(o.setAside || "");
+  const items = ["Active SAM.gov registration + UEI (verify not expired)", "Representations & Certifications — complete/confirm in SAM.gov"];
+  if (/rfq|request for qu/.test(type)) items.push("SF-18 (Request for Quotations) response");
+  else if (/combined|commercial|solicitation/.test(type)) items.push("SF-1449 (Solicitation/Contract — Commercial Items), blocks completed & signed");
+  else items.push("SF-33 (Solicitation, Offer and Award), blocks completed & signed");
+  if (sa) items.push(`Set-aside eligibility evidence for: ${sa} (e.g., SBA/VetCert/8(a)/HUBZone)`);
+  items.push("Acknowledge all amendments (SF-30)", "Technical & Management volume — attached", "Price volume (Vol III) with completed CLIN pricing — attached", "Any solicitation-specific attachments / required forms", "Submit via the portal before the response deadline" + (o.deadline ? ` (${String(o.deadline).slice(0, 10)})` : ""));
+  return ["FORMS & COMPLIANCE CHECKLIST", "", ...items.map((s) => `[ ] ${s}`)].join("\n");
+}
+
+function staticVolumes(opportunity) {
+  const o = opportunity || {};
+  const { profile } = profileAndVertical(o);
+  if (!profile) return { status: 422, json: { ok: false, error: "No DHI vertical matches this opportunity's NAICS." } };
+  return { status: 200, json: { ok: true, price: pricingVolume(profile, o), forms: formsChecklist(o) } };
+}
+
+module.exports = { fetchScope, generateSection, staticVolumes, SECTIONS, verticalForNaics };

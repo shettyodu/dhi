@@ -128,40 +128,16 @@
   }
 
   // ---------- proposal outline ----------
-  function proposalText(o) {
-    const due = o.deadline ? new Date(o.deadline).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "TBD";
-    return [
-      `PROPOSAL OUTLINE — Digital Health International Inc. (DHI)`,
-      `Opportunity: ${o.title}`,
-      `Agency: ${o.agency || "—"}    Solicitation: ${o.solicitation || "—"}`,
-      `NAICS: ${o.naics || "—"}    Set-aside: ${o.setAside || "Full & open"}    Response due: ${due}`,
-      ``,
-      `1. COVER LETTER & EXECUTIVE SUMMARY`,
-      `   - DHI overview: SAM.gov-registered, multi-vertical platform (Research Triangle, NC).`,
-      `   - One-paragraph fit statement for this requirement.`,
-      ``,
-      `2. UNDERSTANDING & TECHNICAL APPROACH`,
-      `   - Restate the requirement in our words; proposed solution and methodology.`,
-      `   - Standards/compliance relevant to the work (e.g., HIPAA, NIST, CE/ISO as applicable).`,
-      ``,
-      `3. PAST PERFORMANCE & CAPABILITIES`,
-      `   - Relevant prior engagements, partners, and references.`,
-      ``,
-      `4. STAFFING & MANAGEMENT PLAN`,
-      `   - Key personnel, roles, timeline/milestones.`,
-      ``,
-      `5. PRICING / COST PROPOSAL`,
-      `   - Line-item pricing with partner quotes; assumptions.`,
-      ``,
-      `6. COMPLIANCE`,
-      `   - Reps & certs, set-aside eligibility${o.setAside ? ` (${o.setAside})` : ""}, required forms/attachments.`,
-      ``,
-      `7. SUBMISSION`,
-      `   - File via ${o.source || "SAM.gov"} (${o.link || "https://sam.gov"}) before ${due}.`,
-      ``,
-      `[Draft outline — human review and final content required before submission.]`,
-    ].join("\n");
-  }
+  // Volume sections (must match SECTIONS in backend/lib/proposal.js)
+  const PROP_SECTIONS = [
+    { key: "exec", title: "Cover Letter, Executive Summary & Understanding" },
+    { key: "technical", title: "Technical Approach" },
+    { key: "management", title: "Management, Schedule & Transition" },
+    { key: "riskqa", title: "Risk Management & Quality Assurance" },
+    { key: "pastperf", title: "Past Performance & Key Personnel" },
+  ];
+  let propOpp = null;
+
   function fillPartSelect(parts, full) {
     const sel = $("prop-part");
     const opts = [{ name: "Full package", content: full }].concat(parts || []);
@@ -169,25 +145,42 @@
     sel.onchange = () => { $("prop-text").value = opts[+sel.value].content; };
     sel.value = "0"; $("prop-text").value = opts[0].content;
   }
-  async function openProposal(o) {
+  async function propCall(payload) {
+    const r = await fetch(FN_PROPOSAL, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: JSON.stringify(Object.assign({ opportunity: propOpp }, payload)) });
+    return r.json().catch(() => ({}));
+  }
+  async function generatePackage() {
+    if (!propOpp) return;
+    const regen = $("prop-regen"), prog = $("prop-progress");
+    const pageLimit = parseInt($("prop-pages").value, 10) || 13;
+    regen.disabled = true; $("prop-part").innerHTML = "";
+    prog.textContent = "Reading the solicitation…";
+    $("prop-text").value = "Generating a tailored proposal package — writing each volume to your page limit…";
+    let scopeText = "", scopeUsed = false;
+    try { const s = await propCall({ action: "scope" }); scopeText = (s && s.scopeText) || ""; scopeUsed = !!(s && s.scopeUsed); } catch (e) {}
+    prog.textContent = "Writing all volume sections…";
+    // sections in parallel (each call stays within the function timeout)
+    const secResults = await Promise.all(PROP_SECTIONS.map((sec) =>
+      propCall({ action: "section", section: sec.key, scopeText: scopeText, pageLimit: pageLimit })
+        .then((d) => ({ name: sec.title, content: (d && d.ok && d.content) ? d.content : `[${sec.title} unavailable — click Generate to retry.${d && d.error ? " " + d.error : ""}]` }))
+        .catch(() => ({ name: sec.title, content: `[${sec.title} failed — retry.]` }))
+    ));
+    prog.textContent = "Adding Price volume & forms checklist…";
+    let staticParts = [];
+    try { const st = await propCall({ action: "static" }); if (st && st.ok) staticParts = [{ name: "Price (Vol III)", content: st.price }, { name: "Forms & Compliance Checklist", content: st.forms }]; } catch (e) {}
+
+    const parts = secResults.map((p, i) => ({ name: `${i + 1}. ${p.name}`, content: p.content })).concat(staticParts);
+    const header = `PROPOSAL PACKAGE — Digital Health International Inc.\nRE: ${propOpp.title || ""} — ${propOpp.agency || ""} (Sol. ${propOpp.solicitation || "—"})\nTarget length: ${pageLimit} pages. ${scopeUsed ? "Tailored to the live SAM.gov solicitation scope." : "Based on opportunity metadata (full solicitation text unavailable)."}\n` + "=".repeat(72);
+    const full = [header, ""].concat(parts.map((p) => `\n========== ${p.name.toUpperCase()} ==========\n\n${p.content}`)).join("\n");
+    fillPartSelect(parts, full);
+    prog.textContent = `Done · ${parts.length} documents` + (scopeUsed ? " · tailored to solicitation" : "");
+    regen.disabled = false;
+  }
+  function openProposal(o) {
+    propOpp = o;
     $("prop-copied").textContent = "";
-    $("prop-part").innerHTML = "";
-    $("prop-text").value = "Generating a complete, tailored proposal package from the solicitation + DHI's partner catalog…";
     $("prop-modal").classList.remove("hidden");
-    try {
-      const r = await fetch(FN_PROPOSAL, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: JSON.stringify({ opportunity: o }) });
-      const d = await r.json().catch(() => ({}));
-      if (r.ok && d.ok && d.proposal) {
-        fillPartSelect(d.parts, d.proposal);
-        $("prop-copied").textContent = (d.ai ? "AI-generated" : "Template") + " draft" + (d.scopeUsed ? " · tailored to solicitation" : " · from opportunity metadata") + " · review before submitting";
-      } else {
-        fillPartSelect([], proposalText(o)); // graceful fallback to the local outline
-        $("prop-copied").textContent = (d && d.error) ? d.error : "Generated a local outline (server unavailable).";
-      }
-    } catch (e) {
-      fillPartSelect([], proposalText(o));
-      $("prop-copied").textContent = "Generated a local outline (network error).";
-    }
+    generatePackage();
   }
 
   // ---------- wire up ----------
@@ -200,6 +193,7 @@
     $("prop-close").addEventListener("click", () => $("prop-modal").classList.add("hidden"));
     $("prop-backdrop").addEventListener("click", () => $("prop-modal").classList.add("hidden"));
     $("prop-copy").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("prop-text").value); $("prop-copied").textContent = "Copied"; } catch (e) { $("prop-copied").textContent = "Select & copy manually"; } });
+    $("prop-regen").addEventListener("click", generatePackage);
     const rb = $("refresh");
     if (rb) rb.addEventListener("click", async () => {
       const st = $("refresh-status"); st.textContent = "Refreshing from SAM.gov…"; rb.disabled = true;
