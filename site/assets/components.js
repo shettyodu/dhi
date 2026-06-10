@@ -14,6 +14,8 @@ const SITE = {
   web: "digitalhealthinternational.com",
   address: "68 Jeans Way, Benson, NC 27504",
   region: "Research Triangle, North Carolina",
+  // Ad / analytics IDs — leave blank until you have them; pixels inject only when set.
+  analytics: { ga4: "", metaPixel: "", linkedinPartnerId: "", googleAdsId: "" },
 };
 
 /* The verticals / service sub-pages. Order drives the Services menu,
@@ -518,7 +520,51 @@ function initChatWidget() {
   });
 }
 
+/* -------- Campaign / influencer attribution + focused landing mode --------
+   - Captures ?ref (influencer code) and utm_* params and persists them for the
+     session, so any lead form can attach them (window.DHIAttribution()).
+   - "Focused mode": when a link carries ?ref or ?lp=1, the full nav menu is
+     hidden so the visitor stays on the promoted offer until they're done.
+   - Injects ad/analytics pixels only when SITE.analytics IDs are configured. */
+function injectAnalytics() {
+  const a = (SITE && SITE.analytics) || {};
+  if (a.ga4 && !window.__ga4) {
+    window.__ga4 = true;
+    const s = document.createElement("script"); s.async = true; s.src = "https://www.googletagmanager.com/gtag/js?id=" + a.ga4; document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || []; window.gtag = function () { dataLayer.push(arguments); };
+    gtag("js", new Date()); gtag("config", a.ga4); if (a.googleAdsId) gtag("config", a.googleAdsId);
+  }
+  if (a.metaPixel && !window.__fbq) {
+    window.__fbq = true;
+    !function (f, b, e, v, n, t, s) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = []; t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s); }(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+    fbq("init", a.metaPixel); fbq("track", "PageView");
+  }
+}
+function initCampaign() {
+  const qs = new URLSearchParams(location.search);
+  try {
+    const ref = qs.get("ref"); if (ref) localStorage.setItem("dhi_ref", ref.slice(0, 64));
+    const utm = {}; ["source", "medium", "campaign", "content", "term"].forEach((k) => { const v = qs.get("utm_" + k); if (v) utm[k] = v.slice(0, 120); });
+    if (Object.keys(utm).length) localStorage.setItem("dhi_utm", JSON.stringify(utm));
+  } catch (e) { /* storage disabled */ }
+  window.DHIAttribution = function () {
+    let ref = "", utm = {};
+    try { ref = localStorage.getItem("dhi_ref") || ""; utm = JSON.parse(localStorage.getItem("dhi_utm") || "{}"); } catch (e) {}
+    return { ref: ref, utm: utm };
+  };
+  if (qs.get("ref") || qs.get("lp") === "1") {
+    document.body.classList.add("lp-mode");
+    if (!document.getElementById("dhi-lp-style")) {
+      const st = document.createElement("style"); st.id = "dhi-lp-style";
+      st.textContent = ".lp-mode header nav,.lp-mode #mobile-btn,.lp-mode #mobile-menu{display:none!important}.lp-mode [data-lp-hide]{display:none!important}";
+      document.head.appendChild(st);
+    }
+  }
+  injectAnalytics();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  initCampaign();
   buildHeader();
   buildFooter();
   initHeroCarousel();
