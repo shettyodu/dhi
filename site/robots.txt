@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Internal / staff-only tools — keep out of search
+Disallow: /admin.html
+Disallow: /gov-bids.html
+Disallow: /insurance-ops.html
+
+Sitemap: https://courageous-fairy-0b2d3c.netlify.app/sitemap.xml

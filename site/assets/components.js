@@ -14,6 +14,9 @@ const SITE = {
   web: "digitalhealthinternational.com",
   address: "68 Jeans Way, Benson, NC 27504",
   region: "Research Triangle, North Carolina",
+  // Canonical site URL (for SEO/OG tags + sitemap). CHANGE this when the custom
+  // domain (e.g. https://digitalhealthinternational.com) goes live.
+  baseUrl: "https://courageous-fairy-0b2d3c.netlify.app",
   // Ad / analytics IDs — leave blank until you have them; pixels inject only when set.
   analytics: { ga4: "", metaPixel: "", linkedinPartnerId: "", googleAdsId: "" },
 };
@@ -563,8 +566,43 @@ function initCampaign() {
   injectAnalytics();
 }
 
+/* ---- SEO: inject canonical + Open Graph + Twitter + JSON-LD on every page ----
+   Pages may provide their own static og:* tags (better for social scrapers);
+   this only fills in what's missing, so Google + most platforms get full meta. */
+function initSEO() {
+  const head = document.head;
+  const base = (SITE.baseUrl || location.origin).replace(/\/+$/, "");
+  const path = location.pathname.replace(/\/index\.html$/, "/");
+  const url = base + (path === "/" || path === "" ? "/" : path);
+  const title = document.title || SITE.name;
+  const descEl = document.querySelector('meta[name="description"]');
+  const desc = (descEl && descEl.content) || "Digital Health International — connecting healthcare, technology, infrastructure & global markets across multiple specialized verticals.";
+  const img = base + "/assets/img/banner.jpg";
+  const m = (a, k, v) => { const e = document.createElement("meta"); e.setAttribute(a, k); e.setAttribute("content", v); head.appendChild(e); };
+
+  if (!document.querySelector('link[rel="canonical"]')) { const l = document.createElement("link"); l.rel = "canonical"; l.href = url; head.appendChild(l); }
+  if (!document.querySelector('meta[property="og:title"]')) {
+    m("property", "og:type", "website"); m("property", "og:site_name", SITE.name);
+    m("property", "og:title", title); m("property", "og:description", desc);
+    m("property", "og:url", url); m("property", "og:image", img);
+  }
+  if (!document.querySelector('meta[name="twitter:card"]')) {
+    m("name", "twitter:card", "summary_large_image"); m("name", "twitter:title", title);
+    m("name", "twitter:description", desc); m("name", "twitter:image", img);
+  }
+  if (!document.getElementById("dhi-jsonld")) {
+    const ld = document.createElement("script"); ld.type = "application/ld+json"; ld.id = "dhi-jsonld";
+    ld.textContent = JSON.stringify([
+      { "@context": "https://schema.org", "@type": "Organization", name: SITE.name, url: base + "/", logo: base + "/assets/img/dhi-logo.png", telephone: SITE.phone, address: { "@type": "PostalAddress", streetAddress: "68 Jeans Way", addressLocality: "Benson", addressRegion: "NC", postalCode: "27504", addressCountry: "US" } },
+      { "@context": "https://schema.org", "@type": "WebSite", name: SITE.name, url: base + "/" },
+    ]);
+    head.appendChild(ld);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initCampaign();
+  initSEO();
   buildHeader();
   buildFooter();
   initHeroCarousel();
