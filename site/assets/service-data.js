@@ -467,7 +467,7 @@ const SERVICE_CONTENT = {
         type: "prose",
         heading: "Sterile surgical disposables — globally certified",
         paragraphs: [
-          "DHI sources sterile, single-use surgical gowns, drapes, OT packs, and sterilization wraps from globally certified manufacturing partners — including <strong class=\"text-brand-900\">Amaryllis Healthcare</strong> and <strong class=\"text-brand-900\">Mediprro</strong> (Sivshree Medittex) — built to international quality and infection-control standards.",
+          "DHI produces sterile, single-use surgical gowns, drapes, OT packs, and sterilization wraps at <strong class=\"text-brand-900\">DHI-managed domestic and international facilities</strong>, with a wide choice of specifications and quality grades — all built to international quality and infection-control standards.",
           "Products are SMS / SMMMS non-woven, AAMI Level 1–4 rated, ultrasonically welded, and EO-sterile, carrying <strong class=\"text-brand-900\">CE (EU MDR 2017/745), ISO 13485, USFDA registration, MDSAP, GMP, and EN 13795</strong> certifications. Gowns and drape kits can be custom-designed by dimension, fabric, and packing, with OEM, white-label, and bulk options.",
         ],
       },
