@@ -27,6 +27,54 @@
   const money = (n) => "$" + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const inCart = (id) => cart.some((l) => l.id === id);
 
+  // Clean category illustrations for items without a product photo.
+  // Drawn in a medical cyan palette; recognizable silhouette per category.
+  function supplyArt(cat) {
+    const st = "#0e7490", fl = "#cffafe", ac = "#0891b2", sf = "#e0f2fe";
+    let body = "";
+    const C = String(cat || "").toLowerCase();
+    if (C.indexOf("drape") >= 0) {
+      body = `<rect x="38" y="34" width="124" height="92" rx="6" fill="${fl}"/>
+        <path d="M72 34V126M128 34V126" stroke="${ac}" opacity=".35"/>
+        <ellipse cx="100" cy="82" rx="29" ry="19" fill="none" stroke="${ac}" stroke-dasharray="3 3"/>
+        <ellipse cx="100" cy="82" rx="20" ry="12" fill="#fff" stroke="${st}"/>`;
+    } else if (C.indexOf("coverall") >= 0) {
+      body = `<ellipse cx="100" cy="34" rx="15" ry="14" fill="${sf}"/>
+        <path d="M82 46h36l9 13-7 9-7-5v23h-30V63l-7 5-7-9z" fill="${fl}"/>
+        <path d="M86 84h28v50h-11l-3-32-3 32H86z" fill="${fl}"/>
+        <path d="M100 50V128" stroke="${ac}" stroke-dasharray="3 3"/>`;
+    } else if (C.indexOf("mask") >= 0 || C.indexOf("respirator") >= 0) {
+      body = `<path d="M58 64q-16 18 0 36" fill="none"/><path d="M142 64q16 18 0 36" fill="none"/>
+        <rect x="58" y="58" width="84" height="46" rx="11" fill="${fl}"/>
+        <path d="M76 58q24-9 48 0" fill="none"/>
+        <path d="M58 72h84M58 81h84M58 90h84" stroke="${ac}" opacity=".5"/>`;
+    } else if (C.indexOf("cap") >= 0 || C.indexOf("cover") >= 0) {
+      body = `<path d="M50 98a50 42 0 0 1 100 0z" fill="${fl}"/>
+        <path d="M50 98q50 20 100 0" fill="${sf}"/>
+        <path d="M70 60q5 30 0 38M100 52v46M130 60q-5 30 0 38" fill="none" stroke="${ac}" opacity=".4"/>`;
+    } else if (C.indexOf("scrub") >= 0) {
+      body = `<path d="M64 56l-19 13 9 19 16-8" fill="${sf}"/><path d="M136 56l19 13-9 19-16-8" fill="${sf}"/>
+        <path d="M64 52h72l7 78q-43 11-86 0z" fill="${fl}"/>
+        <path d="M85 52l15 23 15-23" fill="#fff"/>
+        <rect x="106" y="92" width="22" height="22" rx="2" fill="none" stroke="${ac}"/>`;
+    } else if (C.indexOf("pack") >= 0) {
+      body = `<rect x="44" y="44" width="112" height="78" rx="7" fill="${fl}"/>
+        <path d="M44 50L100 86 156 50" fill="none"/>
+        <path d="M44 116L100 84 156 116" fill="none" stroke="${ac}" opacity=".5"/>
+        <rect x="88" y="38" width="24" height="13" rx="2" fill="${ac}"/>
+        <rect x="86" y="92" width="28" height="22" rx="3" fill="#fff" stroke="${st}"/>
+        <path d="M100 97v12M94 103h12" stroke="${st}"/>`;
+    } else {
+      // gowns / surgical gowns / default garment
+      body = `<path d="M72 52L38 66q-4 2-2 6l6 21q1 4 5 2l26-12" fill="${sf}"/>
+        <path d="M128 52l34 14q4 2 2 6l-6 21q-1 4-5 2l-26-12" fill="${sf}"/>
+        <path d="M72 48q28-16 56 0l10 92q-38 12-76 0z" fill="${fl}"/>
+        <path d="M88 49q12 11 24 0" fill="none"/>
+        <path d="M100 60V132" stroke="${ac}" stroke-dasharray="3 4"/>`;
+    }
+    return `<svg viewBox="0 0 200 160" class="max-h-28 w-auto" style="height:7rem" fill="none" stroke="${st}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${body}</svg>`;
+  }
+
   toolbar.innerHTML = `
     <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div class="relative">
@@ -65,7 +113,7 @@
   function card(p) {
     const added = inCart(p.id);
     return `<div class="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
-      ${p.img ? `<div class="mb-3 flex h-32 items-center justify-center rounded-lg bg-slate-50 p-2"><img src="${p.img}" alt="${p.id}" loading="lazy" class="max-h-28 w-auto object-contain" /></div>` : ""}
+      <div class="mb-3 flex h-32 items-center justify-center rounded-lg bg-slate-50 p-2">${p.img ? `<img src="${p.img}" alt="${p.id}" loading="lazy" class="max-h-28 w-auto object-contain" />` : supplyArt(p.cat)}</div>
       <span class="inline-block w-max rounded bg-brand-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-cyan-700">${p.cat}</span>
       <h3 class="mt-1.5 text-sm font-semibold text-brand-900">${p.t}</h3>
       <p class="font-mono text-xs text-slate-400">${p.id}</p>
