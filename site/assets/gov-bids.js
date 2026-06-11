@@ -8,6 +8,7 @@
   const FN = API_BASE + "/.netlify/functions/gov-bids";
   const FN_REFRESH = API_BASE + "/.netlify/functions/gov-bids-refresh";
   const FN_PROPOSAL = API_BASE + "/.netlify/functions/gov-proposal";
+  const FN_PIPELINE = API_BASE + "/.netlify/functions/gov-pipeline";
   const SKEY = "dhi_admin_secret";
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -20,6 +21,13 @@
     let d = {}; try { d = await r.json(); } catch (e) {}
     return { ok: r.ok, status: r.status, d };
   }
+  async function pipe(payload) {
+    const r = await fetch(FN_PIPELINE, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: JSON.stringify(payload) });
+    let d = {}; try { d = await r.json(); } catch (e) {}
+    return { ok: r.ok, status: r.status, d };
+  }
+  let boardEntries = [], boardStages = ["Identified", "Qualifying", "Drafting", "Submitted", "Won", "Lost", "No-bid"];
+  function daysTo(iso) { if (!iso) return null; const d = new Date(iso); if (isNaN(d)) return null; return Math.round((d.getTime() - Date.now()) / 86400000); }
 
   // ---------- gate ----------
   async function unlock(s) {
@@ -44,6 +52,7 @@
         runSearch({ vertical: b.dataset.v });
       }));
     }
+    refreshBoardCount();
   }
 
   // ---------- search ----------
@@ -105,11 +114,79 @@
           <a href="${esc(o.link)}" target="_blank" rel="noopener" class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">View on ${esc(o.source || "SAM.gov")} ↗</a>
           <button data-prop="${i}" class="rounded-lg bg-cyan-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-cyan-700">Start a proposal</button>
           <button data-wf="${i}" class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">Submission checklist</button>
+          <button data-save="${i}" class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">&#9733; Save to board</button>
         </div>
         <div id="wf-${i}" class="mt-3 hidden rounded-xl bg-slate-50 p-4 text-sm text-slate-700"></div>
       </div>`).join("");
     $("results").querySelectorAll("[data-prop]").forEach((b) => b.addEventListener("click", () => openProposal(list[+b.dataset.prop])));
     $("results").querySelectorAll("[data-wf]").forEach((b) => b.addEventListener("click", () => toggleWorkflow(+b.dataset.wf, list[+b.dataset.wf])));
+    $("results").querySelectorAll("[data-save]").forEach((b) => b.addEventListener("click", () => saveToBoard(list[+b.dataset.save], b)));
+  }
+
+  // ---------- bid board (pipeline) ----------
+  function updateBoardCount() { const el = $("board-count"); if (el) el.textContent = boardEntries.length ? String(boardEntries.length) : ""; }
+  async function refreshBoardCount() { const { ok, d } = await pipe({ action: "list" }); if (ok) { boardEntries = d.entries || []; if (d.stages) boardStages = d.stages; updateBoardCount(); } }
+  async function loadBoard() { const { ok, d } = await pipe({ action: "list" }); if (ok) { boardEntries = d.entries || []; if (d.stages) boardStages = d.stages; } updateBoardCount(); renderBoard(); }
+  async function saveToBoard(o, btn) {
+    if (!o) return; const id = o.id || o.solicitation || o.title; if (!id) return;
+    const orig = btn ? btn.innerHTML : ""; if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+    const { ok } = await pipe({ action: "save", entry: { id: id, stage: "Identified", opportunity: o } });
+    if (btn) { btn.disabled = false; btn.innerHTML = ok ? "✓ On board" : orig; }
+    await refreshBoardCount();
+  }
+  function boardCard(e) {
+    const o = e.opportunity || {};
+    return `<div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+      <p class="text-sm font-semibold text-brand-900">${esc(o.title || e.id)}</p>
+      <p class="mt-0.5 text-xs text-slate-500">${esc(o.agency || "")}${o.solicitation ? " · " + esc(o.solicitation) : ""}</p>
+      <p class="mt-1 text-xs">${dueLabel(o.deadline)}</p>
+      <div class="mt-2 flex flex-wrap items-center gap-1.5">
+        <select data-stage="${esc(e.id)}" class="rounded border border-slate-300 px-1.5 py-1 text-xs">${boardStages.map((s) => `<option ${s === e.stage ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
+        <button data-bprop="${esc(e.id)}" class="rounded bg-cyan-600 px-2 py-1 text-xs font-semibold text-white hover:bg-cyan-700">Proposal</button>
+        ${o.link ? `<a href="${esc(o.link)}" target="_blank" rel="noopener" class="rounded border border-slate-200 px-2 py-1 text-xs font-semibold text-brand-800 hover:bg-slate-50">View</a>` : ""}
+        <button data-brm="${esc(e.id)}" class="ml-auto rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600" title="Remove from board"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <textarea data-bnote="${esc(e.id)}" rows="1" placeholder="Notes…" class="mt-2 w-full rounded border border-slate-200 px-2 py-1 text-xs">${esc(e.notes || "")}</textarea>
+    </div>`;
+  }
+  function renderBoard() {
+    const el = $("board-pane"); if (!el) return;
+    const active = boardEntries.filter((e) => ["Identified", "Qualifying", "Drafting", "Submitted"].includes(e.stage));
+    const soon = active.filter((e) => { const d = daysTo(e.opportunity && e.opportunity.deadline); return d != null && d >= 0 && d <= 7; }).length;
+    const overdue = active.filter((e) => { const d = daysTo(e.opportunity && e.opportunity.deadline); return d != null && d < 0; }).length;
+    const summary = `<div class="mb-4 flex flex-wrap items-center gap-3 text-sm">
+      <span class="font-semibold text-brand-900">${boardEntries.length} on the board</span>
+      ${soon ? `<span class="rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-800">${soon} closing in ≤ 7 days</span>` : ""}
+      ${overdue ? `<span class="rounded-full bg-red-100 px-3 py-1 font-semibold text-red-700">${overdue} past deadline</span>` : ""}
+      <button id="board-refresh" class="ml-auto font-semibold text-cyan-700 hover:underline">↻ Refresh</button></div>`;
+    if (!boardEntries.length) {
+      el.innerHTML = summary + `<div class="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">No saved bids yet. On the <span class="font-semibold">Find &amp; bid</span> tab, search and click <span class="font-semibold">★ Save to board</span>.</div>`;
+      wireBoard(); return;
+    }
+    const cols = boardStages.map((st) => {
+      const items = boardEntries.filter((e) => e.stage === st);
+      return `<div class="w-72 flex-none">
+        <h3 class="mb-2 flex items-center justify-between text-sm font-semibold text-slate-600">${esc(st)} <span class="rounded-full bg-slate-100 px-2 text-xs">${items.length}</span></h3>
+        <div class="space-y-2">${items.map(boardCard).join("") || `<div class="rounded-xl border border-dashed border-slate-200 p-3 text-center text-xs text-slate-400">—</div>`}</div>
+      </div>`;
+    }).join("");
+    el.innerHTML = summary + `<div class="flex gap-3 overflow-x-auto pb-2">${cols}</div>`;
+    wireBoard();
+  }
+  function wireBoard() {
+    const el = $("board-pane"); if (!el) return;
+    const rf = $("board-refresh"); if (rf) rf.onclick = loadBoard;
+    el.querySelectorAll("[data-stage]").forEach((s) => s.addEventListener("change", async () => { await pipe({ action: "update", id: s.dataset.stage, fields: { stage: s.value } }); await loadBoard(); }));
+    el.querySelectorAll("[data-bprop]").forEach((b) => b.addEventListener("click", () => { const e = boardEntries.find((x) => x.id === b.dataset.bprop); if (e && e.opportunity) openProposal(e.opportunity); }));
+    el.querySelectorAll("[data-brm]").forEach((b) => b.addEventListener("click", async () => { await pipe({ action: "remove", id: b.dataset.brm }); await loadBoard(); }));
+    el.querySelectorAll("[data-bnote]").forEach((t) => t.addEventListener("blur", async () => { await pipe({ action: "update", id: t.dataset.bnote, fields: { notes: t.value } }); }));
+  }
+  function showTab(which) {
+    const sp = $("search-pane"), bp = $("board-pane"), ts = $("tab-search"), tb = $("tab-board");
+    const on = "govtab -mb-px border-b-2 border-cyan-600 px-4 py-2.5 text-sm font-semibold text-cyan-700";
+    const off = "govtab -mb-px border-b-2 border-transparent px-4 py-2.5 text-sm font-semibold text-slate-500 hover:text-cyan-700";
+    if (which === "board") { sp.classList.add("hidden"); bp.classList.remove("hidden"); tb.className = on; ts.className = off; loadBoard(); }
+    else { bp.classList.add("hidden"); sp.classList.remove("hidden"); ts.className = on; tb.className = off; }
   }
 
   function toggleWorkflow(i, o) {
@@ -139,9 +216,10 @@
   let propOpp = null;
   let lastPackage = null; // { opp, parts, full, pageLimit, scopeUsed }
 
-  function fillPartSelect(parts, full) {
+  function fillPartSelect(parts, full, matrixText) {
     const sel = $("prop-part");
     const opts = [{ name: "Full package", content: full }].concat(parts || []);
+    if (matrixText) opts.push({ name: "Compliance Matrix", content: matrixText });
     sel.innerHTML = opts.map((p, i) => `<option value="${i}">${esc(p.name)}</option>`).join("");
     sel.onchange = () => { $("prop-text").value = opts[+sel.value].content; };
     sel.value = "0"; $("prop-text").value = opts[0].content;
@@ -159,13 +237,16 @@
     $("prop-text").value = "Generating a tailored proposal package — writing each volume to your page limit…";
     let scopeText = "", scopeUsed = false;
     try { const s = await propCall({ action: "scope" }); scopeText = (s && s.scopeText) || ""; scopeUsed = !!(s && s.scopeUsed); } catch (e) {}
-    prog.textContent = "Writing all volume sections…";
-    // sections in parallel (each call stays within the function timeout)
-    const secResults = await Promise.all(PROP_SECTIONS.map((sec) =>
-      propCall({ action: "section", section: sec.key, scopeText: scopeText, pageLimit: pageLimit })
-        .then((d) => ({ name: sec.title, content: (d && d.ok && d.content) ? d.content : `[${sec.title} unavailable — click Generate to retry.${d && d.error ? " " + d.error : ""}]` }))
-        .catch(() => ({ name: sec.title, content: `[${sec.title} failed — retry.]` }))
-    ));
+    prog.textContent = "Writing all volume sections + compliance matrix…";
+    // sections + compliance matrix in parallel (each call stays within the function timeout)
+    const [secResults, matrixRows] = await Promise.all([
+      Promise.all(PROP_SECTIONS.map((sec) =>
+        propCall({ action: "section", section: sec.key, scopeText: scopeText, pageLimit: pageLimit })
+          .then((d) => ({ name: sec.title, content: (d && d.ok && d.content) ? d.content : `[${sec.title} unavailable — click Generate to retry.${d && d.error ? " " + d.error : ""}]` }))
+          .catch(() => ({ name: sec.title, content: `[${sec.title} failed — retry.]` }))
+      )),
+      propCall({ action: "matrix", scopeText: scopeText }).then((d) => (d && d.ok && Array.isArray(d.rows)) ? d.rows : []).catch(() => []),
+    ]);
     prog.textContent = "Adding Price volume & forms checklist…";
     let staticParts = [];
     try { const st = await propCall({ action: "static" }); if (st && st.ok) staticParts = [{ name: "Price (Vol III)", content: st.price }, { name: "Forms & Compliance Checklist", content: st.forms }]; } catch (e) {}
@@ -173,9 +254,10 @@
     const parts = secResults.map((p, i) => ({ name: `${i + 1}. ${p.name}`, content: p.content })).concat(staticParts);
     const header = `PROPOSAL PACKAGE — Digital Health International Inc.\nRE: ${propOpp.title || ""} — ${propOpp.agency || ""} (Sol. ${propOpp.solicitation || "—"})\nTarget length: ${pageLimit} pages. ${scopeUsed ? "Tailored to the live SAM.gov solicitation scope." : "Based on opportunity metadata (full solicitation text unavailable)."}\n` + "=".repeat(72);
     const full = [header, ""].concat(parts.map((p) => `\n========== ${p.name.toUpperCase()} ==========\n\n${p.content}`)).join("\n");
-    fillPartSelect(parts, full);
-    lastPackage = { opp: propOpp, parts: parts, full: full, pageLimit: pageLimit, scopeUsed: scopeUsed };
+    fillPartSelect(parts, full, matrixRows && matrixRows.length ? matrixToText(matrixRows) : "");
+    lastPackage = { opp: propOpp, parts: parts, full: full, pageLimit: pageLimit, scopeUsed: scopeUsed, matrix: matrixRows };
     const zb = $("prop-zip"); if (zb) zb.disabled = false;
+    renderMatrix();
     renderCompliance();
     prog.textContent = `Done · ${parts.length} documents` + (scopeUsed ? " · tailored to solicitation" : "");
     regen.disabled = false;
@@ -186,6 +268,7 @@
     $("prop-copied").textContent = "";
     const zb = $("prop-zip"); if (zb) zb.disabled = true;
     const cp = $("prop-compliance"); if (cp) { cp.classList.add("hidden"); cp.innerHTML = ""; }
+    const mx = $("prop-matrix"); if (mx) { mx.classList.add("hidden"); mx.innerHTML = ""; }
     $("prop-modal").classList.remove("hidden");
     generatePackage();
   }
@@ -230,6 +313,9 @@
     if (opp.setAside) add("info", "Eligibility", `Set-aside: ${esc(opp.setAside)}.`, "Attach proof of set-aside eligibility (SBA / VetCert / 8(a) / HUBZone).");
     add("info", "Registrations", "Active SAM.gov registration + Reps & Certs required.", "Verify UEI/CAGE active and Reps & Certs current in SAM.gov.");
     add("info", "Human review", "AI-assisted draft — must be reviewed by a person.", "A capture/contracts lead reviews every volume before submission.");
+    const mx = (pkg.matrix || []).length;
+    if (mx) add("info", "Compliance matrix", `${mx} requirements extracted (Section L / M / SOW).`, "Confirm each requirement is addressed in its mapped volume; matrix is in the package.");
+    else add("warn", "Compliance matrix", "No requirements matrix generated.", "Click Generate to build the Section L/M compliance matrix.");
     return F;
   }
 
@@ -250,6 +336,29 @@
     const rows = F.slice().sort((a, b) => order[a.level] - order[b.level]).map((f) =>
       `<li class="flex gap-2 py-1.5"><span class="mt-0.5 flex-none">${chip(f.level)}</span><span><span class="font-medium text-slate-700">${esc(f.doc)}:</span> ${f.msg} <span class="text-slate-400">— ${esc(f.fix)}</span></span></li>`).join("");
     el.innerHTML = `${banner}<ul class="mt-2 divide-y divide-slate-100 text-sm text-slate-600">${rows}</ul>`;
+    el.classList.remove("hidden");
+  }
+
+  // --- requirements compliance matrix (Section L / M / SOW) ------------------
+  function matrixToText(rows) {
+    if (!rows || !rows.length) return "Compliance matrix unavailable — click Generate to retry.";
+    return "REQUIREMENTS COMPLIANCE MATRIX\n" + "=".repeat(64) + "\n\n" +
+      rows.map((r, i) => `${String(r.ref || ("R-" + (i + 1))).padEnd(8)} [${r.source || "SOW"}]  ${r.requirement}\n${" ".repeat(10)}→ ${r.volume}   |   ${r.compliance}`).join("\n\n");
+  }
+  function matrixToHtmlTable(rows) {
+    return `<h2>Requirements Compliance Matrix</h2><table border="1" cellspacing="0" cellpadding="4"><tr><th>Ref</th><th>Source</th><th>Requirement</th><th>Addressed in</th><th>Compliance</th></tr>${rows.map((r) => `<tr><td>${esc(r.ref)}</td><td>${esc(r.source)}</td><td>${esc(r.requirement)}</td><td>${esc(r.volume)}</td><td>${esc(r.compliance)}</td></tr>`).join("")}</table>`;
+  }
+  function matrixToCsv(rows) {
+    const q = (s) => '"' + String(s == null ? "" : s).replace(/"/g, '""') + '"';
+    return ["Ref,Source,Requirement,Addressed In,Compliance"].concat(rows.map((r) => [r.ref, r.source, r.requirement, r.volume, r.compliance].map(q).join(","))).join("\r\n");
+  }
+  function renderMatrix() {
+    const el = $("prop-matrix"); if (!el) return;
+    const rows = (lastPackage && lastPackage.matrix) || [];
+    if (!rows.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+    el.innerHTML = `<details class="rounded-lg border border-slate-200 bg-white">
+      <summary class="cursor-pointer px-3 py-2 text-sm font-semibold text-brand-900">Requirements compliance matrix — ${rows.length} requirements</summary>
+      <div class="max-h-72 overflow-auto px-3 pb-3"><table class="w-full text-xs"><thead><tr class="text-left text-slate-400"><th class="py-1 pr-2">Ref</th><th class="pr-2">Src</th><th class="pr-2">Requirement</th><th class="pr-2">Volume</th><th>Status</th></tr></thead><tbody>${rows.map((r) => `<tr class="border-t border-slate-100 align-top"><td class="py-1 pr-2 font-mono">${esc(r.ref)}</td><td class="pr-2">${esc(r.source)}</td><td class="pr-2 text-slate-600">${esc(r.requirement)}</td><td class="pr-2 text-slate-500">${esc(r.volume)}</td><td class="text-slate-500">${esc(r.compliance)}</td></tr>`).join("")}</tbody></table></div></details>`;
     el.classList.remove("hidden");
   }
 
@@ -294,9 +403,10 @@
       "05_Volume-II_Past-Performance-Key-Personnel.doc",
     ];
     const findings = pkg.findings || analyzeCompliance(pkg);
+    const hasMatrix = pkg.matrix && pkg.matrix.length;
     // README / manifest
     const today = new Date().toLocaleString();
-    const fileList = ["00_COMPLIANCE-REPORT.txt"].concat(names).concat(["06_Volume-III_Price-Cost-Proposal.doc", "07_Forms-and-Compliance-Checklist.doc"]);
+    const fileList = ["00_COMPLIANCE-REPORT.txt"].concat(hasMatrix ? ["00_Compliance-Matrix.doc"] : []).concat(names).concat(["06_Volume-III_Price-Cost-Proposal.doc", "07_Forms-and-Compliance-Checklist.doc"]);
     put("00_README.txt", [
       "DHI PROPOSAL — SUBMISSION PACKAGE (DRAFT)",
       "=".repeat(56), "",
@@ -336,6 +446,11 @@
       ...["blocker", "warn", "info"].flatMap((lv) => findings.filter((f) => f.level === lv).map((f) => `${sev[lv]} ${f.doc}: ${f.msg}\n          ↳ ${f.fix}`)),
       "", "This automated check is a safety net, not a substitute for human review.",
     ].join("\n"));
+    // compliance matrix → .doc table + .csv
+    if (hasMatrix) {
+      put("00_Compliance-Matrix.doc", wordDoc("Requirements Compliance Matrix", matrixToHtmlTable(pkg.matrix)));
+      put("00_Compliance-Matrix.csv", matrixToCsv(pkg.matrix));
+    }
     // narrative volumes → .doc
     pkg.parts.forEach((p, idx) => {
       if (idx < names.length) put(names[idx], wordDoc(p.name, mdToHtml(p.content)));
@@ -390,6 +505,9 @@
     $("prop-regen").addEventListener("click", generatePackage);
     const pz = $("prop-zip"); if (pz) pz.addEventListener("click", downloadPackage);
     const pc = $("prop-check"); if (pc) pc.addEventListener("click", renderCompliance);
+    const pbd = $("prop-board"); if (pbd) pbd.addEventListener("click", () => saveToBoard(propOpp, pbd));
+    const ts = $("tab-search"); if (ts) ts.addEventListener("click", () => showTab("search"));
+    const tbb = $("tab-board"); if (tbb) tbb.addEventListener("click", () => showTab("board"));
     const rb = $("refresh");
     if (rb) rb.addEventListener("click", async () => {
       const st = $("refresh-status"); st.textContent = "Refreshing from SAM.gov…"; rb.disabled = true;

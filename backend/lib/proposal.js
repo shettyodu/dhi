@@ -81,15 +81,17 @@ async function fetchScope(link) {
   } catch (e) { return ""; } finally { clearTimeout(timer); }
 }
 
-async function callOpenAI(system, user, maxTokens) {
+async function callOpenAI(system, user, maxTokens, jsonMode) {
   if (!API_KEY) return null;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
+    const payload = { model: MODEL, messages: [{ role: "system", content: system }, { role: "user", content: user }], temperature: 0.4, max_tokens: maxTokens };
+    if (jsonMode) payload.response_format = { type: "json_object" };
     const res = await fetch(`${BASE}/chat/completions`, {
       method: "POST",
       headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: MODEL, messages: [{ role: "system", content: system }, { role: "user", content: user }], temperature: 0.4, max_tokens: maxTokens }),
+      body: JSON.stringify(payload),
       signal: ctrl.signal,
     });
     if (!res.ok) return null;
@@ -154,4 +156,32 @@ function staticVolumes(opportunity) {
   return { status: 200, json: { ok: true, price: pricingVolume(profile, o), forms: formsChecklist(o) } };
 }
 
-module.exports = { fetchScope, generateSection, staticVolumes, SECTIONS, verticalForNaics };
+// ---- Requirements compliance matrix (Section L / M / SOW → volume → status) --
+async function generateComplianceMatrix(opportunity, scopeText) {
+  const o = opportunity || {};
+  const system =
+    "You are a U.S. Government proposal compliance manager for Digital Health International Inc. " +
+    "Build a REQUIREMENTS COMPLIANCE MATRIX from the solicitation — the cross-reference a source-selection board uses to confirm a proposal addresses every requirement. Output STRICT JSON only.";
+  const user =
+    `Produce a compliance matrix as JSON of the form: {"rows":[{"ref":"L-1","source":"L","requirement":"<concise, specific requirement>","volume":"<where DHI addresses it: Vol I Technical | Vol II Management | Vol III Price | Forms/Reps & Certs>","compliance":"Comply"}]}.\n` +
+    `- Cover Section L (proposal instructions/format/page limits), Section M (evaluation factors/subfactors), and the key SOW/PWS tasks & deliverables.\n` +
+    `- 14–24 rows, most heavily-weighted or mandatory first; each requirement specific and traceable.\n` +
+    `- "compliance" defaults to "Comply"; use "Comply with exception" only when clearly warranted.\n` +
+    `- If the scope text is thin, infer the standard requirements for this opportunity type & NAICS.\n\n` +
+    `SOLICITATION\n${oppSheet(o)}\n\nSCOPE (verbatim excerpt)\n${(scopeText || "(metadata only — infer standard requirements)").slice(0, 7000)}`;
+  const content = await callOpenAI(system, user, 1900, true);
+  let rows = [];
+  if (content) {
+    try { const j = JSON.parse(content); rows = Array.isArray(j) ? j : (j.rows || j.matrix || []); } catch (e) { rows = []; }
+  }
+  rows = (Array.isArray(rows) ? rows : []).filter((r) => r && (r.requirement || r.req)).map((r, i) => ({
+    ref: String(r.ref || r.id || `R-${i + 1}`).slice(0, 12),
+    source: String(r.source || "SOW").toUpperCase().replace(/[^A-Z&/ -]/g, "").slice(0, 6) || "SOW",
+    requirement: String(r.requirement || r.req || "").replace(/\s+/g, " ").trim().slice(0, 400),
+    volume: String(r.volume || r.section || "Vol I Technical").slice(0, 60),
+    compliance: String(r.compliance || "Comply").slice(0, 40),
+  }));
+  return { status: 200, json: { ok: true, ai: !!API_KEY, rows } };
+}
+
+module.exports = { fetchScope, generateSection, staticVolumes, generateComplianceMatrix, SECTIONS, verticalForNaics };
