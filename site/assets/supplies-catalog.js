@@ -35,14 +35,23 @@
     "Covers & Caps":       { blurb: "Bouffants, head, shoe, boot & sleeve covers." },
     "Masks & Respirators": { blurb: "Type II / IIR masks and N95 / KN95 respirators." },
     "Safety / PPE Packs":  { blurb: "Bundled PPE and safety kits." },
+    "Surgical Equipment Drapes": { blurb: "Sterile covers for microscopes, C-arms & instruments." },
+    "OR Accessories":      { blurb: "Leggings, stockinette, tapes, table & Mayo covers." },
+    "Gloves":              { blurb: "Disposable examination & procedure gloves." },
+    "Face Shields & Eye Protection": { blurb: "Visors, goggles & mask-shields." },
+    "Patient Kits & Bedding": { blurb: "Admission/visitor kits, blankets & pillows." },
+    "Underpads":           { blurb: "Disposable underpads & training pads." },
+    "Hand Sanitizer & Hygiene": { blurb: "Alcohol hand gel, wipes & dispensers." },
   };
   const DEPARTMENTS = [
-    { name: "Surgical & OR", cats: ["Surgical Gowns", "Surgical Drapes", "OT Packs"] },
-    { name: "Apparel & Protection", cats: ["Gowns", "Scrubs", "Coveralls", "Covers & Caps"] },
-    { name: "Face & Respiratory", cats: ["Masks & Respirators"] },
+    { name: "Surgical & OR", cats: ["Surgical Gowns", "Surgical Drapes", "OT Packs", "Surgical Equipment Drapes", "OR Accessories"] },
+    { name: "Apparel & Protection", cats: ["Gowns", "Scrubs", "Coveralls", "Covers & Caps", "Gloves"] },
+    { name: "Face & Respiratory", cats: ["Masks & Respirators", "Face Shields & Eye Protection"] },
+    { name: "Patient Care", cats: ["Patient Kits & Bedding", "Underpads"] },
+    { name: "Hygiene & Disinfection", cats: ["Hand Sanitizer & Hygiene"] },
     { name: "Safety & PPE Kits", cats: ["Safety / PPE Packs"] },
   ];
-  const COMING_SOON = ["Surgical Instruments & Tools", "Wound Care & Dressings", "Textiles & Linens", "Exam & Surgical Gloves", "Exam Room Supplies", "Sterilization & Infection Prevention"];
+  const COMING_SOON = ["Surgical Instruments & Tools", "Wound Care & Dressings", "Textiles & Linens", "Exam Room Supplies", "Sterilization & Infection Prevention"];
 
   const byId = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
   const catCount = (c) => PRODUCTS.filter((p) => p.cat === c).length;
@@ -69,20 +78,24 @@
       body = `<rect x="38" y="34" width="124" height="92" rx="6" fill="${fl}"/><path d="M72 34V126M128 34V126" stroke="${ac}" opacity=".35"/><ellipse cx="100" cy="82" rx="29" ry="19" fill="none" stroke="${ac}" stroke-dasharray="3 3"/><ellipse cx="100" cy="82" rx="20" ry="12" fill="#fff" stroke="${st}"/>`;
     } else if (C.indexOf("coverall") >= 0) {
       body = `<ellipse cx="100" cy="34" rx="15" ry="14" fill="${sf}"/><path d="M82 46h36l9 13-7 9-7-5v23h-30V63l-7 5-7-9z" fill="${fl}"/><path d="M86 84h28v50h-11l-3-32-3 32H86z" fill="${fl}"/><path d="M100 50V128" stroke="${ac}" stroke-dasharray="3 3"/>`;
+    } else if (C.indexOf("shield") >= 0 || C.indexOf("eye protection") >= 0) {
+      body = `<rect x="56" y="52" width="88" height="12" rx="6" fill="${sf}"/><path d="M58 64q42 14 84 0l-7 52q-35 15 -70 0z" fill="${fl}" opacity=".75" stroke="${st}"/><path d="M78 78q22 8 44 0" stroke="${ac}" opacity=".5" fill="none"/>`;
     } else if (C.indexOf("mask") >= 0 || C.indexOf("respirator") >= 0 || C.indexOf("face") >= 0) {
       body = `<path d="M58 64q-16 18 0 36" fill="none"/><path d="M142 64q16 18 0 36" fill="none"/><rect x="58" y="58" width="84" height="46" rx="11" fill="${fl}"/><path d="M76 58q24-9 48 0" fill="none"/><path d="M58 72h84M58 81h84M58 90h84" stroke="${ac}" opacity=".5"/>`;
     } else if (C.indexOf("cap") >= 0 || C.indexOf("cover") >= 0) {
       body = `<path d="M50 98a50 42 0 0 1 100 0z" fill="${fl}"/><path d="M50 98q50 20 100 0" fill="${sf}"/><path d="M70 60q5 30 0 38M100 52v46M130 60q-5 30 0 38" fill="none" stroke="${ac}" opacity=".4"/>`;
     } else if (C.indexOf("scrub") >= 0) {
       body = `<path d="M64 56l-19 13 9 19 16-8" fill="${sf}"/><path d="M136 56l19 13-9 19-16-8" fill="${sf}"/><path d="M64 52h72l7 78q-43 11-86 0z" fill="${fl}"/><path d="M85 52l15 23 15-23" fill="#fff"/><rect x="106" y="92" width="22" height="22" rx="2" fill="none" stroke="${ac}"/>`;
-    } else if (C.indexOf("pack") >= 0 || C.indexOf("kit") >= 0) {
+    } else if (C.indexOf("pack") >= 0 || C.indexOf("kit") >= 0 || C.indexOf("accessor") >= 0) {
       body = `<rect x="44" y="44" width="112" height="78" rx="7" fill="${fl}"/><path d="M44 50L100 86 156 50" fill="none"/><path d="M44 116L100 84 156 116" fill="none" stroke="${ac}" opacity=".5"/><rect x="88" y="38" width="24" height="13" rx="2" fill="${ac}"/><rect x="86" y="92" width="28" height="22" rx="3" fill="#fff" stroke="${st}"/><path d="M100 97v12M94 103h12" stroke="${st}"/>`;
     } else if (C.indexOf("tool") >= 0 || C.indexOf("instrument") >= 0) {
       body = `<path d="M70 40l18 18-30 64-10-4 22-60-10-10z" fill="${fl}"/><circle cx="132" cy="56" r="14" fill="none" stroke="${st}"/><circle cx="150" cy="74" r="14" fill="none" stroke="${st}"/><path d="M124 64l-44 60-10-4 44-60z" fill="${sf}"/>`;
     } else if (C.indexOf("wound") >= 0 || C.indexOf("dressing") >= 0) {
       body = `<rect x="48" y="60" width="104" height="44" rx="8" fill="${fl}" transform="rotate(-12 100 82)"/><rect x="84" y="74" width="32" height="16" rx="3" fill="#fff" stroke="${st}" transform="rotate(-12 100 82)"/><path d="M70 70l8 6M122 88l8 6" stroke="${ac}"/>`;
-    } else if (C.indexOf("textile") >= 0 || C.indexOf("linen") >= 0) {
+    } else if (C.indexOf("textile") >= 0 || C.indexOf("linen") >= 0 || C.indexOf("pad") >= 0 || C.indexOf("bedding") >= 0) {
       body = `<path d="M46 56q14-10 28 0t28 0 28 0 24 0v66q-14 8-26 0t-28 0-28 0-26 0z" fill="${fl}"/><path d="M46 78q27 10 108 0M46 100q27 10 108 0" stroke="${ac}" opacity=".4" fill="none"/>`;
+    } else if (C.indexOf("sanitiz") >= 0 || C.indexOf("hygiene") >= 0) {
+      body = `<rect x="82" y="62" width="36" height="60" rx="6" fill="${fl}"/><rect x="90" y="50" width="20" height="14" rx="3" fill="${sf}"/><path d="M86 44h22l-5 7h-12z" fill="${ac}"/><rect x="108" y="45" width="14" height="5" rx="2" fill="${ac}"/><rect x="88" y="82" width="24" height="26" rx="2" fill="#fff" stroke="${st}"/><path d="M100 90v10M95 95h10" stroke="${ac}"/>`;
     } else if (C.indexOf("glove") >= 0) {
       body = `<path d="M78 120V74q0-6 6-6t6 6v-8q0-6 6-6t6 6v6q0-6 6-6t6 6v6q0-5 6-5t6 5v34q0 18-16 18z" fill="${fl}"/><path d="M84 70v18M96 64v22M108 64v22M120 70v18" stroke="${ac}" opacity=".4"/>`;
     } else if (C.indexOf("exam") >= 0) {
