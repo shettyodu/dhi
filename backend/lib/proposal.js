@@ -101,12 +101,13 @@ async function callOpenAI(system, user, maxTokens, jsonMode) {
 }
 
 // ---- generate ONE volume section (sized to its page budget) -----------------
-async function generateSection(opportunity, sectionKey, scopeText, pageLimit) {
+async function generateSection(opportunity, sectionKey, scopeText, pageLimit, answers) {
   const o = opportunity || {};
   const { profile } = profileAndVertical(o);
   if (!profile) return { status: 422, json: { ok: false, error: "No DHI vertical matches this opportunity's NAICS." } };
   const section = SECTIONS.find((s) => s.key === sectionKey);
   if (!section) return { status: 400, json: { ok: false, error: "Unknown section" } };
+  const ans = (answers && String(answers).trim()) ? String(answers).trim().slice(0, 6000) : "";
 
   const limit = Math.max(6, Math.min(40, parseInt(pageLimit, 10) || DEFAULT_TOTAL_PAGES));
   const pageBudget = Math.max(1, Math.round(section.pages * (limit / DEFAULT_TOTAL_PAGES)));
@@ -115,12 +116,14 @@ async function generateSection(opportunity, sectionKey, scopeText, pageLimit) {
   const system =
     "You are a senior U.S. Government proposal writer for Digital Health International Inc. (DHI). Write ONE section of a formal proposal at the depth and rigor a source-selection board expects. " +
     "Use ONLY the DHI facts, partners, products, and standards provided — invent NO certifications, past performance, customers, or specific prices. " +
+    (ans ? "The CONTRACTOR-PROVIDED INFORMATION below is verified input from the bidder — USE IT to replace [bracketed placeholders] with that real content. Do not invent beyond it or the DHI facts; leave a [PLACEHOLDER] only where the answer is still genuinely unknown. " : "") +
     (scopeText ? "Tailor the content specifically to the SOLICITATION SCOPE provided and make it traceable to its requirements. " : "") +
     "Use [BRACKETED PLACEHOLDERS] for unknowns. Use clear headings/sub-headings, tables where useful, and complete paragraphs — substantive, no filler or padding.";
   const user =
     `WRITE ONLY THIS SECTION: ${section.title}\nTarget length: about ${pageBudget} page(s) (~${pageBudget * WORDS_PER_PAGE} words) — be thorough but do not pad.\nSECTION INSTRUCTIONS: ${section.ask}\n\n` +
     `SOLICITATION\n${oppSheet(o)}\n\n` +
     (scopeText ? `SOLICITATION SCOPE (verbatim excerpt — tailor to this)\n${scopeText}\n\n` : "") +
+    (ans ? `CONTRACTOR-PROVIDED INFORMATION (verified bidder input — use to fill placeholders with real specifics)\n${ans}\n\n` : "") +
     `DHI CORPORATE FACTS\n${corpSheet()}\n\nMATCHED CAPABILITY — ${profile.label}\n${factSheet(profile)}\n`;
 
   let content = await callOpenAI(system, user, maxTokens);
@@ -184,4 +187,29 @@ async function generateComplianceMatrix(opportunity, scopeText) {
   return { status: 200, json: { ok: true, ai: !!API_KEY, rows } };
 }
 
-module.exports = { fetchScope, generateSection, staticVolumes, generateComplianceMatrix, SECTIONS, verticalForNaics };
+// ---- "What do you need from me?" — info-request questionnaire for the bidder -
+async function generateInfoRequests(opportunity, scopeText) {
+  const o = opportunity || {};
+  const { profile } = profileAndVertical(o);
+  const system =
+    "You are a U.S. Government proposal manager for Digital Health International Inc. " +
+    "List the specific information you must collect FROM THE BIDDING CONTRACTOR to finish a compliant proposal — ONLY things an AI cannot know or should not invent. Output STRICT JSON only.";
+  const user =
+    `Return JSON {"groups":[{"category":"<Company & Eligibility | Past Performance | Key Personnel | Pricing | Technical specifics>","items":[{"id":"pp1","question":"<plain-English question the contractor can answer>","hint":"<what a good answer looks like>"}]}]}.\n` +
+    `Tailor to THIS solicitation. Cover, as relevant: company registrations (UEI/CAGE) and set-aside eligibility/certifications; past-performance references (contract #, value, period of performance, client POC); key personnel (names, roles, résumés, clearances); pricing inputs (CLIN quantities, partner quotes, labor); and any solicitation-specific technical details the bidder must supply. 10–18 concise questions spread across the groups.\n\n` +
+    `SOLICITATION\n${oppSheet(o)}\nMATCHED CAPABILITY: ${profile ? profile.label : "—"}\n\nSCOPE\n${(scopeText || "(metadata only — infer the standard inputs for this type/NAICS)").slice(0, 6000)}`;
+  const content = await callOpenAI(system, user, 1500, true);
+  let groups = [];
+  if (content) { try { const j = JSON.parse(content); groups = j.groups || (Array.isArray(j) ? j : []); } catch (e) { groups = []; } }
+  groups = (Array.isArray(groups) ? groups : []).map((g, gi) => ({
+    category: String(g.category || `Group ${gi + 1}`).slice(0, 80),
+    items: (Array.isArray(g.items) ? g.items : []).map((it, ii) => ({
+      id: (String(it.id || "").replace(/[^a-z0-9_]/gi, "").slice(0, 24)) || `q${gi}_${ii}`,
+      question: String(it.question || it.q || "").replace(/\s+/g, " ").trim().slice(0, 300),
+      hint: String(it.hint || "").replace(/\s+/g, " ").trim().slice(0, 200),
+    })).filter((it) => it.question),
+  })).filter((g) => g.items.length);
+  return { status: 200, json: { ok: true, ai: !!API_KEY, groups } };
+}
+
+module.exports = { fetchScope, generateSection, staticVolumes, generateComplianceMatrix, generateInfoRequests, SECTIONS, verticalForNaics };

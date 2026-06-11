@@ -214,7 +214,8 @@
     { key: "pastperf", title: "Past Performance & Key Personnel" },
   ];
   let propOpp = null;
-  let lastPackage = null; // { opp, parts, full, pageLimit, scopeUsed }
+  let lastPackage = null; // { opp, parts, full, pageLimit, scopeUsed, matrix, scopeText, answers }
+  let propAnswers = "";   // contractor-provided answers woven into the volumes
 
   function fillPartSelect(parts, full, matrixText) {
     const sel = $("prop-part");
@@ -241,7 +242,7 @@
     // sections + compliance matrix in parallel (each call stays within the function timeout)
     const [secResults, matrixRows] = await Promise.all([
       Promise.all(PROP_SECTIONS.map((sec) =>
-        propCall({ action: "section", section: sec.key, scopeText: scopeText, pageLimit: pageLimit })
+        propCall({ action: "section", section: sec.key, scopeText: scopeText, pageLimit: pageLimit, answers: propAnswers })
           .then((d) => ({ name: sec.title, content: (d && d.ok && d.content) ? d.content : `[${sec.title} unavailable — click Generate to retry.${d && d.error ? " " + d.error : ""}]` }))
           .catch(() => ({ name: sec.title, content: `[${sec.title} failed — retry.]` }))
       )),
@@ -255,7 +256,7 @@
     const header = `PROPOSAL PACKAGE — Digital Health International Inc.\nRE: ${propOpp.title || ""} — ${propOpp.agency || ""} (Sol. ${propOpp.solicitation || "—"})\nTarget length: ${pageLimit} pages. ${scopeUsed ? "Tailored to the live SAM.gov solicitation scope." : "Based on opportunity metadata (full solicitation text unavailable)."}\n` + "=".repeat(72);
     const full = [header, ""].concat(parts.map((p) => `\n========== ${p.name.toUpperCase()} ==========\n\n${p.content}`)).join("\n");
     fillPartSelect(parts, full, matrixRows && matrixRows.length ? matrixToText(matrixRows) : "");
-    lastPackage = { opp: propOpp, parts: parts, full: full, pageLimit: pageLimit, scopeUsed: scopeUsed, matrix: matrixRows };
+    lastPackage = { opp: propOpp, parts: parts, full: full, pageLimit: pageLimit, scopeUsed: scopeUsed, matrix: matrixRows, scopeText: scopeText, answers: propAnswers };
     const zb = $("prop-zip"); if (zb) zb.disabled = false;
     renderMatrix();
     renderCompliance();
@@ -269,6 +270,9 @@
     const zb = $("prop-zip"); if (zb) zb.disabled = true;
     const cp = $("prop-compliance"); if (cp) { cp.classList.add("hidden"); cp.innerHTML = ""; }
     const mx = $("prop-matrix"); if (mx) { mx.classList.add("hidden"); mx.innerHTML = ""; }
+    propAnswers = "";
+    const nd = $("prop-needs"); if (nd) { nd.classList.add("hidden"); nd.innerHTML = ""; }
+    const nst = $("prop-needs-status"); if (nst) nst.textContent = "";
     $("prop-modal").classList.remove("hidden");
     generatePackage();
   }
@@ -316,6 +320,7 @@
     const mx = (pkg.matrix || []).length;
     if (mx) add("info", "Compliance matrix", `${mx} requirements extracted (Section L / M / SOW).`, "Confirm each requirement is addressed in its mapped volume; matrix is in the package.");
     else add("warn", "Compliance matrix", "No requirements matrix generated.", "Click Generate to build the Section L/M compliance matrix.");
+    if ((pkg.answers || "").trim()) add("info", "Bidder input", "Contractor-provided information was woven into the volumes.", "Verify the inserted specifics are accurate before submission.");
     return F;
   }
 
@@ -404,9 +409,10 @@
     ];
     const findings = pkg.findings || analyzeCompliance(pkg);
     const hasMatrix = pkg.matrix && pkg.matrix.length;
+    const hasAnswers = pkg.answers && pkg.answers.trim();
     // README / manifest
     const today = new Date().toLocaleString();
-    const fileList = ["00_COMPLIANCE-REPORT.txt"].concat(hasMatrix ? ["00_Compliance-Matrix.doc"] : []).concat(names).concat(["06_Volume-III_Price-Cost-Proposal.doc", "07_Forms-and-Compliance-Checklist.doc"]);
+    const fileList = ["00_COMPLIANCE-REPORT.txt"].concat(hasMatrix ? ["00_Compliance-Matrix.doc"] : []).concat(hasAnswers ? ["00_Information-Provided.txt"] : []).concat(names).concat(["06_Volume-III_Price-Cost-Proposal.doc", "07_Forms-and-Compliance-Checklist.doc"]);
     put("00_README.txt", [
       "DHI PROPOSAL — SUBMISSION PACKAGE (DRAFT)",
       "=".repeat(56), "",
@@ -451,6 +457,7 @@
       put("00_Compliance-Matrix.doc", wordDoc("Requirements Compliance Matrix", matrixToHtmlTable(pkg.matrix)));
       put("00_Compliance-Matrix.csv", matrixToCsv(pkg.matrix));
     }
+    if (hasAnswers) put("00_Information-Provided.txt", "CONTRACTOR-PROVIDED INFORMATION\n" + "=".repeat(56) + "\n\n" + pkg.answers + "\n\n(These answers were woven into the volumes above — verify before submission.)");
     // narrative volumes → .doc
     pkg.parts.forEach((p, idx) => {
       if (idx < names.length) put(names[idx], wordDoc(p.name, mdToHtml(p.content)));
@@ -492,6 +499,44 @@
     setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
   }
 
+  // ---------- "what do you need from me?" — info-request gap-fill loop --------
+  async function loadInfoRequests() {
+    if (!propOpp) return;
+    const btn = $("prop-needs-btn"), st = $("prop-needs-status");
+    if (btn) btn.disabled = true; if (st) st.textContent = "Preparing your information request…";
+    const scopeText = (lastPackage && lastPackage.scopeText) || "";
+    let groups = [];
+    try { const d = await propCall({ action: "questions", scopeText: scopeText }); if (d && d.ok && Array.isArray(d.groups)) groups = d.groups; } catch (e) {}
+    renderNeeds(groups);
+    if (btn) btn.disabled = false; if (st) st.textContent = "";
+  }
+  function renderNeeds(groups) {
+    const el = $("prop-needs"); if (!el) return;
+    if (!groups || !groups.length) { el.innerHTML = `<p class="text-sm text-slate-500">No additional information needed right now — generate the package first, or the AI already has what it needs.</p>`; el.classList.remove("hidden"); return; }
+    el.innerHTML = `<div class="rounded-xl border border-cyan-200 bg-cyan-50/40 p-4">
+      <p class="text-sm font-semibold text-brand-900">To complete your bid, please provide:</p>
+      <p class="mt-0.5 text-xs text-slate-500">The AI fills the rest. Leave blank anything you don't have yet — those stay as [placeholders] for later.</p>
+      ${groups.map((g) => `<div class="mt-3"><p class="text-xs font-semibold uppercase tracking-wide text-cyan-700">${esc(g.category)}</p>
+        <div class="mt-1.5 space-y-2">${g.items.map((it) => `<label class="block"><span class="text-sm text-slate-700">${esc(it.question)}</span>${it.hint ? `<span class="block text-xs text-slate-400">${esc(it.hint)}</span>` : ""}<textarea data-need="${esc(it.id)}" data-q="${esc(it.question)}" rows="1" class="g-in mt-1"></textarea></label>`).join("")}</div></div>`).join("")}
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <button id="prop-needs-go" class="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700">Complete my bid with these answers</button>
+        <span id="prop-needs-go-status" class="text-sm text-slate-500"></span>
+      </div></div>`;
+    el.classList.remove("hidden");
+    if (propAnswers) el.querySelectorAll("[data-need]").forEach((f) => { const blk = propAnswers.split("\n\n").find((b) => b.indexOf(f.dataset.q + "\n") === 0); if (blk) f.value = blk.split("\n→ ").slice(1).join("\n→ "); });
+    const go = $("prop-needs-go"); if (go) go.addEventListener("click", completeBid);
+  }
+  async function completeBid() {
+    const el = $("prop-needs"); if (!el) return;
+    const answered = [...el.querySelectorAll("[data-need]")].filter((f) => f.value.trim());
+    const gs = $("prop-needs-go-status");
+    if (!answered.length) { if (gs) gs.textContent = "Enter at least one answer first."; return; }
+    propAnswers = answered.map((f) => `${f.dataset.q}\n→ ${f.value.trim()}`).join("\n\n");
+    if (gs) gs.textContent = "Completing your bid with your answers…";
+    await generatePackage();
+    if (gs) gs.textContent = `Done — ${answered.length} answer${answered.length > 1 ? "s" : ""} woven in. Review the updated volumes.`;
+  }
+
   // ---------- wire up ----------
   function init() {
     if (secret) { showTool(); } // re-validates via verticals call; if 401, user can re-enter below
@@ -506,6 +551,7 @@
     const pz = $("prop-zip"); if (pz) pz.addEventListener("click", downloadPackage);
     const pc = $("prop-check"); if (pc) pc.addEventListener("click", renderCompliance);
     const pbd = $("prop-board"); if (pbd) pbd.addEventListener("click", () => saveToBoard(propOpp, pbd));
+    const pnb = $("prop-needs-btn"); if (pnb) pnb.addEventListener("click", loadInfoRequests);
     const ts = $("tab-search"); if (ts) ts.addEventListener("click", () => showTab("search"));
     const tbb = $("tab-board"); if (tbb) tbb.addEventListener("click", () => showTab("board"));
     const rb = $("refresh");

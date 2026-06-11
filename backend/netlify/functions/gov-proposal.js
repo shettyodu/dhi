@@ -7,7 +7,7 @@
      { action: "section", opportunity, section, scopeText, pageLimit } → one volume section
      { action: "static",  opportunity }                       → { price, forms }
    Auth: header x-dhi-admin: <ADMIN_SECRET> (fail-closed). */
-const { fetchScope, generateSection, staticVolumes, generateComplianceMatrix } = require("../../lib/proposal");
+const { fetchScope, generateSection, staticVolumes, generateComplianceMatrix, generateInfoRequests } = require("../../lib/proposal");
 
 const cors = {
   "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
@@ -36,14 +36,18 @@ exports.handler = async (event) => {
       return json(r.status, r.json);
     }
     if (body.action === "section") {
-      const r = await generateSection(o, body.section, body.scopeText || "", body.pageLimit);
+      const r = await generateSection(o, body.section, body.scopeText || "", body.pageLimit, body.answers || "");
       return json(r.status, r.json);
     }
     if (body.action === "matrix") {
       const r = await generateComplianceMatrix(o, body.scopeText || "");
       return json(r.status, r.json);
     }
-    return json(400, { error: "Unknown action (use scope | section | static | matrix)" });
+    if (body.action === "questions") {
+      const r = await generateInfoRequests(o, body.scopeText || "");
+      return json(r.status, r.json);
+    }
+    return json(400, { error: "Unknown action (use scope | section | static | matrix | questions)" });
   } catch (e) {
     console.error("gov-proposal error:", e.message);
     return json(500, { error: "Proposal generation failed" });
