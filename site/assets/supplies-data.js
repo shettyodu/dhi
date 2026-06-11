@@ -4,32 +4,32 @@
    Box-unit items priced per box; ambiguous KN95 lines are quote-only (p=null). */
 const SUPPLIES_PRODUCTS = [
   // ---- Coveralls ----
-  { id: "DHI-CVL-001",   t: "Coverall — Type 5-B / 6-B (AAMI Level 3)", cat: "Coveralls", group: "Protective coverall", unit: "each", p: 4.94, img: "assets/img/products/supply-coverall.jpg", specs: "55 GSM (PP+PE) · White · 60/box · AAMI Level 3" },
-  { id: "DHI-CVL-002",   t: "Reinforced Coverall — Type 3-B / 4-B (AAMI Level 3)", cat: "Coveralls", group: "Reinforced coverall", unit: "each", p: 8.99, img: "assets/img/products/supply-coverall.jpg", specs: "55 GSM (PP+PE) · White · 60/box · reinforced seams" },
-  { id: "DHI-CVL-003",  t: "RED-ZONE Coverall — Type 3-B / 4-B + Boot Cover", cat: "Coveralls", group: "Reinforced coverall + boot", unit: "each", p: 10.99, img: "assets/img/products/supply-coverall.jpg", specs: "55 GSM (PP+PE) · White · 60/box · integrated boot cover" },
+  { id: "DHI-CVL-001",   t: "Coverall — Type 5-B / 6-B (AAMI Level 3)", cat: "Coveralls", group: "Protective coverall", unit: "each", p: 4.94, img: "assets/img/products/supply-DHI-CVL-001.png", specs: "55 GSM (PP+PE) · White · 60/box · AAMI Level 3" },
+  { id: "DHI-CVL-002",   t: "Reinforced Coverall — Type 3-B / 4-B (AAMI Level 3)", cat: "Coveralls", group: "Reinforced coverall", unit: "each", p: 8.99, img: "", specs: "55 GSM (PP+PE) · White · 60/box · reinforced seams" },
+  { id: "DHI-CVL-003",  t: "RED-ZONE Coverall — Type 3-B / 4-B + Boot Cover", cat: "Coveralls", group: "Reinforced coverall + boot", unit: "each", p: 10.99, img: "", specs: "55 GSM (PP+PE) · White · 60/box · integrated boot cover" },
   // ---- Gowns ----
-  { id: "DHI-GWN-001",   t: "Isolation Gown — AAMI Level 1", cat: "Gowns", group: "Isolation gown", unit: "each", p: 2.70, img: "assets/img/products/supply-gowns.jpg", specs: "35 GSM (PP+PE) laminated · Blue · 100/box" },
-  { id: "DHI-GWN-002",   t: "Isolation Gown — AAMI Level 2", cat: "Gowns", group: "Isolation gown", unit: "each", p: 2.78, img: "assets/img/products/supply-gowns.jpg", specs: "41 GSM (PP+PE) laminated · Blue · 100/box" },
-  { id: "DHI-GWN-003", t: "Isolation Gown — AAMI Level 3", cat: "Gowns", group: "Isolation gown", unit: "each", p: 3.20, img: "assets/img/products/supply-gowns.jpg", specs: "55 GSM (PP+PE) laminated · White · 100/box" },
-  { id: "DHI-GWN-004",   t: "Surgical Reinforced Isolation Gown — AAMI Level 4", cat: "Gowns", group: "Surgical gown", unit: "each", p: 5.99, img: "assets/img/products/supply-gowns.jpg", specs: "55 (PP+PE) + 25 GSM barrier · White · 60/box" },
-  { id: "DHI-GWN-005", t: "Surgical Isolation Gown — AAMI Level 3", cat: "Gowns", group: "Surgical gown", unit: "each", p: 5.99, img: "assets/img/products/supply-gowns.jpg", specs: "40 GSM SMS + 25 GSM barrier · Blue · 60/box" },
+  { id: "DHI-GWN-001",   t: "Isolation Gown — AAMI Level 1", cat: "Gowns", group: "Isolation gown", unit: "each", p: 2.70, img: "", specs: "35 GSM (PP+PE) laminated · Blue · 100/box" },
+  { id: "DHI-GWN-002",   t: "Isolation Gown — AAMI Level 2", cat: "Gowns", group: "Isolation gown", unit: "each", p: 2.78, img: "", specs: "41 GSM (PP+PE) laminated · Blue · 100/box" },
+  { id: "DHI-GWN-003", t: "Isolation Gown — AAMI Level 3", cat: "Gowns", group: "Isolation gown", unit: "each", p: 3.20, img: "", specs: "55 GSM (PP+PE) laminated · White · 100/box" },
+  { id: "DHI-GWN-004",   t: "Surgical Reinforced Isolation Gown — AAMI Level 4", cat: "Gowns", group: "Surgical gown", unit: "each", p: 5.99, img: "", specs: "55 (PP+PE) + 25 GSM barrier · White · 60/box" },
+  { id: "DHI-GWN-005", t: "Surgical Isolation Gown — AAMI Level 3", cat: "Gowns", group: "Surgical gown", unit: "each", p: 5.99, img: "", specs: "40 GSM SMS + 25 GSM barrier · Blue · 60/box" },
   // ---- Scrubs ----
   { id: "DHI-SCR-001",   t: "Disposable Fluid-Resistant Scrub", cat: "Scrubs", group: "Disposable scrub set", unit: "set", p: 13.99, img: "", specs: "55 GSM (PP+PE) laminated · White · 50/box" },
   { id: "DHI-SCR-002",   t: "Disposable Scrub (SMS 40–45 GSM)", cat: "Scrubs", group: "Disposable scrub set", unit: "set", p: 13.99, img: "", specs: "40–45 GSM SMS fabric · Blue · 100/box" },
   { id: "DHI-SCR-003", t: "Reusable Scrub + Cap Set — Green", cat: "Scrubs", group: "Reusable scrub set", unit: "set", p: 33.99, img: "", specs: "100% cotton poplin medical fabric · Green · 50/box" },
   { id: "DHI-SCR-004",  t: "Reusable Scrub + Cap Set — Blue", cat: "Scrubs", group: "Reusable scrub set", unit: "set", p: 33.99, img: "", specs: "100% cotton poplin medical fabric · Blue · 50/box" },
   // ---- Covers & Caps ----
-  { id: "DHI-CAP-001",   t: "Disposable Boot Cover, 13\" (non-slip soles)", cat: "Covers & Caps", group: "Foot cover", unit: "pair", p: 3.24, img: "", specs: "55 GSM (PP+PE) laminated · White · 150/box · +3 mm non-slip sole" },
-  { id: "DHI-CAP-002",   t: "Disposable Shoe Cover, 4\"", cat: "Covers & Caps", group: "Foot cover", unit: "pair", p: 3.06, img: "", specs: "55 GSM (PP+PE) laminated · White · 250/box" },
+  { id: "DHI-CAP-001",   t: "Disposable Boot Cover, 13\" (non-slip soles)", cat: "Covers & Caps", group: "Foot cover", unit: "pair", p: 3.24, img: "assets/img/products/supply-DHI-CAP-001.jpg", specs: "55 GSM (PP+PE) laminated · White · 150/box · +3 mm non-slip sole" },
+  { id: "DHI-CAP-002",   t: "Disposable Shoe Cover, 4\"", cat: "Covers & Caps", group: "Foot cover", unit: "pair", p: 3.06, img: "assets/img/products/supply-DHI-CAP-002.jpg", specs: "55 GSM (PP+PE) laminated · White · 250/box" },
   { id: "DHI-CAP-003",   t: "Protective Oversleeves, 16\" (elasticated)", cat: "Covers & Caps", group: "Sleeve cover", unit: "pair", p: 1.98, img: "", specs: "55 GSM (PP+PE) laminated · White · 250/box" },
   { id: "DHI-CAP-004",   t: "Protective Head Cover (laminated)", cat: "Covers & Caps", group: "Head cover", unit: "each", p: 1.98, img: "", specs: "55 GSM (PP+PE) laminated · White · 250/box" },
-  { id: "DHI-CAP-005", t: "Bouffant Cap, SMS 21\"", cat: "Covers & Caps", group: "Bouffant (box of 1,440)", unit: "box", p: 100.00, img: "", specs: "30 GSM non-woven · Blue/Green · 1,440/box" },
-  { id: "DHI-CAP-006", t: "Bouffant Cap, SMS 24\"", cat: "Covers & Caps", group: "Bouffant (box of 1,440)", unit: "box", p: 110.00, img: "", specs: "30 GSM non-woven · Blue/Green · 1,440/box" },
+  { id: "DHI-CAP-005", t: "Bouffant Cap, SMS 21\"", cat: "Covers & Caps", group: "Bouffant (box of 1,440)", unit: "box", p: 100.00, img: "assets/img/products/supply-DHI-CAP-005.jpg", specs: "30 GSM non-woven · Blue/Green · 1,440/box" },
+  { id: "DHI-CAP-006", t: "Bouffant Cap, SMS 24\"", cat: "Covers & Caps", group: "Bouffant (box of 1,440)", unit: "box", p: 110.00, img: "assets/img/products/supply-DHI-CAP-006.jpg", specs: "30 GSM non-woven · Blue/Green · 1,440/box" },
   { id: "DHI-CAP-007",   t: "Bouffant Cap, Non-Woven 15 GSM", cat: "Covers & Caps", group: "Bouffant (box of 1,440)", unit: "box", p: 50.00, img: "", specs: "15 GSM non-woven · Blue/Green · 1,440/box" },
   // ---- Masks & Respirators ----
-  { id: "DHI-MSK-001",   t: "Medical Mask — Type IIR", cat: "Masks & Respirators", group: "Surgical mask (box of 50)", unit: "box", p: 3.06, img: "", specs: "Medical Blue · 50 pc/box · fluid-resistant" },
+  { id: "DHI-MSK-001",   t: "Medical Mask — Type IIR", cat: "Masks & Respirators", group: "Surgical mask (box of 50)", unit: "box", p: 3.06, img: "assets/img/products/supply-DHI-MSK-001.jpg", specs: "Medical Blue · 50 pc/box · fluid-resistant" },
   { id: "DHI-MSK-002",   t: "Medical Mask — Type II", cat: "Masks & Respirators", group: "Surgical mask (box of 50)", unit: "box", p: 2.70, img: "", specs: "Medical Blue · 50 pc/box" },
-  { id: "DHI-MSK-003",   t: "Kiddo Mask — Type II", cat: "Masks & Respirators", group: "Children's mask (box of 50)", unit: "box", p: 4.32, img: "", specs: "Colorful · 50 pc/box" },
+  { id: "DHI-MSK-003",   t: "Kiddo Mask — Type II", cat: "Masks & Respirators", group: "Children's mask (box of 50)", unit: "box", p: 4.32, img: "assets/img/products/supply-DHI-MSK-003.jpg", specs: "Colorful · 50 pc/box" },
   { id: "DHI-MSK-004",   t: "KN95 / N95 / FFP2 Respirator — 5-Layer", cat: "Masks & Respirators", group: "Respirator (box of 50)", unit: "box", p: null, img: "", specs: "Medical-grade 5-layer · White · 50 pc/box · request pricing" },
   { id: "DHI-MSK-005",   t: "KN95 Respirator — 5-Layer, Individually Packed", cat: "Masks & Respirators", group: "Respirator (box of 50)", unit: "box", p: null, img: "", specs: "Medical-grade 5-layer · individually packed · White · 50 pc/box · request pricing" },
   // ---- Surgical Gowns ----
