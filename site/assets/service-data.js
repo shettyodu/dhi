@@ -562,6 +562,38 @@ const SERVICE_CONTENT = {
         ],
       },
       {
+        type: "prose",
+        heading: "Modular buildings & workforce housing",
+        paragraphs: [
+          "Beyond clinical units, DHI delivers <strong class=\"text-brand-900\">demountable and flat-pack modular buildings</strong> for workforce accommodation (man camps), site offices, classrooms, clinics, and emergency housing — from a single unit to joined, multi-storey complexes assembled on site in days.",
+          "Units are produced at <strong class=\"text-brand-900\">DHI-managed domestic and international facilities</strong> with a wide choice of sizes, layouts, and specifications. Flat-pack shipping keeps freight efficient — up to 10 units per 40&prime; high-cube container — and the demountable design lets the same building be relocated and reconfigured as needs change.",
+        ],
+      },
+      {
+        type: "cards",
+        heading: "Modular building — technical specifications",
+        items: [
+          { title: "Steel structure", desc: "Cold-formed galvanized steel profiles, 1.5–2 mm, joined with seamless bolted connections." },
+          { title: "Roof & wall panels", desc: "5 cm sandwich panels with painted galvanized steel skins for heat and sound insulation." },
+          { title: "Insulation options", desc: "EPS polystyrene foam, rock wool, or polyurethane — with optional floor insulation." },
+          { title: "Flooring", desc: "16 mm cement board plus 2 mm PVC vinyl; rated to a 200 kg/m² floor load." },
+          { title: "Sizes & layouts", desc: "2.4–4 m wide × 3–12 m long, 2.6 m height; single units up to 3-storey buildings, with WC/shower, kitchenette, and partition options." },
+          { title: "Flat-pack shipping", desc: "Up to 10 units per 40′ HC container; demountable units ship as profiles for the lowest freight cost." },
+        ],
+      },
+      {
+        type: "gallery",
+        heading: "Modular buildings in the field",
+        intro: "Workforce camps, site offices, clinics, and emergency accommodation — configured and finished to your specification.",
+        items: [
+          { src: "assets/img/modules/module-3storey.jpg", caption: "Multi-storey modular accommodation" },
+          { src: "assets/img/modules/module-camp.jpg", caption: "Workforce camp — joined two-storey units" },
+          { src: "assets/img/modules/module-unit.jpg", caption: "Single modular building unit" },
+          { src: "assets/img/modules/module-production.jpg", caption: "Factory-produced, flat-pack delivered" },
+          { src: "assets/img/modules/module-panel.jpg", caption: "Insulated sandwich-panel construction" },
+        ],
+      },
+      {
         type: "cards",
         heading: "Provider & manufacturer network",
         intro: "DHI sources mobile and rapid-deployment health infrastructure from specialized manufacturers, matching the right unit to each deployment:",
