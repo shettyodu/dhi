@@ -2,7 +2,7 @@
    Internal rep tool — government bid match-maker (SAM.gov, federal + defense).
    Auth: header  x-dhi-admin: <ADMIN_SECRET>   (fail-closed, same as admin-leads)
    Body: { action: "search", query?, vertical?, daysBack? } | { action: "verticals" } */
-const { searchBids, listVerticals } = require("../../lib/govbids");
+const { searchBids, listVerticals, interpret } = require("../../lib/govbids");
 const { searchFromCache } = require("../../lib/govcache");
 const { connectLambda } = require("@netlify/blobs");
 
@@ -29,9 +29,20 @@ exports.handler = async (event) => {
     if (body.action === "verticals") {
       return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, verticals: listVerticals() }) };
     }
-    // Prefer the daily cache (no live API call); fall back to a live/sample search.
-    const cached = await searchFromCache({ query: body.query, vertical: body.vertical }).catch(() => null);
-    const json = cached || (await searchBids({ query: body.query, vertical: body.vertical, daysBack: body.daysBack })).json;
+    // Free-text keyword searches (a term that doesn't map to a DHI vertical, e.g.
+    // "waterline") must hit SAM.gov live — the daily cache only holds our vertical
+    // NAICS, so it can't answer arbitrary terms. Vertical/NAICS browses use the
+    // fast cache, falling back to live when the cache is empty.
+    const interp = interpret(body.query, body.vertical);
+    const isKeyword = !interp.naics.length && !!interp.title;
+    let json;
+    if (isKeyword) {
+      json = (await searchBids({ query: body.query, vertical: body.vertical, daysBack: body.daysBack })).json;
+    } else {
+      const cached = await searchFromCache({ query: body.query, vertical: body.vertical }).catch(() => null);
+      json = (cached && cached.count > 0) ? cached
+        : (await searchBids({ query: body.query, vertical: body.vertical, daysBack: body.daysBack })).json;
+    }
     return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify(json) };
   } catch (e) {
     console.error("gov-bids error:", e.message);

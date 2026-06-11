@@ -109,11 +109,16 @@ function normalizeSam(o) {
 }
 
 async function searchLive(interp, daysBack) {
+  // Free-text keyword search (no vertical/NAICS match): widen to SAM's max ~1-year
+  // window, raise the limit, and broaden notice types so the portal returns what
+  // SAM.gov returns — whether or not the term maps to a DHI vertical/product.
+  const keyword = !interp.naics.length && !!interp.title;
+  const span = keyword ? 364 : (daysBack || 90);
   const to = new Date();
-  const from = new Date(Date.now() - (daysBack || 90) * 86400000);
-  const base = { api_key: SAM_API_KEY, postedFrom: fmtDate(from), postedTo: fmtDate(to), limit: "25", ptype: "o,p,k" };
-  // Use a title term only when no vertical/NAICS matched (NAICS + title over-narrows).
-  if (!interp.naics.length && interp.title) base.title = interp.title;
+  const from = new Date(Date.now() - span * 86400000);
+  const base = { api_key: SAM_API_KEY, postedFrom: fmtDate(from), postedTo: fmtDate(to),
+    limit: keyword ? "100" : "25", ptype: keyword ? "o,p,k,r,s,i" : "o,p,k" };
+  if (keyword) base.title = interp.title;
   const naicsList = interp.naics.length ? interp.naics.slice(0, 3) : [null]; // cap calls to protect the daily quota
   const seen = new Set(); const out = [];
   for (const nc of naicsList) {
@@ -169,6 +174,15 @@ async function searchBids({ query, vertical, daysBack } = {}) {
   const scored = opportunities
     .map((o) => Object.assign({}, o, scoreOpportunity(o, naicsSet)))
     .sort((a, b) => b.score - a.score);
+
+  // For a live free-text keyword search, set an explicit note so reps understand
+  // the scope (SAM's public API matches the solicitation TITLE, not full body text).
+  const keyword = !interp.naics.length && !!interp.title;
+  if (live && keyword) {
+    note = scored.length
+      ? `Live SAM.gov results with “${interp.title}” in the solicitation title.`
+      : `No open SAM.gov solicitations with “${interp.title}” in the title (last 12 months). Note: SAM.gov’s website also matches text inside the solicitation body, which this title search can’t reach.`;
+  }
 
   return {
     status: 200,
