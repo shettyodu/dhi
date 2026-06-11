@@ -55,7 +55,7 @@ const BY_VERTICAL = {
   },
   "supplies": {
     label: "Supplies, Textiles & Linens",
-    partners: ["Amaryllis Healthcare", "Mediprro (Sivshree Medittex)"],
+    partners: ["DHI-managed domestic & international manufacturing facilities (multi-source, by quality & price)"],
     offerings: ["Sterile, single-use surgical gowns, drapes, OT packs, and sterilization wraps (specialty packs across general surgery, cardiac, orthopedic, OB/GYN, urology, neuro, ophthalmic)", "PPE, consumables, hospital-grade textiles & linens"],
     quality: ["SMS/SMMMS non-woven; AAMI Level 1–4; ultrasonically welded; EO-sterile"],
     standards: ["CE (EU MDR 2017/745), ISO 13485, USFDA-registered, MDSAP, GMP, EN 13795"],
