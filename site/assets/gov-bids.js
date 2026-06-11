@@ -137,6 +137,7 @@
     { key: "pastperf", title: "Past Performance & Key Personnel" },
   ];
   let propOpp = null;
+  let lastPackage = null; // { opp, parts, full, pageLimit, scopeUsed }
 
   function fillPartSelect(parts, full) {
     const sel = $("prop-part");
@@ -173,14 +174,207 @@
     const header = `PROPOSAL PACKAGE — Digital Health International Inc.\nRE: ${propOpp.title || ""} — ${propOpp.agency || ""} (Sol. ${propOpp.solicitation || "—"})\nTarget length: ${pageLimit} pages. ${scopeUsed ? "Tailored to the live SAM.gov solicitation scope." : "Based on opportunity metadata (full solicitation text unavailable)."}\n` + "=".repeat(72);
     const full = [header, ""].concat(parts.map((p) => `\n========== ${p.name.toUpperCase()} ==========\n\n${p.content}`)).join("\n");
     fillPartSelect(parts, full);
+    lastPackage = { opp: propOpp, parts: parts, full: full, pageLimit: pageLimit, scopeUsed: scopeUsed };
+    const zb = $("prop-zip"); if (zb) zb.disabled = false;
+    renderCompliance();
     prog.textContent = `Done · ${parts.length} documents` + (scopeUsed ? " · tailored to solicitation" : "");
     regen.disabled = false;
   }
   function openProposal(o) {
     propOpp = o;
+    lastPackage = null;
     $("prop-copied").textContent = "";
+    const zb = $("prop-zip"); if (zb) zb.disabled = true;
+    const cp = $("prop-compliance"); if (cp) { cp.classList.add("hidden"); cp.innerHTML = ""; }
     $("prop-modal").classList.remove("hidden");
     generatePackage();
+  }
+
+  // ================= Submission package: compliance check + cataloged ZIP =====
+
+  // --- compliance analysis (client-side; no fabrication, only flags gaps) ----
+  function analyzeCompliance(pkg) {
+    const F = [], opp = pkg.opp || {};
+    const add = (level, doc, msg, fix) => F.push({ level, doc, msg, fix });
+    const PH = /\[[^\]\n]*(TBD|PLACEHOLDER|INSERT|BRACKET|QTY|QUOTE|SUBTOTAL|TOTAL|client name|contract value|period of perform|reference|résumé|resume|name)[^\]\n]*\]/gi;
+    let words = 0;
+    pkg.parts.forEach((p) => {
+      const c = p.content || "", isStatic = /^(Price|Forms)/i.test(p.name) || /Price \(Vol|Forms & Compliance/i.test(p.name);
+      if (c.trim().startsWith("[") && /(unavailable|failed|retry|Generate to retry)/i.test(c)) {
+        add("blocker", p.name, "This volume did not generate.", "Click Generate to retry, then re-check.");
+        return;
+      }
+      if (!isStatic) {
+        const phs = c.match(PH) || [];
+        if (phs.length) {
+          const uniq = [...new Set(phs.map((x) => x.trim()))].slice(0, 5);
+          add(phs.length > 3 ? "blocker" : "warn", p.name,
+            `${phs.length} placeholder${phs.length > 1 ? "s" : ""} to complete (e.g. ${uniq.map(esc).join(", ")}).`,
+            "Replace every bracketed placeholder with real, verified content.");
+        }
+        words += c.trim().split(/\s+/).filter(Boolean).length;
+      }
+    });
+    const estPages = Math.max(1, Math.ceil(words / 500));
+    if (pkg.pageLimit && estPages > pkg.pageLimit) {
+      add("warn", "Whole proposal", `Narrative is ~${estPages} pages vs the ${pkg.pageLimit}-page limit.`, "Trim content (or raise the limit) so the volume fits.");
+    }
+    const price = pkg.parts.find((p) => /^Price|Price \(Vol/i.test(p.name));
+    if (price && /\[(QUOTE|SUBTOTAL|TOTAL|QTY)\]/.test(price.content)) {
+      add("blocker", "Price (Vol III)", "Pricing still contains placeholder amounts.", "Insert partner quotes, quantities and totals mapped to the CLIN structure.");
+    }
+    const forms = pkg.parts.find((p) => /Forms/i.test(p.name));
+    if (forms) { const un = (forms.content.match(/\[ \]/g) || []).length; if (un) add("warn", "Forms checklist", `${un} checklist item${un > 1 ? "s" : ""} not yet completed.`, "Work through each item before submitting."); }
+    if (!opp.deadline) add("warn", "Submission", "No response deadline captured.", "Confirm the due date/time & method on the opportunity page.");
+    if (!opp.solicitation) add("warn", "Submission", "No solicitation/notice ID captured.", "Confirm the solicitation number before submitting.");
+    if (opp.setAside) add("info", "Eligibility", `Set-aside: ${esc(opp.setAside)}.`, "Attach proof of set-aside eligibility (SBA / VetCert / 8(a) / HUBZone).");
+    add("info", "Registrations", "Active SAM.gov registration + Reps & Certs required.", "Verify UEI/CAGE active and Reps & Certs current in SAM.gov.");
+    add("info", "Human review", "AI-assisted draft — must be reviewed by a person.", "A capture/contracts lead reviews every volume before submission.");
+    return F;
+  }
+
+  function renderCompliance() {
+    const el = $("prop-compliance"); if (!el || !lastPackage) return;
+    const F = analyzeCompliance(lastPackage);
+    lastPackage.findings = F;
+    const nb = F.filter((f) => f.level === "blocker").length, nw = F.filter((f) => f.level === "warn").length;
+    const banner = nb
+      ? `<div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">Not ready to submit — ${nb} blocker${nb > 1 ? "s" : ""}${nw ? ` · ${nw} warning${nw > 1 ? "s" : ""}` : ""} to resolve.</div>`
+      : nw
+      ? `<div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">No blockers · ${nw} item${nw > 1 ? "s" : ""} to review before final human sign-off.</div>`
+      : `<div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">No automated issues found — proceed to final human review.</div>`;
+    const chip = (lv) => lv === "blocker" ? '<span class="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold uppercase text-red-700">Fix</span>'
+      : lv === "warn" ? '<span class="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold uppercase text-amber-700">Review</span>'
+      : '<span class="rounded bg-slate-200 px-1.5 py-0.5 text-xs font-bold uppercase text-slate-600">Note</span>';
+    const order = { blocker: 0, warn: 1, info: 2 };
+    const rows = F.slice().sort((a, b) => order[a.level] - order[b.level]).map((f) =>
+      `<li class="flex gap-2 py-1.5"><span class="mt-0.5 flex-none">${chip(f.level)}</span><span><span class="font-medium text-slate-700">${esc(f.doc)}:</span> ${f.msg} <span class="text-slate-400">— ${esc(f.fix)}</span></span></li>`).join("");
+    el.innerHTML = `${banner}<ul class="mt-2 divide-y divide-slate-100 text-sm text-slate-600">${rows}</ul>`;
+    el.classList.remove("hidden");
+  }
+
+  // --- text/markdown → Word-openable HTML (.doc) -----------------------------
+  function mdInline(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+?)`/g, "<code>$1</code>"); }
+  function mdToHtml(md) {
+    const L = String(md).replace(/\r/g, "").split("\n"); const out = []; let i = 0;
+    const isTbl = (s) => /^\s*\|.*\|\s*$/.test(s), isH = (s) => /^#{1,4}\s/.test(s), isUl = (s) => /^\s*[-*]\s+/.test(s), isOl = (s) => /^\s*\d+\.\s+/.test(s);
+    while (i < L.length) {
+      const ln = L[i];
+      if (isTbl(ln)) {
+        const t = []; while (i < L.length && isTbl(L[i])) { t.push(L[i]); i++; }
+        const rows = t.filter((r) => !/^\s*\|[\s:|-]+\|\s*$/.test(r)).map((r) => r.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim()));
+        if (rows.length) out.push(`<table border="1" cellspacing="0" cellpadding="4"><tr>${rows[0].map((c) => `<th>${mdInline(c)}</th>`).join("")}</tr>${rows.slice(1).map((r) => `<tr>${r.map((c) => `<td>${mdInline(c)}</td>`).join("")}</tr>`).join("")}</table>`);
+        continue;
+      }
+      if (isH(ln)) { const m = ln.match(/^(#{1,4})\s+(.*)$/); out.push(`<h${m[1].length}>${mdInline(m[2])}</h${m[1].length}>`); i++; continue; }
+      if (isUl(ln)) { const it = []; while (i < L.length && isUl(L[i])) { it.push(L[i].replace(/^\s*[-*]\s+/, "")); i++; } out.push(`<ul>${it.map((x) => `<li>${mdInline(x)}</li>`).join("")}</ul>`); continue; }
+      if (isOl(ln)) { const it = []; while (i < L.length && isOl(L[i])) { it.push(L[i].replace(/^\s*\d+\.\s+/, "")); i++; } out.push(`<ol>${it.map((x) => `<li>${mdInline(x)}</li>`).join("")}</ol>`); continue; }
+      if (ln.trim() === "") { i++; continue; }
+      const para = []; while (i < L.length && L[i].trim() !== "" && !isH(L[i]) && !isUl(L[i]) && !isOl(L[i]) && !isTbl(L[i])) { para.push(L[i]); i++; }
+      out.push(`<p>${mdInline(para.join(" "))}</p>`);
+    }
+    return out.join("\n");
+  }
+  function wordDoc(title, bodyHtml) {
+    return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${esc(title)}</title>` +
+      `<style>body{font-family:'Times New Roman',serif;font-size:11pt;line-height:1.45;color:#111} h1{font-size:16pt} h2{font-size:13pt} h3{font-size:11.5pt} table{border-collapse:collapse;width:100%} td,th{border:1px solid #444;padding:4px 6px;font-size:10pt;text-align:left} pre{font-family:Consolas,'Courier New',monospace;font-size:10pt;white-space:pre-wrap}</style></head><body>${bodyHtml}</body></html>`;
+  }
+  const slug = (s) => String(s || "").replace(/[^\w]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "opportunity";
+
+  function buildFiles(pkg) {
+    const opp = pkg.opp || {}, base = "DHI_Proposal_" + slug(opp.solicitation || opp.title);
+    const enc = new TextEncoder(), files = [];
+    const put = (name, str) => files.push({ name: base + "/" + name, data: enc.encode(str) });
+    // numbering map for the narrative + static parts
+    const names = [
+      "01_Volume-I_Cover-Letter-Exec-Summary-Understanding.doc",
+      "02_Volume-II_Technical-Approach.doc",
+      "03_Volume-II_Management-Schedule-Transition.doc",
+      "04_Volume-II_Risk-Management-and-QA.doc",
+      "05_Volume-II_Past-Performance-Key-Personnel.doc",
+    ];
+    const findings = pkg.findings || analyzeCompliance(pkg);
+    // README / manifest
+    const today = new Date().toLocaleString();
+    const fileList = ["00_COMPLIANCE-REPORT.txt"].concat(names).concat(["06_Volume-III_Price-Cost-Proposal.doc", "07_Forms-and-Compliance-Checklist.doc"]);
+    put("00_README.txt", [
+      "DHI PROPOSAL — SUBMISSION PACKAGE (DRAFT)",
+      "=".repeat(56), "",
+      `RE: ${opp.title || ""}`,
+      `Agency:        ${opp.agency || "—"}`,
+      `Solicitation:  ${opp.solicitation || "—"}`,
+      `NAICS / Type:  ${opp.naics || "—"} / ${opp.type || "—"}`,
+      `Set-aside:     ${opp.setAside || "Full & open"}`,
+      `Deadline:      ${opp.deadline || "— (confirm on the opportunity page)"}`,
+      `Generated:     ${today}`,
+      `Tailored:      ${pkg.scopeUsed ? "Yes — to the live SAM.gov solicitation scope." : "From opportunity metadata (full text unavailable)."}`,
+      "", "CONTENTS", "-".repeat(56),
+      ...fileList.map((f) => "  " + f),
+      "", "HOW TO SUBMIT", "-".repeat(56),
+      "  1. Open 00_COMPLIANCE-REPORT.txt and resolve every [FIX] blocker;",
+      "     review each [REVIEW] item.",
+      "  2. Open each .doc in Microsoft Word; fill ALL [bracketed placeholders]",
+      "     with real, verified content; finalize formatting & page limits.",
+      "  3. Complete Vol III pricing with partner quotes and the CLIN structure.",
+      "  4. Work the Forms & Compliance Checklist; attach required forms.",
+      "  5. Submit via SAM.gov before the response deadline.",
+      "", "DISCLAIMER", "-".repeat(56),
+      "  AI-assisted draft grounded in DHI capability facts. It invents no",
+      "  certifications, past performance, customers, or prices. A capture /",
+      "  contracts lead must review and finalize every volume before submission.",
+    ].join("\n"));
+    // compliance report
+    const sev = { blocker: "[FIX]   ", warn: "[REVIEW]", info: "[NOTE]  " };
+    const nb = findings.filter((f) => f.level === "blocker").length, nw = findings.filter((f) => f.level === "warn").length;
+    put("00_COMPLIANCE-REPORT.txt", [
+      "PRE-SUBMISSION COMPLIANCE CHECK",
+      "=".repeat(56), "",
+      `Opportunity: ${opp.title || ""} (Sol. ${opp.solicitation || "—"})`,
+      `Status: ${nb ? "NOT READY — " + nb + " blocker(s), " + nw + " warning(s)." : nw ? "No blockers — " + nw + " item(s) to review." : "No automated issues found."}`,
+      `Checked: ${today}`, "",
+      "FINDINGS (resolve [FIX] before submitting):", "-".repeat(56),
+      ...["blocker", "warn", "info"].flatMap((lv) => findings.filter((f) => f.level === lv).map((f) => `${sev[lv]} ${f.doc}: ${f.msg}\n          ↳ ${f.fix}`)),
+      "", "This automated check is a safety net, not a substitute for human review.",
+    ].join("\n"));
+    // narrative volumes → .doc
+    pkg.parts.forEach((p, idx) => {
+      if (idx < names.length) put(names[idx], wordDoc(p.name, mdToHtml(p.content)));
+    });
+    // static volumes (alignment-sensitive) → <pre> .doc
+    const price = pkg.parts.find((p) => /Price/i.test(p.name));
+    const forms = pkg.parts.find((p) => /Forms/i.test(p.name));
+    if (price) put("06_Volume-III_Price-Cost-Proposal.doc", wordDoc("Price / Cost Proposal", `<pre>${esc(price.content)}</pre>`));
+    if (forms) put("07_Forms-and-Compliance-Checklist.doc", wordDoc("Forms & Compliance Checklist", `<pre>${esc(forms.content)}</pre>`));
+    return { files, base };
+  }
+
+  // --- minimal STORE-method ZIP writer (no deps) -----------------------------
+  function crc32(b) { let c = ~0; for (let i = 0; i < b.length; i++) { c ^= b[i]; for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xEDB88320 & -(c & 1)); } return ~c >>> 0; }
+  function zipStore(files) {
+    const u16 = (n) => [n & 255, (n >> 8) & 255], u32 = (n) => [n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >>> 24) & 255];
+    const chunks = [], central = []; let offset = 0; const DT = 0, DD = 0x21; // 1980-01-01
+    files.forEach((f) => {
+      const nameB = new TextEncoder().encode(f.name), crc = crc32(f.data), sz = f.data.length;
+      const local = u32(0x04034b50).concat(u16(20), u16(0), u16(0), u16(DT), u16(DD), u32(crc), u32(sz), u32(sz), u16(nameB.length), u16(0));
+      chunks.push(new Uint8Array(local), nameB, f.data);
+      central.push(new Uint8Array(u32(0x02014b50).concat(u16(20), u16(20), u16(0), u16(0), u16(DT), u16(DD), u32(crc), u32(sz), u32(sz), u16(nameB.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset))), nameB);
+      offset += local.length + nameB.length + sz;
+    });
+    const cStart = offset; let cSize = 0;
+    central.forEach((c) => { chunks.push(c); cSize += c.length; });
+    chunks.push(new Uint8Array(u32(0x06054b50).concat(u16(0), u16(0), u16(files.length), u16(files.length), u32(cSize), u32(cStart), u16(0))));
+    let total = 0; chunks.forEach((c) => (total += c.length));
+    const out = new Uint8Array(total); let p = 0; chunks.forEach((c) => { out.set(c, p); p += c.length; });
+    return out;
+  }
+  function downloadPackage() {
+    if (!lastPackage) return;
+    if (!lastPackage.findings) renderCompliance();
+    const { files, base } = buildFiles(lastPackage);
+    const blob = new Blob([zipStore(files)], { type: "application/zip" });
+    const url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = base + ".zip"; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
   }
 
   // ---------- wire up ----------
@@ -194,6 +388,8 @@
     $("prop-backdrop").addEventListener("click", () => $("prop-modal").classList.add("hidden"));
     $("prop-copy").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("prop-text").value); $("prop-copied").textContent = "Copied"; } catch (e) { $("prop-copied").textContent = "Select & copy manually"; } });
     $("prop-regen").addEventListener("click", generatePackage);
+    const pz = $("prop-zip"); if (pz) pz.addEventListener("click", downloadPackage);
+    const pc = $("prop-check"); if (pc) pc.addEventListener("click", renderCompliance);
     const rb = $("refresh");
     if (rb) rb.addEventListener("click", async () => {
       const st = $("refresh-status"); st.textContent = "Refreshing from SAM.gov…"; rb.disabled = true;
