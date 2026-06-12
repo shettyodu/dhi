@@ -8,7 +8,12 @@
 const stripeLib = require("stripe");
 const PRICES = require("../data/prices.json");
 
-function configured() { return !!process.env.STRIPE_SECRET_KEY; }
+// Requires BOTH a Stripe key AND an explicit opt-in flag, so supplies card
+// checkout stays OFF even though the Stripe key is already present (shared with
+// the lighting checkout). Flip on = set SUPPLIES_CARD_ENABLED=1.
+function configured() {
+  return !!process.env.STRIPE_SECRET_KEY && /^(1|true|on|yes)$/i.test(String(process.env.SUPPLIES_CARD_ENABLED || ""));
+}
 function stripe() { return stripeLib(process.env.STRIPE_SECRET_KEY); }
 
 async function createCheckoutSession({ items, origin } = {}) {
@@ -33,6 +38,7 @@ async function createCheckoutSession({ items, origin } = {}) {
     return { status: 400, json: { ok: false, quoteOnly: true, error: "These items are quote-only — submit a purchase order or request a quote." } };
   }
   const base = String(origin || process.env.PUBLIC_BASE_URL || "").replace(/\/+$/, "");
+  if (!/^https?:\/\//.test(base)) return { status: 400, json: { ok: false, error: "Missing site origin for checkout return URLs." } };
   try {
     const session = await stripe().checkout.sessions.create({
       mode: "payment",
