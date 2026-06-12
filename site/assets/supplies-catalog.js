@@ -53,7 +53,7 @@
   ];
   const COMING_SOON = ["Surgical Instruments & Tools", "Wound Care & Dressings", "Textiles & Linens", "Exam Room Supplies", "Sterilization & Infection Prevention"];
   // Merchandising (Medline-style): best-seller categories + photo-forward popular products.
-  const BESTSELLERS = ["Gloves", "Surgical Gowns", "Surgical Drapes", "OT Packs", "Masks & Respirators", "Coveralls"];
+  const BESTSELLERS = ["Gloves", "Surgical Gowns", "OT Packs", "Masks & Respirators", "Coveralls", "Scrubs"];
   const FEATURED = ["DHI-CVL-001", "DHI-MSK-001", "DHI-CAP-001", "DHI-MSK-003", "DHI-CVL-004", "DHI-CAP-005", "DHI-CAP-002", "DHI-CAP-006"];
 
   const byId = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
@@ -65,12 +65,12 @@
   // ----- quote cart --------------------------------------------------------
   let cart = load();
   function load() {
-    try { const raw = JSON.parse(localStorage.getItem(STORE)) || []; return raw.map((x) => (typeof x === "string" ? { id: x, qty: 1 } : { id: x.id, qty: x.qty || 1 })); } catch (e) { return []; }
+    try { const raw = JSON.parse(localStorage.getItem(STORE)) || []; return raw.map((x) => (typeof x === "string" ? { id: x, qty: 1, v: "" } : { id: x.id, qty: x.qty || 1, v: x.v || "" })); } catch (e) { return []; }
   }
   function save() { localStorage.setItem(STORE, JSON.stringify(cart)); }
-  const inCart = (id) => cart.some((l) => l.id === id);
-  function toggle(id) { const i = cart.findIndex((l) => l.id === id); if (i >= 0) cart.splice(i, 1); else cart.push({ id, qty: 1 }); save(); dockRender(); }
-  function setQty(id, d) { const l = cart.find((x) => x.id === id); if (!l) return; l.qty = Math.max(1, (l.qty || 1) + d); save(); dockRender(); }
+  const inCart = (id, v) => cart.some((l) => l.id === id && (l.v || "") === (v || ""));
+  function toggle(id, v) { v = v || ""; const i = cart.findIndex((l) => l.id === id && (l.v || "") === v); if (i >= 0) cart.splice(i, 1); else cart.push({ id, qty: 1, v }); save(); dockRender(); }
+  function setQty(id, v, d) { v = v || ""; const l = cart.find((x) => x.id === id && (x.v || "") === v); if (!l) return; l.qty = Math.max(1, (l.qty || 1) + d); save(); dockRender(); }
 
   // ----- category illustrations (for items / categories without a photo) ---
   function supplyArt(cat, cls) {
@@ -269,12 +269,16 @@
           ${specRows.length ? `<dl class="mt-5 grid grid-cols-1 gap-1.5 text-sm sm:grid-cols-2">
             ${specRows.map((s) => `<div class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2"><svg class="mt-0.5 h-4 w-4 flex-none text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg><span class="text-slate-600">${esc(s)}</span></div>`).join("")}
           </dl>` : ""}
-          <div class="mt-5 rounded-lg border border-slate-200 p-4">
+          ${p.variants && Object.keys(p.variants).length ? `<div class="mt-5 space-y-3">
+            ${Object.entries(p.variants).map(([dim, opts]) => `<label class="block"><span class="text-sm font-medium text-slate-700">${esc(dim)} <span class="text-slate-400">· ${opts.length} options</span></span>
+              <select class="spv mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none" data-dim="${esc(dim)}">${opts.map((o) => `<option>${esc(o)}</option>`).join("")}</select></label>`).join("")}
+            <p class="text-xs text-slate-400">Different quality, colors, and specifications are available — pick yours, or tell us your spec on the quote.</p>
+          </div>` : `<div class="mt-5 rounded-lg border border-slate-200 p-4">
             <p class="text-sm font-semibold text-brand-900">Sizes, grades &amp; configurations</p>
             <p class="mt-1 text-sm text-slate-500">Available in multiple sizes, fabrics, and quality grades. Tell us your specification on the quote and we'll match it — custom-design, sterile/non-sterile, and bulk options available.</p>
-          </div>
+          </div>`}
           <div class="mt-5 flex flex-wrap items-center gap-3">
-            ${addBtn(p)}
+            <button id="sp-add" class="inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors bg-cyan-600 text-white hover:bg-cyan-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> <span>Add to quote</span></button>
             <button id="sp-quote" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Request a quote →</button>
           </div>
           <p class="mt-4 text-xs leading-relaxed text-slate-400">${esc(SOURCING)} Pricing, applicable taxes &amp; freight are provided with your quote.</p>
@@ -284,8 +288,14 @@
         <h2 class="font-display text-lg font-bold text-brand-900">More in ${esc(p.cat)}</h2>
         <div class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">${related.map(productCard).join("")}</div>
       </section>` : ""}`;
+    const curV = () => [...app.querySelectorAll(".spv")].map((s) => `${s.dataset.dim}: ${s.value}`).join(" · ");
+    const addEl = document.getElementById("sp-add");
+    const refreshAdd = () => { if (!addEl) return; const inq = inCart(p.id, curV()); addEl.className = "inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors " + (inq ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" : "bg-cyan-600 text-white hover:bg-cyan-700"); addEl.querySelector("span").textContent = inq ? "Added to quote" : "Add to quote"; };
+    if (addEl) addEl.addEventListener("click", () => { const v = curV(); if (!inCart(p.id, v)) toggle(p.id, v); refreshAdd(); });
+    app.querySelectorAll(".spv").forEach((s) => s.addEventListener("change", refreshAdd));
     const qb = document.getElementById("sp-quote");
-    if (qb) qb.addEventListener("click", () => { if (!inCart(p.id)) toggle(p.id); openDrawer(); });
+    if (qb) qb.addEventListener("click", () => { const v = curV(); if (!inCart(p.id, v)) toggle(p.id, v); openDrawer(); });
+    refreshAdd();
   }
 
   // ----- VIEW: search results ----------------------------------------------
@@ -321,13 +331,14 @@
         <div class="flex-1 overflow-y-auto px-5 py-4">${items.length ? `<ul class="space-y-2">${items.map((l) => { const pl = l.p; return `
           <li class="rounded-lg border border-slate-200 p-3">
             <div class="flex items-start justify-between gap-3"><div class="min-w-0"><a href="#/p/${encodeURIComponent(l.id)}" class="text-sm font-semibold text-brand-900 hover:text-cyan-700">${esc(pl.t)}</a>
+              ${l.v ? `<p class="text-xs font-medium text-cyan-700">${esc(l.v)}</p>` : ""}
               <p class="font-mono text-xs text-slate-400">${esc(l.id)}</p></div>
-              <button data-rm="${encodeURIComponent(l.id)}" class="srm flex-none rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-9 0v14a1 1 0 001 1h8a1 1 0 001-1V6"/></svg></button></div>
+              <button data-id="${encodeURIComponent(l.id)}" data-v="${encodeURIComponent(l.v || "")}" class="srm flex-none rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-9 0v14a1 1 0 001 1h8a1 1 0 001-1V6"/></svg></button></div>
             <div class="mt-2 flex items-center justify-between">
               <div class="inline-flex items-center rounded-md border border-slate-300">
-                <button data-dec="${encodeURIComponent(l.id)}" class="px-2.5 py-1 text-slate-600 hover:bg-slate-100">−</button>
+                <button data-dec data-id="${encodeURIComponent(l.id)}" data-v="${encodeURIComponent(l.v || "")}" class="px-2.5 py-1 text-slate-600 hover:bg-slate-100">−</button>
                 <span class="px-3 text-sm font-semibold text-brand-900">${l.qty}</span>
-                <button data-inc="${encodeURIComponent(l.id)}" class="px-2.5 py-1 text-slate-600 hover:bg-slate-100">+</button>
+                <button data-inc data-id="${encodeURIComponent(l.id)}" data-v="${encodeURIComponent(l.v || "")}" class="px-2.5 py-1 text-slate-600 hover:bg-slate-100">+</button>
               </div>
             </div>
           </li>`; }).join("")}</ul>` : `<p class="rounded-lg border border-dashed border-slate-300 p-8 text-center text-slate-500">Your cart is empty.</p>`}</div>
@@ -340,9 +351,9 @@
     const reopen = () => { closeDrawer(); openDrawer(); };
     document.getElementById("sqd-x").onclick = closeDrawer;
     document.getElementById("sqd-bd").onclick = closeDrawer;
-    panel.querySelectorAll(".srm").forEach((b) => b.addEventListener("click", () => { toggle(decodeURIComponent(b.dataset.rm)); rerender(); reopen(); }));
-    panel.querySelectorAll("[data-inc]").forEach((b) => b.addEventListener("click", () => { setQty(decodeURIComponent(b.dataset.inc), 1); reopen(); }));
-    panel.querySelectorAll("[data-dec]").forEach((b) => b.addEventListener("click", () => { setQty(decodeURIComponent(b.dataset.dec), -1); reopen(); }));
+    panel.querySelectorAll(".srm").forEach((b) => b.addEventListener("click", () => { toggle(decodeURIComponent(b.dataset.id), decodeURIComponent(b.dataset.v)); rerender(); reopen(); }));
+    panel.querySelectorAll("[data-inc]").forEach((b) => b.addEventListener("click", () => { setQty(decodeURIComponent(b.dataset.id), decodeURIComponent(b.dataset.v), 1); reopen(); }));
+    panel.querySelectorAll("[data-dec]").forEach((b) => b.addEventListener("click", () => { setQty(decodeURIComponent(b.dataset.id), decodeURIComponent(b.dataset.v), -1); reopen(); }));
     panel.querySelectorAll('a[href^="#/"]').forEach((a) => a.addEventListener("click", closeDrawer));
     const c = document.getElementById("sqd-clear");
     if (c) c.onclick = () => { cart = []; save(); dockRender(); rerender(); closeDrawer(); };
