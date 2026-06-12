@@ -24,6 +24,7 @@
 
   let lastProfile = null;
   let lastLead = null;
+  let liveInventory = false; // flips true when an inventory provider key is configured
   let lastBuckets = [];
   let curBucket = 0;
   let dealFilter = "all", photosOnly = false, sortBy = "match"; // on-results refine state
@@ -106,11 +107,29 @@
     results.scrollIntoView({ behavior: "smooth", block: "start" });
     if (lead) { lastLead = lead; captureLead(lead); }
     let d = {}, ok = false, status = 0;
+    async function hit(ep, pl) {
+      try { const r = await fetch(FN(ep), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pl) }); let j = {}; try { j = await r.json(); } catch (e) {} return { ok: r.ok, status: r.status, d: j }; }
+      catch (e) { return { ok: false, status: 0, d: { error: "Network error — please try again." } }; }
+    }
     try {
-      const r = await fetch(FN(endpoint), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      status = r.status; try { d = await r.json(); } catch (e) {}
-      ok = r.ok;
-    } catch (e) { d = { error: "Network error — please try again." }; }
+      if (liveInventory) {
+        // Route to real external inventory. For NL, parse the query into a profile
+        // via the AI backend first, then query live inventory with that profile.
+        let profile = payload, nlFailed = false;
+        if (endpoint === "automotive-search-nl") {
+          const pr = await hit("automotive-search-nl", payload);
+          if (pr.ok && pr.d) { profile = pr.d.profile || {}; lastProfile = profile; }
+          else { ok = pr.ok; status = pr.status; d = pr.d; nlFailed = true; }
+        }
+        if (!nlFailed) {
+          const inv = await hit("automotive-inventory", { action: "search", profile });
+          if (inv.ok) { ok = true; status = inv.status; d = inv.d; if (!d.profile) d.profile = profile; }
+          else { const fb = await hit(endpoint, payload); ok = fb.ok; status = fb.status; d = fb.d; } // provider hiccup → fall back
+        }
+      } else {
+        const r = await hit(endpoint, payload); ok = r.ok; status = r.status; d = r.d;
+      }
+    } catch (e) { ok = false; d = { error: "Network error — please try again." }; }
     if (!ok) { results.innerHTML = errorHtml(d, status, !!lead); return; }
     lastProfile = d.profile || (payload.query ? null : payload);
     renderResults(d);
@@ -440,4 +459,8 @@
   $("cmp-clear").addEventListener("click", () => { selected.clear(); document.querySelectorAll("[data-cmp]").forEach((c) => (c.checked = false)); updateCmpBar(); });
   $("cmp-close").addEventListener("click", () => $("cmp-modal").classList.add("hidden"));
   $("cmp-backdrop").addEventListener("click", () => $("cmp-modal").classList.add("hidden"));
+
+  // Live external inventory auto-activates the moment a provider key is configured.
+  fetch(FN("automotive-inventory"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "status" }) })
+    .then((r) => r.json()).then((d) => { liveInventory = !!(d && d.configured); }).catch(() => {});
 })();
