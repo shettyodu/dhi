@@ -18,3 +18,8 @@
 # Daily refresh of the Government bid-opportunity cache (SAM.gov → Netlify Blobs).
 [functions."gov-bids-refresh"]
   schedule = "@daily"
+
+# Keep the AutoCommand backend (Render free tier) warm — no cold-start lag on
+# the first buyer search. Every 10 minutes (Render sleeps after ~15 min idle).
+[functions."automotive-keepalive"]
+  schedule = "*/10 * * * *"
