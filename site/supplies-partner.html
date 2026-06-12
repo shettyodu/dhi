@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custom Design &amp; Procurement Membership — DHI Supplies</title>
+  <meta name="description" content="Request custom-designed or wholesale-manufactured medical supplies from DHI, or apply for a DHI Procurement Membership to supply as a vetted manufacturing partner." />
+  <link rel="canonical" href="https://courageous-fairy-0b2d3c.netlify.app/supplies-partner.html" />
+  <meta property="og:title" content="Custom Design & Procurement Membership — DHI" />
+  <meta property="og:description" content="Special-design / wholesale manufacturing requests, and vendor membership to join DHI's procurement network." />
+  <meta property="og:url" content="https://courageous-fairy-0b2d3c.netlify.app/supplies-partner.html" />
+  <meta property="og:image" content="https://courageous-fairy-0b2d3c.netlify.app/assets/img/banner.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}
+    .s-in{margin-top:.25rem;width:100%;border-radius:.5rem;border:1px solid #cbd5e1;padding:.6rem .75rem;font-size:.95rem}
+    .s-in:focus{outline:none;border-color:#06b6d4;box-shadow:0 0 0 2px rgba(6,182,212,.25)}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <section class="relative overflow-hidden bg-brand-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
+      <nav class="mb-5 flex items-center gap-2 text-sm text-slate-400">
+        <a href="index.html" class="hover:text-cyan-300">Home</a><span>/</span>
+        <a href="supplies.html" class="hover:text-cyan-300">Supplies</a><span>/</span>
+        <span class="text-slate-200">Design &amp; Membership</span>
+      </nav>
+      <p class="kicker text-sm font-semibold uppercase tracking-wider text-cyan-300">Custom design · wholesale · vendor network</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Design it, source it, or supply it</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">Need something custom-designed or wholesale-manufactured? Tell us your spec. Are you a manufacturer? Apply for a <strong class="text-white">DHI Procurement Membership</strong> to join our vetted supply network.</p>
+    </div>
+  </section>
+
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid gap-8 lg:grid-cols-2">
+
+      <!-- CUSTOM DESIGN / WHOLESALE REQUEST -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <span class="inline-block rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-cyan-700">For buyers</span>
+        <h2 class="mt-3 font-display text-xl font-bold text-brand-900">Custom design &amp; wholesale request</h2>
+        <p class="mt-1 text-sm text-slate-500">Custom-designed gowns, drapes, packs, apparel, or any bulk/private-label run — produced at DHI-managed domestic &amp; international facilities. Tell us what you need.</p>
+        <form id="design-form" class="mt-5 grid gap-3 sm:grid-cols-2">
+          <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Organization</span><input id="d-company" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Your name</span><input id="d-name" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Email</span><input id="d-email" type="email" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Phone <span class="text-slate-400">(optional)</span></span><input id="d-phone" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Product area</span>
+            <select id="d-category" class="s-in"><option value="">Select…</option><option>Gowns</option><option>Drapes</option><option>OT / procedure packs</option><option>Coveralls / apparel</option><option>Masks / face protection</option><option>Gloves</option><option>Textiles / linens</option><option>Other</option></select></label>
+          <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">What do you need? <span class="text-slate-400">(spec, fabric, size, branding)</span></span><textarea id="d-detail" rows="3" class="s-in"></textarea></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Estimated volume</span><input id="d-volume" class="s-in" placeholder="e.g. 50,000 units / month" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Target timeline</span><input id="d-timeline" class="s-in" placeholder="e.g. 8–12 weeks" /></label>
+          <div class="sm:col-span-2">
+            <button id="d-submit" type="submit" class="rounded-lg bg-cyan-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Send my request</button>
+            <span id="d-status" class="ml-3 text-sm"></span>
+          </div>
+        </form>
+        <div id="d-result" class="mt-4 hidden"></div>
+      </div>
+
+      <!-- PROCUREMENT MEMBERSHIP -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <span class="inline-block rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-800">For manufacturers</span>
+        <h2 class="mt-3 font-display text-xl font-bold text-brand-900">DHI Procurement Membership</h2>
+        <p class="mt-1 text-sm text-slate-500">Manufacturers &amp; wholesalers: apply to join DHI's vetted supply network and receive design and bulk-procurement requests. Membership is reviewed and approval-based.</p>
+        <form id="vendor-form" class="mt-5 grid gap-3 sm:grid-cols-2">
+          <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Company</span><input id="v-company" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Contact name</span><input id="v-name" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Email</span><input id="v-email" type="email" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Phone <span class="text-slate-400">(optional)</span></span><input id="v-phone" class="s-in" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Country / region</span><input id="v-region" class="s-in" /></label>
+          <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">What do you manufacture?</span><input id="v-products" class="s-in" placeholder="e.g. SMS gowns & drapes, nitrile gloves, masks" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Certifications / standards</span><input id="v-certs" class="s-in" placeholder="e.g. CE, ISO 13485, FDA, MDSAP" /></label>
+          <label class="block"><span class="text-sm font-medium text-slate-700">Website <span class="text-slate-400">(optional)</span></span><input id="v-web" class="s-in" /></label>
+          <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Capacity &amp; notes</span><textarea id="v-notes" rows="2" class="s-in" placeholder="Monthly capacity, MOQ, OEM/white-label, export experience…"></textarea></label>
+          <div class="sm:col-span-2">
+            <button id="v-submit" type="submit" class="rounded-lg bg-brand-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 disabled:opacity-60">Apply for membership</button>
+            <span id="v-status" class="ml-3 text-sm"></span>
+          </div>
+        </form>
+        <div id="v-result" class="mt-4 hidden"></div>
+      </div>
+    </div>
+    <p class="mx-auto mt-8 max-w-3xl text-center text-xs text-slate-400">DHI reviews each request and membership application. Submitting does not create a binding order or contract; a DHI representative follows up. Manufacturer names and locations are kept confidential.</p>
+  </main>
+
+  <script src="assets/components.js"></script>
+  <script src="assets/supplies-partner.js"></script>
+</body>
+</html>

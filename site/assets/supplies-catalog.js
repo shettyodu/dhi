@@ -209,9 +209,15 @@
         </p>
       </section>
       ${depts}${soon}
-      <div class="mt-10 rounded-xl border border-cyan-100 bg-cyan-50/60 p-4 text-sm text-slate-600">
-        <p class="font-semibold text-brand-900">Preferred Vendor Program</p>
-        <p class="mt-1">Volume &amp; bulk pricing, plus custom-design and private-label options for qualifying orders. Pricing, applicable taxes &amp; freight are provided with your quote.</p>
+      <div class="mt-10 grid gap-4 sm:grid-cols-2">
+        <div class="rounded-xl border border-cyan-100 bg-cyan-50/60 p-4 text-sm text-slate-600">
+          <p class="font-semibold text-brand-900">Custom design &amp; wholesale</p>
+          <p class="mt-1">Need a custom-designed or private-label run? Tell us your spec — produced at DHI-managed facilities. <a href="supplies-partner.html" class="font-semibold text-cyan-700 hover:underline">Request custom design &rarr;</a></p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+          <p class="font-semibold text-brand-900">DHI Procurement Membership</p>
+          <p class="mt-1">Manufacturers &amp; wholesalers — apply to join our vetted supply network. <a href="supplies-partner.html" class="font-semibold text-cyan-700 hover:underline">Apply for membership &rarr;</a></p>
+        </div>
       </div>`;
   }
 
@@ -344,7 +350,9 @@
           </li>`; }).join("")}</ul>` : `<p class="rounded-lg border border-dashed border-slate-300 p-8 text-center text-slate-500">Your cart is empty.</p>`}</div>
         <div class="border-t border-slate-200 px-5 py-4">
           ${items.length ? `<p class="mb-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">${items.length} item${items.length === 1 ? "" : "s"} ready. We'll prepare a quote with volume pricing, taxes &amp; freight and send it to you.</p>` : ""}
-          ${items.length ? `<a href="contact.html?interest=${encodeURIComponent("Supplies, Textiles & Linens")}" class="mb-2 block rounded-lg bg-cyan-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-cyan-700">Request a quote &rarr;</a>` : ""}
+          ${items.length ? `<a href="supplies-po.html" class="mb-2 block rounded-lg bg-cyan-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-cyan-700">Submit a purchase order &rarr;</a>` : ""}
+          ${items.length ? `<a href="contact.html?interest=${encodeURIComponent("Supplies, Textiles & Linens")}" class="mb-2 block rounded-lg border border-cyan-600 px-4 py-3 text-center text-sm font-semibold text-cyan-700 hover:bg-cyan-50">Request a quote instead</a>` : ""}
+          ${items.length ? `<p class="mb-2 text-center text-xs text-slate-400">Card checkout coming soon</p>` : ""}
           ${items.length ? `<button id="sqd-clear" class="mb-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-50">Clear list</button>` : ""}
         </div></aside>`;
     document.body.appendChild(panel);
