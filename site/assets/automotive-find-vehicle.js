@@ -23,6 +23,7 @@
   function toast(msg) { const t = $("toast"); if (!t) return; t.textContent = msg; t.classList.remove("opacity-0"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.add("opacity-0"), 2600); }
 
   let lastProfile = null;
+  let lastLead = null;
   let lastBuckets = [];
   let curBucket = 0;
   let dealFilter = "all", photosOnly = false, sortBy = "match"; // on-results refine state
@@ -103,7 +104,7 @@
     results.classList.remove("hidden");
     results.innerHTML = loadingHtml();
     results.scrollIntoView({ behavior: "smooth", block: "start" });
-    if (lead) captureLead(lead);
+    if (lead) { lastLead = lead; captureLead(lead); }
     let d = {}, ok = false, status = 0;
     try {
       const r = await fetch(FN(endpoint), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
@@ -216,6 +217,31 @@
     }
     grid.innerHTML = list.map(vehicleCard).join("");
     grid.querySelectorAll("[data-cmp]").forEach((cb) => cb.addEventListener("change", onCompareToggle));
+    grid.querySelectorAll("[data-get]").forEach((b) => b.addEventListener("click", () => getCar(b.dataset.get)));
+  }
+
+  // ---------- Model A handoff: choose a car → record interest + go to source ----
+  async function getCar(id) {
+    const v = findVehicle(id); if (!v) return;
+    const attr = (window.DHIAttribution ? window.DHIAttribution() : null);
+    const r = (attr && attr.ref) || ref || "";
+    if (lastLead && lastLead.name && lastLead.email) {
+      const lead = Object.assign({}, lastLead, {
+        type: "customer", source: "AutoCommand · vehicle interest", referral_code: r,
+        vehicle: `${v.year} ${v.make} ${v.model}${v.trim ? " " + v.trim : ""}`,
+        vehicle_id: v.vehicle_id, vin: v.vin || "", asking_price: v.asking_price,
+        listing_source: v.source_name || (v.deal_terms && v.deal_terms.source) || "", listing_url: v.listing_url || "",
+      });
+      fetch(FN("submit-lead"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(lead) }).catch(() => {});
+    }
+    if (v.listing_url) {
+      const sep = v.listing_url.indexOf("?") >= 0 ? "&" : "?";
+      const url = v.listing_url + sep + "utm_source=dhi-autocommand&utm_medium=referral" + (r ? "&ref=" + encodeURIComponent(r) : "");
+      window.open(url, "_blank", "noopener");
+      toast("Opening the listing at " + (v.source_name || "the source") + " — we'll track your deal.");
+    } else {
+      toast(lastLead && lastLead.email ? "Saved — a DHI advisor will follow up on this vehicle." : "Add your contact info in the search form and we'll line up this vehicle.");
+    }
   }
 
   function photoHtml(v) {
@@ -301,6 +327,7 @@
             <input type="checkbox" data-cmp data-id="${id}" ${checked} class="h-4 w-4 rounded border-slate-300 text-cyan-600" /> Compare
           </label>
         </div>
+        <button data-get="${id}" class="mt-3 w-full rounded-lg bg-cyan-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-cyan-700">${v.listing_url ? "Get this car &rarr;" : "Request this vehicle &rarr;"}</button>
       </div>
     </div>`;
   }
