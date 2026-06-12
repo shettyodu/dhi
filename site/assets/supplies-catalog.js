@@ -52,6 +52,9 @@
     { name: "Safety & PPE Kits", cats: ["Safety / PPE Packs"] },
   ];
   const COMING_SOON = ["Surgical Instruments & Tools", "Wound Care & Dressings", "Textiles & Linens", "Exam Room Supplies", "Sterilization & Infection Prevention"];
+  // Merchandising (Medline-style): best-seller categories + photo-forward popular products.
+  const BESTSELLERS = ["Gloves", "Surgical Gowns", "Surgical Drapes", "OT Packs", "Masks & Respirators", "Coveralls"];
+  const FEATURED = ["DHI-CVL-001", "DHI-MSK-001", "DHI-CAP-001", "DHI-MSK-003", "DHI-CVL-004", "DHI-CAP-005", "DHI-CAP-002", "DHI-CAP-006"];
 
   const byId = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
   const catCount = (c) => PRODUCTS.filter((p) => p.cat === c).length;
@@ -176,11 +179,35 @@
             </div>`).join("")}
         </div>
       </section>`;
+    const bestsellers = `
+      <section>
+        <p class="kicker text-xs font-semibold uppercase tracking-wider text-cyan-700">Browse our best-sellers</p>
+        <h2 class="font-display text-xl font-bold text-brand-900 sm:text-2xl">Your one-stop shop for thousands of medical supplies</h2>
+        <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          ${BESTSELLERS.filter((c) => catCount(c)).map((c) => `
+            <a href="#/c/${encodeURIComponent(c)}" class="group rounded-xl border border-slate-200 bg-white p-3 text-center shadow-sm transition-shadow hover:shadow-md">
+              ${catArt(c, "flex h-24 items-center justify-center rounded-lg bg-slate-50 p-2", "max-h-20 w-auto object-contain")}
+              <h3 class="mt-2 text-sm font-semibold text-brand-900 group-hover:text-cyan-700">${esc(c)}</h3>
+              <p class="text-xs text-slate-400">${catCount(c)} products</p>
+            </a>`).join("")}
+        </div>
+      </section>`;
+    const featuredItems = FEATURED.map((id) => byId[id]).filter(Boolean);
+    const featured = featuredItems.length ? `
+      <section class="mt-9">
+        <h2 class="font-display text-lg font-bold text-brand-900">Popular products</h2>
+        <div class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">${featuredItems.map(productCard).join("")}</div>
+      </section>` : "";
     app.innerHTML = `
-      <p class="mt-4 flex items-start gap-2 text-sm text-slate-500">
-        <svg class="mt-0.5 h-4 w-4 flex-none text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
-        <span><strong class="font-semibold text-brand-900">Pick a category</strong> to see every product we offer in that area, then add items to your quote list. ${esc(SOURCING)}</span>
-      </p>
+      ${bestsellers}
+      ${featured}
+      <section class="mt-10">
+        <h2 class="font-display text-lg font-bold text-brand-900">Shop by department</h2>
+        <p class="mt-1 flex items-start gap-2 text-sm text-slate-500">
+          <svg class="mt-0.5 h-4 w-4 flex-none text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>Pick a category to see every product we offer in that area, then add items to your quote list. ${esc(SOURCING)}</span>
+        </p>
+      </section>
       ${depts}${soon}
       <div class="mt-10 rounded-xl border border-cyan-100 bg-cyan-50/60 p-4 text-sm text-slate-600">
         <p class="font-semibold text-brand-900">Preferred Vendor Program</p>
