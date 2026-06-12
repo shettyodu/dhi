@@ -5,6 +5,7 @@
   const qs = new URLSearchParams(location.search);
   const API_BASE = (qs.get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
   const FN = API_BASE + "/.netlify/functions/submit-lead";
+  const FN_CHECKOUT = API_BASE + "/.netlify/functions/supplies-checkout";
   const STORE = "dhi_supplies_quote";
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -73,5 +74,50 @@
     finally { btn.disabled = false; }
   });
 
+  // ----- card checkout (Stripe; dormant until keys configured) -----
+  const cardBtn = $("po-card");
+  const pricedInCart = () => lines().some((l) => l.p && l.p.p != null);
+  async function initCard() {
+    if (!cardBtn) return;
+    if (!pricedInCart()) return;                 // quote-only cart → keep card hidden
+    try {
+      const r = await fetch(FN_CHECKOUT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "status" }) });
+      const d = await r.json().catch(() => ({}));
+      if (d && d.configured) { cardBtn.classList.remove("hidden"); cardBtn.classList.add("inline-flex"); }
+    } catch (e) { /* leave hidden */ }
+  }
+  if (cardBtn) cardBtn.addEventListener("click", async () => {
+    const status = $("po-status");
+    if (!pricedInCart()) { status.className = "text-sm text-red-600"; status.textContent = "These items are quote-only — submit a PO."; return; }
+    cardBtn.disabled = true; status.className = "text-sm text-slate-500"; status.textContent = "Opening secure card checkout…";
+    try {
+      const r = await fetch(FN_CHECKOUT, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create", origin: location.origin, items: lines().map((l) => ({ id: l.id, qty: l.qty, v: l.v, name: l.p.t })) }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.ok && d.url) { window.location.href = d.url; return; }
+      status.className = "text-sm text-red-600"; status.textContent = d.error || "Card checkout unavailable — submit a PO instead.";
+    } catch (e) { status.className = "text-sm text-red-600"; status.textContent = "Couldn't start card checkout — submit a PO instead."; }
+    finally { cardBtn.disabled = false; }
+  });
+
+  // success / cancel return from Stripe
+  (function handleReturn() {
+    if (qs.get("paid")) {
+      localStorage.removeItem(STORE); cart = [];
+      const res = $("po-result"); const form = $("po-form");
+      if (form) form.classList.add("hidden");
+      if (res) {
+        res.className = "mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-slate-700";
+        res.innerHTML = `<p class="font-semibold text-emerald-700">Payment received — thank you.</p><p class="mt-1">Your card order is confirmed. A DHI representative will follow up on delivery, taxes &amp; freight.</p><a href="supplies-catalog.html" class="mt-3 inline-block rounded-md bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">Back to catalog</a>`;
+        res.classList.remove("hidden");
+      }
+    } else if (qs.get("canceled")) {
+      const status = $("po-status"); if (status) { status.className = "text-sm text-amber-700"; status.textContent = "Card checkout canceled — your items are still here."; }
+    }
+  })();
+
   renderItems();
+  initCard();
 })();
