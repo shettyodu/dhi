@@ -137,7 +137,7 @@ async function searchInventory(profile) {
   }
   applyCohortDeal(vehicles);   // deal rating from comparable set when the provider gives no market value
   // single recommendation bucket so the existing find-vehicle UI renders it as-is
-  return { status: 200, json: { ok: true, provider: PROVIDER, count: vehicles.length, results: { buckets: [{ key: "live_inventory", label: "Live inventory matches", vehicles }] } } };
+  return { status: 200, json: { ok: true, provider: PROVIDER, count: vehicles.length, results: { total_count: vehicles.length, buckets: [{ key: "live_inventory", label: "Live inventory matches", vehicles }] } } };
 }
 
 // When the provider doesn't return a market value (e.g. Auto.dev), derive a

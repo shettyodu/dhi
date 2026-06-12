@@ -167,7 +167,11 @@
     dealFilter = "all"; photosOnly = false; sortBy = "match"; curBucket = 0; // fresh search → reset refine
     const r = d.results || {};
     lastBuckets = Array.isArray(r.buckets) ? r.buckets.filter((b) => b.vehicles && b.vehicles.length) : [];
-    const total = r.total_count != null ? r.total_count : 0;
+    // Prefer an explicit total from the backend; otherwise derive it from the
+    // buckets we actually rendered (the live-inventory response has no total_count).
+    const total = r.total_count != null ? r.total_count
+      : (d.count != null ? d.count
+        : lastBuckets.reduce((n, b) => n + (b.vehicles ? b.vehicles.length : 0), 0));
     if (!lastBuckets.length) {
       results.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         <p class="font-semibold text-brand-900">No matches yet</p>
