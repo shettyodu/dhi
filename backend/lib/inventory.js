@@ -135,8 +135,27 @@ async function searchInventory(profile) {
     v.deal_terms = dealTermsFor(v);
     vehicles.push(v);
   }
+  applyCohortDeal(vehicles);   // deal rating from comparable set when the provider gives no market value
   // single recommendation bucket so the existing find-vehicle UI renders it as-is
   return { status: 200, json: { ok: true, provider: PROVIDER, count: vehicles.length, results: { buckets: [{ key: "live_inventory", label: "Live inventory matches", vehicles }] } } };
+}
+
+// When the provider doesn't return a market value (e.g. Auto.dev), derive a
+// deal rating from the median price of each make|model|year cohort in the result
+// set (>= 3 comparables). No extra API calls; only fills price_vs_market_pct
+// where it's genuinely absent.
+function median(a) { const s = a.filter((x) => x != null).sort((x, y) => x - y); if (!s.length) return null; const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+function applyCohortDeal(vehicles) {
+  const groups = {};
+  for (const v of vehicles) { if (v.asking_price == null) continue; const k = `${v.make}|${v.model}|${v.year}`.toLowerCase(); (groups[k] = groups[k] || []).push(v.asking_price); }
+  for (const v of vehicles) {
+    if (v.score.price_vs_market_pct != null || v.asking_price == null) continue;
+    const g = groups[`${v.make}|${v.model}|${v.year}`.toLowerCase()] || [];
+    if (g.length >= 3) {
+      const ref = median(g);
+      if (ref) { v.score.price_vs_market_pct = Math.round(((v.asking_price - ref) / ref) * 1000) / 10; v.score.market_basis = "comparable set"; }
+    }
+  }
 }
 
 module.exports = { configured, searchInventory, dealTermsFor };
