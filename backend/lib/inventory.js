@@ -63,23 +63,28 @@ function normMarketcheck(r) {
 }
 
 // ---- Auto.dev (auto.dev/api/listings) ---------------------------------------
+// Auto.dev returns price/mileage as formatted strings ("$28,500"), clickoffUrl
+// as a relative path, and no market value in the basic listing (so no deal %).
+const money = (x) => { if (x == null) return null; if (typeof x === "number") return isNaN(x) ? null : x; const n = Number(String(x).replace(/[^0-9.]/g, "")); return isNaN(n) ? null : n; };
 function normAutodev(r) {
-  const price = num(r.price || r.priceUnformatted);
-  const ref = num(r.priceMarket || r.marketValue) || null;
+  const price = money(r.priceUnformatted != null ? r.priceUnformatted : r.price);
+  const ref = money(r.priceMarket != null ? r.priceMarket : (r.marketValue != null ? r.marketValue : r.retailValue));
+  let url = r.clickoffUrl || r.vdpUrl || r.detailUrl || "";
+  if (url && url.indexOf("http") !== 0) url = "https://www.auto.dev" + (url.charAt(0) === "/" ? "" : "/") + url;
   return {
     vehicle_id: String(r.id || r.vin || ""),
     vin: r.vin || "",
     year: num(r.year), make: r.make || "", model: r.model || "", trim: r.trim || "",
-    mileage: num(r.mileage || r.mileageUnformatted), asking_price: price,
+    mileage: money(r.mileageUnformatted != null ? r.mileageUnformatted : r.mileage), asking_price: price,
     drivetrain: r.drivetrain || r.driveType || "", fuel_type: r.fuelType || r.fuel || "", transmission: r.transmission || "",
-    exterior_color: r.exteriorColor || r.color || "",
+    exterior_color: r.displayColor || r.exteriorColor || r.color || "",
     location_city: r.city || "", location_state: r.state || "",
     photos: (Array.isArray(r.photoUrls) && r.photoUrls) || (r.primaryPhotoUrl ? [r.primaryPhotoUrl] : []),
     source_name: r.dealerName || r.sellerName || "", source_type: r.sellerType || "dealer",
     source_provider: "autodev",
-    listing_url: r.clickoffUrl || r.vdpUrl || r.detailUrl || "",
+    listing_url: url,
     title_status: r.titleStatus || "", accident_count: null,
-    score: { overall_score: null, price_vs_market_pct: pctVsMarket(price, ref), dealer_reliability: null, mileage_class: null, title_risk: false, shipping_adjusted_cost: price },
+    score: { overall_score: null, price_vs_market_pct: pctVsMarket(price, ref), dealer_reliability: null, mileage_class: null, title_risk: false, shipping_adjusted_cost: null },
   };
 }
 
