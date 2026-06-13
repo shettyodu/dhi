@@ -79,6 +79,51 @@
     return p;
   }
 
+  // Parse a plain-English query ("2022 toyota suv under 35k, below 60k miles, AWD")
+  // into a /search profile entirely in-browser — no LLM round-trip. This keeps the
+  // NL box as fast and reliable as the structured form when live inventory is on.
+  const MAKES = ["mercedes-benz", "land rover", "alfa romeo", "toyota", "honda", "ford", "chevrolet", "chevy", "nissan", "jeep", "subaru", "hyundai", "kia", "mazda", "volkswagen", "vw", "bmw", "mercedes", "audi", "lexus", "acura", "gmc", "ram", "dodge", "chrysler", "buick", "cadillac", "tesla", "volvo", "porsche", "jaguar", "mitsubishi", "mini", "infiniti", "lincoln", "genesis", "fiat"];
+  const MAKE_FIX = { chevy: "Chevrolet", vw: "Volkswagen" };
+  const BODY = { suv: "SUV", sedan: "Sedan", pickup: "Truck", truck: "Truck", coupe: "Coupe", hatchback: "Hatchback", minivan: "Minivan", van: "Van", wagon: "Wagon", convertible: "Convertible" };
+  function titleCase(s) { return s.replace(/\b\w/g, (c) => c.toUpperCase()); }
+  function parseNL(query) {
+    const q = " " + String(query || "").toLowerCase() + " ";
+    const p = {};
+    // make (longest names first so "land rover" wins over a stray "rover")
+    for (const m of MAKES) { if (new RegExp("\\b" + m.replace(/[-]/g, "\\$&") + "\\b").test(q)) { p.make = MAKE_FIX[m] || titleCase(m); break; } }
+    // body style / fuel / drivetrain
+    for (const k in BODY) { if (new RegExp("\\b" + k + "s?\\b").test(q)) { p.body_style = BODY[k]; break; } }
+    if (/\bhybrids?\b/.test(q)) p.fuel_type = "Hybrid";
+    else if (/\b(electric|ev|evs)\b/.test(q)) p.fuel_type = "Electric";
+    else if (/\bdiesels?\b/.test(q)) p.fuel_type = "Diesel";
+    const dt = q.match(/\b(awd|4wd|4x4|fwd|rwd)\b/);
+    if (dt) p.drivetrain = dt[1] === "4x4" ? "4WD" : dt[1].toUpperCase();
+    // year(s)
+    Object.assign(p, years(q));
+    // location (and remember the zip so it isn't misread as money below)
+    const where = loc(q); Object.assign(p, where);
+    // mileage: a number (optionally with "k") immediately followed by mi/mile(s)
+    let rest = q;
+    const mileM = q.match(/(\d[\d,\.]*)\s*(k)?\s*(?:mi|mile|miles)\b/);
+    if (mileM) {
+      let v = parseFloat(mileM[1].replace(/,/g, "")); if (isNaN(v)) v = null;
+      if (v != null) { if (mileM[2]) v *= 1000; else if (v < 1000) v *= 1000; p.mileage_max = Math.round(v); }
+      rest = q.replace(mileM[0], " ");
+    }
+    // strip years, zip, and model codes (f-150, q50, cx-5, x3) from the price
+    // text so they aren't misread as dollars. Leave "35k"-style amounts intact.
+    rest = rest.replace(/\b(?:19|20)\d{2}\b/g, " ");
+    rest = rest.replace(/\b[a-z]{1,3}-?\d+\b/g, " ");
+    if (where.location_zip) rest = rest.replace(where.location_zip, " ");
+    const money = moneyRange(rest);
+    if (money.min != null && money.max != null) { p.budget_min = money.min; p.budget_max = money.max; }
+    else if (money.max != null || money.min != null) {
+      const v = money.max != null ? money.max : money.min;
+      if (/\b(over|above|more than|at least|min|starting)\b/.test(q)) p.budget_min = v; else p.budget_max = v;
+    }
+    return p;
+  }
+
   function leadFromForm() {
     return {
       type: "customer", referral_code: ref,
@@ -113,19 +158,15 @@
     }
     try {
       if (liveInventory) {
-        // Route to real external inventory. For NL, parse the query into a profile
-        // via the AI backend first, then query live inventory with that profile.
-        let profile = payload, nlFailed = false;
-        if (endpoint === "automotive-search-nl") {
-          const pr = await hit("automotive-search-nl", payload);
-          if (pr.ok && pr.d) { profile = pr.d.profile || {}; lastProfile = profile; }
-          else { ok = pr.ok; status = pr.status; d = pr.d; nlFailed = true; }
-        }
-        if (!nlFailed) {
-          const inv = await hit("automotive-inventory", { action: "search", profile });
-          if (inv.ok) { ok = true; status = inv.status; d = inv.d; if (!d.profile) d.profile = profile; }
-          else { const fb = await hit(endpoint, payload); ok = fb.ok; status = fb.status; d = fb.d; } // provider hiccup → fall back
-        }
+        // Route to real external inventory. For NL we parse the query into a profile
+        // in-browser (instant, no LLM round-trip) and query live inventory directly —
+        // this avoids the slow Flask /search/nl hop that was timing out (504) against
+        // Netlify's function cap. The AI backend stays as a fallback on provider error.
+        let profile = payload;
+        if (endpoint === "automotive-search-nl") { profile = parseNL(payload.query || ""); lastProfile = profile; }
+        const inv = await hit("automotive-inventory", { action: "search", profile });
+        if (inv.ok) { ok = true; status = inv.status; d = inv.d; if (!d.profile) d.profile = profile; }
+        else { const fb = await hit(endpoint, payload); ok = fb.ok; status = fb.status; d = fb.d; } // provider hiccup → fall back to AI backend
       } else {
         const r = await hit(endpoint, payload); ok = r.ok; status = r.status; d = r.d;
       }
