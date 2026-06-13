@@ -291,11 +291,20 @@
   const DEALER_DEMO = /[?&](dealerdemo|buydirect)=1/i.test(location.search);
   function vehicleLabel(v) { return `${v.year} ${v.make} ${v.model}${v.trim ? " " + v.trim : ""}`.trim(); }
   function contactFromForm() { return { name: val("fv-name"), email: val("fv-email"), phone: val("fv-phone") }; }
+  // Deterministic ~50/50 split for demo mode so a preview looks like real
+  // production (a natural mix of buy-direct + concierge), and stays stable for a
+  // given vehicle across sorts/re-renders.
+  function demoBuyDirect(v) {
+    const key = String(v.vin || v.vehicle_id || v.title || "");
+    let h = 0; for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+    return h % 2 === 0;
+  }
   // A listing is "buy direct" when the provider gives a real, openable dealer link
-  // (paid tier / direct dealer feed). Until then it's concierge (lead-based).
+  // (paid tier / direct dealer feed). Until then it's concierge (lead-based). In
+  // demo mode, ~half the cards are shown as buy-direct to mimic production.
   function dealerLink(v) {
     if (v.listing_url && /^https?:\/\//.test(v.listing_url)) return { url: v.listing_url, demo: false };
-    if (DEALER_DEMO) { const q = encodeURIComponent(`${vehicleLabel(v)} ${v.source_name || ""}`.trim()); return { url: `https://www.google.com/search?q=${q}`, demo: true }; }
+    if (DEALER_DEMO && demoBuyDirect(v)) { const q = encodeURIComponent(`${vehicleLabel(v)} ${v.source_name || ""}`.trim()); return { url: `https://www.google.com/search?q=${q}`, demo: true }; }
     return null;
   }
   function isBuyDirect(v) { return !!dealerLink(v); }
