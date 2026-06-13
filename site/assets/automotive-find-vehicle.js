@@ -286,8 +286,24 @@
 
   // ---------- Model A handoff: choose a car → record interest + go to source ----
   let pendingVehicleId = null; // set when "Request this vehicle" is clicked before contact info is entered
+  // Demo toggle: ?dealerDemo=1 previews the "Continue to dealer" hand-off even
+  // before real dealer clickoff links exist, so the team can walk the flow.
+  const DEALER_DEMO = /[?&](dealerdemo|buydirect)=1/i.test(location.search);
   function vehicleLabel(v) { return `${v.year} ${v.make} ${v.model}${v.trim ? " " + v.trim : ""}`.trim(); }
   function contactFromForm() { return { name: val("fv-name"), email: val("fv-email"), phone: val("fv-phone") }; }
+  // A listing is "buy direct" when the provider gives a real, openable dealer link
+  // (paid tier / direct dealer feed). Until then it's concierge (lead-based).
+  function dealerLink(v) {
+    if (v.listing_url && /^https?:\/\//.test(v.listing_url)) return { url: v.listing_url, demo: false };
+    if (DEALER_DEMO) { const q = encodeURIComponent(`${vehicleLabel(v)} ${v.source_name || ""}`.trim()); return { url: `https://www.google.com/search?q=${q}`, demo: true }; }
+    return null;
+  }
+  function isBuyDirect(v) { return !!dealerLink(v); }
+  function fulfillmentBadge(v) {
+    return isBuyDirect(v)
+      ? `<span class="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200" title="Buy directly from the dealer — completes on the dealer's site">Buy direct</span>`
+      : `<span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500" title="A DHI advisor lines up this vehicle for you">Concierge</span>`;
+  }
   function submitVehicleRequest(v, contact) {
     const attr = (window.DHIAttribution ? window.DHIAttribution() : null);
     const r = (attr && attr.ref) || ref || "";
@@ -302,18 +318,10 @@
   }
   async function getCar(id) {
     const v = findVehicle(id); if (!v) return;
-    // If the provider gives a real, openable clickoff link (paid arrangement),
-    // hand the buyer off to the source with attribution and log the referral.
-    if (v.listing_url && /^https?:\/\//.test(v.listing_url)) {
-      const attr = (window.DHIAttribution ? window.DHIAttribution() : null);
-      const r = (attr && attr.ref) || ref || "";
-      const sep = v.listing_url.indexOf("?") >= 0 ? "&" : "?";
-      window.open(v.listing_url + sep + "utm_source=dhi-autocommand&utm_medium=referral" + (r ? "&ref=" + encodeURIComponent(r) : ""), "_blank", "noopener");
-      submitVehicleRequest(v, contactFromForm());
-      toast("Opening the listing at " + (v.source_name || "the source") + " — we'll track your deal.");
-      return;
-    }
-    // Lead-based listing (no public page) → request this exact VIN; an advisor sources it.
+    // Path A — buy direct: a real dealer link exists (or demo mode) → show the
+    // visible hand-off so the buyer completes the purchase on the dealer's site.
+    if (isBuyDirect(v)) { openHandoff(v); return; }
+    // Otherwise concierge: request this exact VIN; a DHI advisor sources it.
     const c = contactFromForm();
     if (c.email && c.name) {
       submitVehicleRequest(v, c);
@@ -325,6 +333,52 @@
       if (nameEl) { nameEl.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => nameEl.focus(), 300); }
       toast("Add your name & email below, then submit and we'll line up this " + vehicleLabel(v) + ".");
     }
+  }
+
+  // ---- Path A: visible "Continue to dealer" hand-off ----------------------------
+  // A clear interstitial so the buyer knows they're completing on the dealer's site
+  // with DHI tracking the deal. Activates automatically when a real dealer link
+  // exists; ?dealerDemo=1 lets the team preview it before links are connected.
+  function closeHandoff() { const m = $("dealer-modal"); if (m) m.remove(); document.removeEventListener("keydown", onHandoffKey); }
+  function onHandoffKey(e) { if (e.key === "Escape") closeHandoff(); }
+  function openHandoff(v) {
+    const d = dealerLink(v); if (!d) return;
+    const attr = (window.DHIAttribution ? window.DHIAttribution() : null);
+    const r = (attr && attr.ref) || ref || "";
+    const sep = d.url.indexOf("?") >= 0 ? "&" : "?";
+    const finalUrl = d.url + sep + "utm_source=dhi-autocommand&utm_medium=referral" + (r ? "&ref=" + encodeURIComponent(r) : "");
+    const dealer = esc(v.source_name || "the dealer");
+    closeHandoff();
+    const wrap = document.createElement("div");
+    wrap.id = "dealer-modal";
+    wrap.className = "fixed inset-0 z-[60] flex items-center justify-center p-4";
+    wrap.innerHTML = `
+      <div data-close class="absolute inset-0 bg-brand-950/60"></div>
+      <div role="dialog" aria-modal="true" class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div class="bg-brand-900 px-5 py-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-cyan-300">Continue to dealer</p>
+          <h3 class="mt-0.5 text-lg font-bold text-white">${esc(vehicleLabel(v))}</h3>
+          <p class="text-sm text-cyan-100">${fmtUSD(v.asking_price)} · ${dealer}${v.location_state ? " · " + esc(v.location_state) : ""}</p>
+        </div>
+        <div class="px-5 py-4">
+          <ol class="space-y-2 text-sm text-slate-600">
+            <li class="flex gap-2"><span class="font-semibold text-cyan-600">1.</span><span>We'll open <b>${dealer}</b>'s listing in a new tab with DHI tracking.</span></li>
+            <li class="flex gap-2"><span class="font-semibold text-cyan-600">2.</span><span>You complete the purchase with the dealer at their listed price.</span></li>
+            <li class="flex gap-2"><span class="font-semibold text-cyan-600">3.</span><span>DHI stays with your deal for support — reach us anytime if you need help.</span></li>
+          </ol>
+          ${d.demo ? `<p class="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 ring-1 ring-amber-200">Preview mode — with a connected dealer, Continue opens their exact listing. (This demo opens a search for the vehicle.)</p>` : ""}
+          <div class="mt-4 flex gap-2">
+            <button data-close class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+            <a data-go href="${esc(finalUrl)}" target="_blank" rel="noopener" class="flex-1 rounded-lg bg-cyan-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-cyan-700">Continue to ${dealer} &rarr;</a>
+          </div>
+          <p class="mt-2 text-center text-[11px] text-slate-400">The sale completes on the dealer's site. DHI does not take payment for vehicles.</p>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeHandoff));
+    const go = wrap.querySelector("[data-go]");
+    if (go) go.addEventListener("click", () => { submitVehicleRequest(v, contactFromForm()); closeHandoff(); toast("Opening " + (v.source_name || "the dealer") + " — we're tracking your deal."); });
+    document.addEventListener("keydown", onHandoffKey);
   }
 
   function photoHtml(v) {
@@ -404,13 +458,16 @@
           <span>${esc(v.location_city || "")}${v.location_city ? ", " : ""}${esc(v.location_state || "")}</span>
         </div>
         <p class="mt-2 text-xs text-slate-500"><span class="font-medium text-slate-600">Why:</span> ${why.join(" · ")}</p>
-        <div class="mt-3 flex items-center justify-between">
-          <span class="text-xs text-slate-400">${esc(v.source_name || v.source_type || "")}</span>
-          <label class="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-slate-600">
+        <div class="mt-3 flex items-center justify-between gap-2">
+          <div class="flex min-w-0 items-center gap-1.5">
+            <span class="truncate text-xs text-slate-400">${esc(v.source_name || v.source_type || "")}</span>
+            ${fulfillmentBadge(v)}
+          </div>
+          <label class="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs font-medium text-slate-600">
             <input type="checkbox" data-cmp data-id="${id}" ${checked} class="h-4 w-4 rounded border-slate-300 text-cyan-600" /> Compare
           </label>
         </div>
-        <button data-get="${id}" class="mt-3 w-full rounded-lg bg-cyan-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-cyan-700">${v.listing_url ? "Get this car &rarr;" : "Request this vehicle &rarr;"}</button>
+        <button data-get="${id}" class="mt-3 w-full rounded-lg bg-cyan-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-cyan-700">${isBuyDirect(v) ? "Continue to dealer &rarr;" : "Request this vehicle &rarr;"}</button>
       </div>
     </div>`;
   }
