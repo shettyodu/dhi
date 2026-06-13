@@ -69,8 +69,14 @@ const money = (x) => { if (x == null) return null; if (typeof x === "number") re
 function normAutodev(r) {
   const price = money(r.priceUnformatted != null ? r.priceUnformatted : r.price);
   const ref = money(r.priceMarket != null ? r.priceMarket : (r.marketValue != null ? r.marketValue : r.retailValue));
-  let url = r.clickoffUrl || r.vdpUrl || r.detailUrl || "";
-  if (url && url.indexOf("http") !== 0) url = "https://www.auto.dev" + (url.charAt(0) === "/" ? "" : "/") + url;
+  // Only use a clickoff URL that's a real absolute link the buyer can actually
+  // open. Auto.dev metasearch listings have clickoffUrl=null / clickOff=false and
+  // expose only an internal vdpUrl/hrefTarget that 404s off-platform — those are
+  // lead-based (acceptsLeads), so we hand the buyer off via a DHI advisor request
+  // instead of opening a dead page. listing_url stays "" unless a true clickoff exists.
+  let url = r.clickoffUrl || r.clickOffUrl || "";
+  if (url && url.indexOf("http") !== 0) url = "";
+  const acceptsLeads = r.acceptsLeads === true || (!url && r.clickOff !== true);
   return {
     vehicle_id: String(r.id || r.vin || ""),
     vin: r.vin || "",
@@ -82,7 +88,7 @@ function normAutodev(r) {
     photos: (Array.isArray(r.photoUrls) && r.photoUrls) || (r.primaryPhotoUrl ? [r.primaryPhotoUrl] : []),
     source_name: r.dealerName || r.sellerName || "", source_type: r.sellerType || "dealer",
     source_provider: "autodev",
-    listing_url: url,
+    listing_url: url, accepts_leads: acceptsLeads,
     title_status: r.titleStatus || "", accident_count: null,
     score: { overall_score: null, price_vs_market_pct: pctVsMarket(price, ref), dealer_reliability: null, mileage_class: null, title_risk: false, shipping_adjusted_cost: null },
   };

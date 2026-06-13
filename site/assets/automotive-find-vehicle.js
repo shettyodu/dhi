@@ -285,26 +285,45 @@
   }
 
   // ---------- Model A handoff: choose a car → record interest + go to source ----
-  async function getCar(id) {
-    const v = findVehicle(id); if (!v) return;
+  let pendingVehicleId = null; // set when "Request this vehicle" is clicked before contact info is entered
+  function vehicleLabel(v) { return `${v.year} ${v.make} ${v.model}${v.trim ? " " + v.trim : ""}`.trim(); }
+  function contactFromForm() { return { name: val("fv-name"), email: val("fv-email"), phone: val("fv-phone") }; }
+  function submitVehicleRequest(v, contact) {
     const attr = (window.DHIAttribution ? window.DHIAttribution() : null);
     const r = (attr && attr.ref) || ref || "";
-    if (lastLead && lastLead.name && lastLead.email) {
-      const lead = Object.assign({}, lastLead, {
-        type: "customer", source: "AutoCommand · vehicle interest", referral_code: r,
-        vehicle: `${v.year} ${v.make} ${v.model}${v.trim ? " " + v.trim : ""}`,
-        vehicle_id: v.vehicle_id, vin: v.vin || "", asking_price: v.asking_price,
-        listing_source: v.source_name || (v.deal_terms && v.deal_terms.source) || "", listing_url: v.listing_url || "",
-      });
-      fetch(FN("submit-lead"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(lead) }).catch(() => {});
-    }
-    if (v.listing_url) {
+    const lead = {
+      type: "customer", source: "AutoCommand · vehicle request", referral_code: r,
+      name: contact.name, email: contact.email, phone: contact.phone,
+      vehicle: vehicleLabel(v), vehicle_id: v.vehicle_id, vin: v.vin || "", asking_price: v.asking_price,
+      listing_source: v.source_name || (v.deal_terms && v.deal_terms.source) || "", listing_url: v.listing_url || "",
+      location: (v.location_city || "") + (v.location_state ? ", " + v.location_state : ""),
+    };
+    return fetch(FN("submit-lead"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(lead) }).catch(() => {});
+  }
+  async function getCar(id) {
+    const v = findVehicle(id); if (!v) return;
+    // If the provider gives a real, openable clickoff link (paid arrangement),
+    // hand the buyer off to the source with attribution and log the referral.
+    if (v.listing_url && /^https?:\/\//.test(v.listing_url)) {
+      const attr = (window.DHIAttribution ? window.DHIAttribution() : null);
+      const r = (attr && attr.ref) || ref || "";
       const sep = v.listing_url.indexOf("?") >= 0 ? "&" : "?";
-      const url = v.listing_url + sep + "utm_source=dhi-autocommand&utm_medium=referral" + (r ? "&ref=" + encodeURIComponent(r) : "");
-      window.open(url, "_blank", "noopener");
+      window.open(v.listing_url + sep + "utm_source=dhi-autocommand&utm_medium=referral" + (r ? "&ref=" + encodeURIComponent(r) : ""), "_blank", "noopener");
+      submitVehicleRequest(v, contactFromForm());
       toast("Opening the listing at " + (v.source_name || "the source") + " — we'll track your deal.");
+      return;
+    }
+    // Lead-based listing (no public page) → request this exact VIN; an advisor sources it.
+    const c = contactFromForm();
+    if (c.email && c.name) {
+      submitVehicleRequest(v, c);
+      pendingVehicleId = null;
+      toast("Request received — a DHI advisor will line up this " + vehicleLabel(v) + " and follow up.");
     } else {
-      toast(lastLead && lastLead.email ? "Saved — a DHI advisor will follow up on this vehicle." : "Add your contact info in the search form and we'll line up this vehicle.");
+      pendingVehicleId = id;
+      const nameEl = $("fv-name");
+      if (nameEl) { nameEl.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => nameEl.focus(), 300); }
+      toast("Add your name & email below, then submit and we'll line up this " + vehicleLabel(v) + ".");
     }
   }
 
@@ -476,6 +495,13 @@
     e.preventDefault();
     const profile = buildProfile();
     const btn = $("fv-submit"); btn.disabled = true; setTimeout(() => (btn.disabled = false), 800);
+    // If the buyer clicked "Request this vehicle" before entering contact info,
+    // attach that specific vehicle to this submission now that we have their details.
+    if (pendingVehicleId) {
+      const v = findVehicle(pendingVehicleId); const c = contactFromForm();
+      if (v && c.email && c.name) { submitVehicleRequest(v, c); toast("Request received — a DHI advisor will line up this " + vehicleLabel(v) + "."); }
+      pendingVehicleId = null;
+    }
     runSearch("automotive-search", profile, leadFromForm());
   });
   const nlGo = $("nl-go");
