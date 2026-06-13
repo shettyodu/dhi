@@ -40,6 +40,44 @@ async function fetchJSON(url, opts) {
 
 const pctVsMarket = (price, ref) => (price && ref) ? Math.round(((price - ref) / ref) * 1000) / 10 : null;
 
+// Geocode a city/place to lat/lon so Auto.dev's radius filter works. Common US
+// metros resolve instantly from a built-in table; anything else falls back to
+// the free, key-less OpenStreetMap (Nominatim) geocoder (US-scoped, short timeout).
+const CITY_GEO = {
+  "norfolk": [36.8508, -76.2859], "virginia beach": [36.8529, -75.9780], "chesapeake": [36.7682, -76.2875],
+  "richmond": [37.5407, -77.4360], "raleigh": [35.7796, -78.6382], "durham": [35.9940, -78.8986],
+  "charlotte": [35.2271, -80.8431], "greensboro": [36.0726, -79.7920], "washington": [38.9072, -77.0369],
+  "baltimore": [39.2904, -76.6122], "atlanta": [33.7490, -84.3880], "charleston": [32.7765, -79.9311],
+  "columbia": [34.0007, -81.0348], "nashville": [36.1627, -86.7816], "knoxville": [35.9606, -83.9207],
+  "new york": [40.7128, -74.0060], "philadelphia": [39.9526, -75.1652], "boston": [42.3601, -71.0589],
+  "chicago": [41.8781, -87.6298], "detroit": [42.3314, -83.0458], "dallas": [32.7767, -96.7970],
+  "houston": [29.7604, -95.3698], "austin": [30.2672, -97.7431], "san antonio": [29.4241, -98.4936],
+  "denver": [39.7392, -104.9903], "phoenix": [33.4484, -112.0740], "las vegas": [36.1699, -115.1398],
+  "los angeles": [34.0522, -118.2437], "san diego": [32.7157, -117.1611], "san francisco": [37.7749, -122.4194],
+  "seattle": [47.6062, -122.3321], "portland": [45.5152, -122.6784], "miami": [25.7617, -80.1918],
+  "orlando": [28.5383, -81.3792], "tampa": [27.9506, -82.4572], "jacksonville": [30.3322, -81.6557],
+  "minneapolis": [44.9778, -93.2650], "st louis": [38.6270, -90.1994], "kansas city": [39.0997, -94.5786],
+  "newport news": [37.0871, -76.4730], "hampton": [37.0299, -76.3452], "suffolk": [36.7282, -76.5836],
+};
+async function geocode(text, state) {
+  const key = String(text || "").toLowerCase().replace(/[.'-]/g, "").replace(/\s+/g, " ").trim();
+  if (key && CITY_GEO[key]) return { lat: CITY_GEO[key][0], lon: CITY_GEO[key][1] };
+  if (!key) return null;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 4000);
+  try {
+    const params = new URLSearchParams({ format: "json", limit: "1", country: "us", city: text });
+    if (state) params.set("state", state);
+    const r = await fetch("https://nominatim.openstreetmap.org/search?" + params.toString(), {
+      headers: { "User-Agent": "DHI-AutoCommand/1.0 (vehicle search)", Accept: "application/json" }, signal: ctrl.signal,
+    });
+    if (!r.ok) return null;
+    const j = await r.json().catch(() => []);
+    if (Array.isArray(j) && j[0] && j[0].lat && j[0].lon) return { lat: Number(j[0].lat), lon: Number(j[0].lon) };
+  } catch (e) { /* geocode best-effort */ } finally { clearTimeout(timer); }
+  return null;
+}
+
 // ---- Marketcheck (api.marketcheck.com/v2/search/car/active) -----------------
 function normMarketcheck(r) {
   const vd = r.vehicle || r.build || {};
@@ -121,7 +159,14 @@ async function searchInventory(profile) {
       if (p.year_min) q.set("year_min", String(p.year_min));
       if (p.year_max) q.set("year_max", String(p.year_max));
       if (p.mileage_max) q.set("mileage_max", String(Math.round(p.mileage_max)));
+      // Location: a ZIP filters by zip+radius directly. A city/place is geocoded
+      // to lat/lon so the radius is honored (Auto.dev ignores free-text location).
       if (p.location_zip) { q.set("zip", p.location_zip); q.set("radius", String(p.radius || RADIUS)); }
+      else if (p.location_text || p.location_state) {
+        const geo = await geocode(p.location_text, p.location_state);
+        if (geo) { q.set("latitude", String(geo.lat)); q.set("longitude", String(geo.lon)); q.set("radius", String(p.radius || RADIUS)); }
+        else if (p.location_state) { q.set("state", p.location_state); }
+      }
       const r = await fetchJSON("https://auto.dev/api/listings?" + q.toString(), { headers: { Authorization: `Bearer ${KEY}` } });
       if (!r.ok) return { status: 502, json: { ok: false, error: "Inventory provider unavailable (Auto.dev)." } };
       raw = (r.data && (r.data.records || r.data.listings)) || [];

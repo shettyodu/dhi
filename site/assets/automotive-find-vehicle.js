@@ -50,10 +50,15 @@
     return ys.length === 1 ? { year_min: ys[0] } : { year_min: Math.min(...ys), year_max: Math.max(...ys) };
   }
   function loc(s) {
-    const out = {}; const raw = String(s || "");
+    const out = {}; const raw = String(s || "").trim();
     const zip = raw.match(/\b(\d{5})\b/); if (zip) out.location_zip = zip[1];
-    const st = raw.match(/,\s*([A-Za-z]{2})\b/) || raw.match(/\b([A-Za-z]{2})\b\s*$/);
-    if (st) out.location_state = st[1].toUpperCase();
+    const cs = raw.match(/^([a-zA-Z][a-zA-Z.'\- ]+?)\s*,\s*([a-zA-Z]{2})\b/); // "Norfolk, VA"
+    if (cs) { out.location_text = cs[1].trim(); out.location_state = cs[2].toUpperCase(); return out; }
+    if (!out.location_zip) {
+      if (/^[A-Za-z]{2}$/.test(raw)) out.location_state = raw.toUpperCase();              // just "VA"
+      else if (/^[a-zA-Z][a-zA-Z.'\- ]{2,}$/.test(raw)) out.location_text = raw.trim();    // just "Norfolk"
+      else { const st = raw.match(/\b([A-Za-z]{2})\b\s*$/); if (st) out.location_state = st[1].toUpperCase(); }
+    }
     return out;
   }
   function val(id) { const el = $(id); return el ? el.value.trim() : ""; }
@@ -85,6 +90,34 @@
   const MAKES = ["mercedes-benz", "land rover", "alfa romeo", "toyota", "honda", "ford", "chevrolet", "chevy", "nissan", "jeep", "subaru", "hyundai", "kia", "mazda", "volkswagen", "vw", "bmw", "mercedes", "audi", "lexus", "acura", "gmc", "ram", "dodge", "chrysler", "buick", "cadillac", "tesla", "volvo", "porsche", "jaguar", "mitsubishi", "mini", "infiniti", "lincoln", "genesis", "fiat"];
   const MAKE_FIX = { chevy: "Chevrolet", vw: "Volkswagen" };
   const BODY = { suv: "SUV", sedan: "Sedan", pickup: "Truck", truck: "Truck", coupe: "Coupe", hatchback: "Hatchback", minivan: "Minivan", van: "Van", wagon: "Wagon", convertible: "Convertible" };
+  // Tokens that end a place name (price/keyword words) and words that are never a place.
+  const LOC_STOP = new Set(["under", "over", "below", "above", "around", "about", "with", "for", "and", "or", "near", "less", "than", "up", "to", "max", "min", "that", "cost", "costs", "priced", "price", "miles", "mile", "mi", "k", "the", "a", "an"]);
+  const BAD_PLACE = new Set(MAKES.concat(["suv", "sedan", "truck", "pickup", "coupe", "hatchback", "minivan", "van", "wagon", "convertible", "hybrid", "electric", "ev", "diesel", "awd", "4wd", "fwd", "rwd", "car", "cars", "vehicle", "vehicles", "sale", "stock", "mileage", "miles", "me", "option", "options"]));
+  // Pull a place (city + optional 2-letter state) out of a query, wherever it sits:
+  // "near richmond under 30k", "from norfolk", "in dallas tx", "within X mi of raleigh".
+  function extractPlace(q) {
+    const STRONG = ["from", "near", "around", "outside"], WEAK = ["in", "of"];
+    const toks = q.split(/\s+/).filter(Boolean);
+    const cands = [];
+    for (let i = 0; i < toks.length; i++) {
+      const tw = toks[i].replace(/[^a-z]/g, "");
+      const strong = STRONG.includes(tw); if (!strong && !WEAK.includes(tw)) continue;
+      const place = []; let st = "";
+      for (let j = i + 1; j < toks.length; j++) {
+        const w = toks[j].replace(/^[.,]+|[.,]+$/g, "");
+        if (!w) continue;
+        if (/\d/.test(w) || LOC_STOP.has(w)) break;
+        if (/^[a-z]{2}$/.test(w) && place.length) { st = w.toUpperCase(); break; } // trailing state
+        if (!/^[a-z][a-z.'-]*$/.test(w)) break;
+        place.push(w); if (place.length >= 3) break;
+      }
+      if (!place.length) continue;
+      const lw = place.join(" ").replace(/[.'-]/g, " ").trim();
+      if (lw.length < 3 || BAD_PLACE.has(lw)) continue;
+      cands.push({ text: place.join(" "), state: st, strong });
+    }
+    return cands.find((c) => c.state) || cands.find((c) => c.strong) || cands[cands.length - 1] || null;
+  }
   function titleCase(s) { return s.replace(/\b\w/g, (c) => c.toUpperCase()); }
   function parseNL(query) {
     const q = " " + String(query || "").toLowerCase() + " ";
@@ -100,21 +133,37 @@
     if (dt) p.drivetrain = dt[1] === "4x4" ? "4WD" : dt[1].toUpperCase();
     // year(s)
     Object.assign(p, years(q));
-    // location (and remember the zip so it isn't misread as money below)
-    const where = loc(q); Object.assign(p, where);
-    // mileage: a number (optionally with "k") immediately followed by mi/mile(s)
-    let rest = q;
-    const mileM = q.match(/(\d[\d,\.]*)\s*(k)?\s*(?:mi|mile|miles)\b/);
+    // --- distance / radius vs odometer mileage -------------------------------
+    // "50 miles from norfolk" / "within 50 miles of raleigh" is a search RADIUS,
+    // not odometer mileage — detect it first so the number isn't misread.
+    let radius = null, distSpan = "";
+    let dm = q.match(/(\d+)\s*(?:mi|miles?)\s+(?:from|of|to|near|around|within|outside)\b/);
+    if (!dm) dm = q.match(/\bwithin\s+(\d+)\s*(?:mi|miles?)\b/);
+    if (dm) { radius = parseInt(dm[1], 10); distSpan = dm[0]; }
+    // --- location: a city/place anywhere in the query (+ optional ", ST") ------
+    let locText = "", locState = "";
+    const place = extractPlace(q);
+    if (place) { locText = place.text; locState = place.state; }
+    if (!locText) { const cs = q.match(/\b([a-z][a-z.'\- ]+?),\s*([a-z]{2})\b/); if (cs) { locText = cs[1].trim(); locState = cs[2].toUpperCase(); } }
+    const zipM = q.match(/\b(\d{5})\b/); const zip = zipM ? zipM[1] : "";
+    if (zip) p.location_zip = zip;
+    if (locText) p.location_text = locText;
+    if (locState) p.location_state = locState;
+    if (radius) p.radius = radius; else if (locText || zip) p.radius = 100; // local default when a place is named
+    // --- odometer mileage (after removing any distance span) ------------------
+    let rest = distSpan ? q.replace(distSpan, " ") : q;
+    const mileM = rest.match(/(\d[\d,\.]*)\s*(k)?\s*(?:mi|mile|miles)\b/);
     if (mileM) {
       let v = parseFloat(mileM[1].replace(/,/g, "")); if (isNaN(v)) v = null;
       if (v != null) { if (mileM[2]) v *= 1000; else if (v < 1000) v *= 1000; p.mileage_max = Math.round(v); }
-      rest = q.replace(mileM[0], " ");
+      rest = rest.replace(mileM[0], " ");
     }
-    // strip years, zip, and model codes (f-150, q50, cx-5, x3) from the price
-    // text so they aren't misread as dollars. Leave "35k"-style amounts intact.
+    // strip years, zip, model codes (f-150, q50, cx-5), and the place name from the
+    // price text so they aren't misread as dollars. Leave "35k"-style amounts intact.
     rest = rest.replace(/\b(?:19|20)\d{2}\b/g, " ");
     rest = rest.replace(/\b[a-z]{1,3}-?\d+\b/g, " ");
-    if (where.location_zip) rest = rest.replace(where.location_zip, " ");
+    if (zip) rest = rest.replace(zip, " ");
+    if (locText) rest = rest.replace(new RegExp(locText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), " ");
     const money = moneyRange(rest);
     if (money.min != null && money.max != null) { p.budget_min = money.min; p.budget_max = money.max; }
     else if (money.max != null || money.min != null) {
