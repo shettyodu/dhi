@@ -21,7 +21,7 @@
   if (!grid || !toolbar) return;
 
   // ---- state ----
-  let state = { q: "", cat: "All", family: "", supplier: "", sort: "rel", shown: PAGE,
+  let state = { q: "", cat: "All", family: "", supplier: "", sort: "rel", shown: PAGE, view: "grid",
     facets: { w: new Set(), cct: new Set(), base: new Set(), lm: new Set() } };
 
   function money(n) {
@@ -70,7 +70,13 @@
           const n = c === "All" ? PRODUCTS.length : (catCounts.find((x) => x.c === c) || {}).n;
           return `<button data-cat="${c}" class="cat-pill rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors">${c} <span class="opacity-60">${n}</span></button>`;
         }).join("")}
-        <span id="cat-count" class="ml-auto text-sm text-slate-500"></span>
+        <div class="ml-auto flex items-center gap-3">
+          <span id="cat-count" class="text-sm text-slate-500"></span>
+          <div class="inline-flex overflow-hidden rounded-lg border border-slate-300" role="group" aria-label="View">
+            <button data-view="grid" title="Grid view" class="view-btn flex items-center justify-center px-2.5 py-1.5"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
+            <button data-view="list" title="List view" class="view-btn flex items-center justify-center px-2.5 py-1.5"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+          </div>
+        </div>
       </div>
     </div>`;
 
@@ -237,6 +243,56 @@
       </div>`;
   }
 
+  function photoThumb(p) {
+    const rp = realPhoto(p);
+    if (rp) return `<div class="flex h-full items-center justify-center p-1"><img src="${rp}" alt="${p.id}" loading="lazy" class="max-h-16 w-auto object-contain" /></div>`;
+    return window.SKUPhoto ? SKUPhoto.svg(p) : "";
+  }
+
+  // Dense horizontal row (list view) — competitor-style spec table layout.
+  function listRow(p) {
+    const inCart = cart.some((l) => l.id === p.id);
+    const pl = priceLabel(p);
+    const badges = [
+      p.w && badge(p.w, "bg-amber-100 text-amber-800"),
+      p.lm && badge(p.lm + " lm", "bg-cyan-100 text-cyan-800"),
+      p.cct && badge(p.cct, "bg-brand-100 text-brand-800"),
+      p.base && badge("Base " + p.base, "bg-slate-100 text-slate-700"),
+    ].filter(Boolean).join(" ");
+    return `
+      <div class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md">
+        <div class="h-20 w-20 flex-none overflow-hidden rounded-lg bg-white ring-1 ring-slate-100">${photoThumb(p)}</div>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span class="inline-block rounded bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-cyan-700">${p.cat}</span>
+            <h3 class="font-mono text-sm font-bold text-brand-900 break-all">${p.id}</h3>
+          </div>
+          <p class="mt-0.5 truncate text-xs text-slate-500">${p.group ? p.group + " · " : ""}<span class="text-slate-400">${sup(p)}</span></p>
+          ${badges ? `<div class="mt-1.5 flex flex-wrap gap-1.5">${badges}</div>` : ""}
+        </div>
+        <p class="hidden min-w-0 flex-1 text-xs leading-relaxed text-slate-500 lg:line-clamp-2 xl:block">${p.specs || ""}</p>
+        <div class="flex-none text-right">
+          <div class="font-display text-base font-bold ${pl.quote ? "text-slate-400" : "text-brand-900"}">${pl.txt}</div>
+          <div class="text-[11px] text-slate-400">${pl.note}</div>
+        </div>
+        <button data-add="${p.id}" class="add-btn flex-none inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+          inCart ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" : "bg-cyan-600 text-white hover:bg-cyan-700"
+        }">
+          ${inCart
+            ? '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg><span class="hidden sm:inline">Added</span>'
+            : '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span class="hidden sm:inline">Add</span>'}
+        </button>
+      </div>`;
+  }
+
+  function updateViewButtons() {
+    toolbar.querySelectorAll(".view-btn").forEach((b) => {
+      const active = b.dataset.view === state.view;
+      b.className = "view-btn flex items-center justify-center px-2.5 py-1.5 " +
+        (active ? "bg-cyan-600 text-white" : "bg-white text-slate-500 hover:bg-slate-50");
+    });
+  }
+
   // ---- faceted filter sidebar ----
   function optionCounts(key, valuesOf) {
     const pool = basePool(); const map = new Map();
@@ -284,18 +340,23 @@
   function applyRender() { render(); renderFacets(); }
 
   function render() {
+    const isList = state.view === "list";
+    grid.className = isList
+      ? "flex flex-1 flex-col gap-3"
+      : "grid flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-3";
     const list = filtered();
     countEl.textContent = `${list.length.toLocaleString()} item${list.length === 1 ? "" : "s"}`;
     const slice = list.slice(0, state.shown);
     if (!list.length) {
-      grid.innerHTML = `<div class="col-span-full rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">No items match your search. Try a different catalog number, wattage, or type.</div>`;
+      grid.innerHTML = `<div class="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">No items match your search. Try a different catalog number, wattage, or type.</div>`;
       return;
     }
+    const renderer = isList ? listRow : card;
     grid.innerHTML =
-      slice.map(card).join("") +
+      slice.map(renderer).join("") +
       (list.length > state.shown
-        ? `<div class="col-span-full mt-2 text-center"><button id="load-more" class="rounded-lg border border-slate-300 bg-white px-6 py-2.5 text-sm font-semibold text-brand-800 hover:border-cyan-400 hover:text-cyan-700">Load more (${(list.length - state.shown).toLocaleString()} remaining)</button></div>`
-        : `<div class="col-span-full mt-2 text-center text-sm text-slate-400">End of results — ${list.length.toLocaleString()} items</div>`);
+        ? `<div class="${isList ? "" : "col-span-full"} mt-2 text-center"><button id="load-more" class="rounded-lg border border-slate-300 bg-white px-6 py-2.5 text-sm font-semibold text-brand-800 hover:border-cyan-400 hover:text-cyan-700">Load more (${(list.length - state.shown).toLocaleString()} remaining)</button></div>`
+        : `<div class="${isList ? "" : "col-span-full"} mt-2 text-center text-sm text-slate-400">End of results — ${list.length.toLocaleString()} items</div>`);
   }
 
   // ---- quote dock ----
@@ -414,6 +475,8 @@
   supplierEl.addEventListener("change", () => { state.supplier = supplierEl.value; state.shown = PAGE; applyRender(); });
   document.getElementById("cat-sort").addEventListener("change", (e) => { state.sort = e.target.value; state.shown = PAGE; render(); });
   toolbar.addEventListener("click", (e) => {
+    const vb = e.target.closest(".view-btn");
+    if (vb) { state.view = vb.dataset.view; updateViewButtons(); render(); return; }
     const pill = e.target.closest(".cat-pill");
     if (!pill) return;
     state.cat = pill.dataset.cat;
@@ -452,6 +515,7 @@
   refreshPills();
   refreshFamilies();
   refreshSuppliers();
+  updateViewButtons();
   applyRender();
   renderDock();
 })();
