@@ -21,7 +21,8 @@
   if (!grid || !toolbar) return;
 
   // ---- state ----
-  let state = { q: "", cat: "All", family: "", supplier: "", sort: "rel", shown: PAGE };
+  let state = { q: "", cat: "All", family: "", supplier: "", sort: "rel", shown: PAGE,
+    facets: { w: new Set(), cct: new Set(), base: new Set(), lm: new Set() } };
 
   function money(n) {
     return "$" + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -77,6 +78,7 @@
   const familyEl = document.getElementById("cat-family");
   const supplierEl = document.getElementById("cat-supplier");
   const countEl = document.getElementById("cat-count");
+  const facetsEl = document.getElementById("catalog-facets");
 
   function refreshPills() {
     toolbar.querySelectorAll(".cat-pill").forEach((b) => {
@@ -110,11 +112,20 @@
     supplierEl.value = state.supplier;
   }
 
-  // ---- filtering ----
-  function filtered() {
+  // ---- faceted attributes ----------------------------------------------------
+  const LM_BUCKETS = [["0–500", 0, 500], ["500–1,000", 500, 1000], ["1,000–2,500", 1000, 2500],
+    ["2,500–5,000", 2500, 5000], ["5,000–10,000", 5000, 10000], ["10,000+", 10000, Infinity]];
+  function lmNum(p) { const m = String(p.lm || "").replace(/,/g, "").match(/\d+/); return m ? parseInt(m[0], 10) : null; }
+  function lmBucketsOf(p) { const n = lmNum(p); if (n == null) return []; return LM_BUCKETS.filter((b) => n >= b[1] && n < b[2]).map((b) => b[0]); }
+  function cctList(p) { return String(p.cct || "").split(/[,/]/).map((s) => s.trim()).filter(Boolean); }
+  function wOf(p) { return p.w ? String(p.w).trim() : ""; }
+  function baseOf(p) { return p.base ? String(p.base).trim() : ""; }
+
+  // Products matching everything EXCEPT the facet filters (the pool facets count over).
+  function basePool() {
     const q = state.q.trim().toLowerCase();
     const terms = q ? q.split(/\s+/) : [];
-    const list = PRODUCTS.filter((p) => {
+    return PRODUCTS.filter((p) => {
       if (state.cat !== "All" && p.cat !== state.cat) return false;
       if (state.family && p.group !== state.family) return false;
       if (state.supplier && sup(p) !== state.supplier) return false;
@@ -124,6 +135,21 @@
       }
       return true;
     });
+  }
+  // True if p passes all active facets (skip `except` to compute that facet's counts).
+  function matchFacets(p, except) {
+    const f = state.facets;
+    if (except !== "w" && f.w.size && !f.w.has(wOf(p))) return false;
+    if (except !== "base" && f.base.size && !f.base.has(baseOf(p))) return false;
+    if (except !== "cct" && f.cct.size && !cctList(p).some((c) => f.cct.has(c))) return false;
+    if (except !== "lm" && f.lm.size && !lmBucketsOf(p).some((b) => f.lm.has(b))) return false;
+    return true;
+  }
+  function activeFacetCount() { const f = state.facets; return f.w.size + f.cct.size + f.base.size + f.lm.size; }
+
+  // ---- filtering ----
+  function filtered() {
+    const list = basePool().filter((p) => matchFacets(p, null));
     if (state.sort === "rel") {
       // Default view leads with real-photo products; accessories/no-image items
       // (mounting hardware) fall to the end. Stable sort preserves data order within.
@@ -210,6 +236,52 @@
         </button>
       </div>`;
   }
+
+  // ---- faceted filter sidebar ----
+  function optionCounts(key, valuesOf) {
+    const pool = basePool(); const map = new Map();
+    for (const p of pool) { if (!matchFacets(p, key)) continue; for (const v of valuesOf(p)) { if (v === "") continue; map.set(v, (map.get(v) || 0) + 1); } }
+    return map;
+  }
+  function facetGroup(key, title, options) {
+    if (!options.length) return "";
+    const sel = state.facets[key];
+    const rows = options.map((o) => `
+      <label class="flex cursor-pointer items-center gap-2 py-1 text-sm text-slate-600 hover:text-brand-900">
+        <input type="checkbox" data-facet="${key}" value="${String(o.val).replace(/"/g, "&quot;")}" ${sel.has(o.val) ? "checked" : ""} class="h-4 w-4 rounded border-slate-300 accent-cyan-600" />
+        <span class="flex-1">${o.val}</span><span class="text-xs text-slate-400">${o.count}</span>
+      </label>`).join("");
+    return `<details open class="border-b border-slate-100 py-3">
+      <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-brand-900">${title}${sel.size ? `<span class="rounded-full bg-cyan-100 px-2 text-xs font-bold text-cyan-700">${sel.size}</span>` : ""}</summary>
+      <div class="mt-2 max-h-56 space-y-0.5 overflow-y-auto pr-1">${rows}</div>
+    </details>`;
+  }
+  function renderFacets() {
+    if (!facetsEl) return;
+    const wOpts = [...optionCounts("w", (p) => [wOf(p)]).entries()].map(([val, count]) => ({ val, count })).sort((a, b) => (parseFloat(a.val) || 0) - (parseFloat(b.val) || 0));
+    const cctOpts = [...optionCounts("cct", cctList).entries()].map(([val, count]) => ({ val, count })).sort((a, b) => (parseInt(a.val) || 0) - (parseInt(b.val) || 0));
+    const baseOpts = [...optionCounts("base", (p) => [baseOf(p)]).entries()].map(([val, count]) => ({ val, count })).sort((a, b) => a.val.localeCompare(b.val));
+    const lmMap = optionCounts("lm", lmBucketsOf);
+    const lmOpts = LM_BUCKETS.map((b) => b[0]).filter((l) => lmMap.has(l)).map((l) => ({ val: l, count: lmMap.get(l) }));
+    const groups = [
+      facetGroup("w", "Wattage", wOpts),
+      facetGroup("cct", "Color temperature", cctOpts),
+      facetGroup("lm", "Brightness (lumens)", lmOpts),
+      facetGroup("base", "Base", baseOpts),
+    ].filter(Boolean).join("");
+    const n = activeFacetCount();
+    facetsEl.innerHTML = `
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-32">
+        <div class="flex items-center justify-between">
+          <h2 class="font-display text-sm font-bold uppercase tracking-wide text-brand-900">Filters</h2>
+          ${n ? `<button id="facet-clear" class="text-xs font-semibold text-cyan-700 hover:underline">Clear (${n})</button>` : ""}
+        </div>
+        <div class="mt-1">${groups || `<p class="py-3 text-sm text-slate-400">No additional filters for this view.</p>`}</div>
+      </div>`;
+    const clr = document.getElementById("facet-clear");
+    if (clr) clr.onclick = () => { state.facets = { w: new Set(), cct: new Set(), base: new Set(), lm: new Set() }; state.shown = PAGE; applyRender(); };
+  }
+  function applyRender() { render(); renderFacets(); }
 
   function render() {
     const list = filtered();
@@ -330,14 +402,16 @@
     renderDock();
   }
 
+  function resetFacets() { state.facets = { w: new Set(), cct: new Set(), base: new Set(), lm: new Set() }; }
+
   // ---- events ----
   let t;
   qEl.addEventListener("input", () => {
     clearTimeout(t);
-    t = setTimeout(() => { state.q = qEl.value; state.shown = PAGE; render(); }, 140);
+    t = setTimeout(() => { state.q = qEl.value; state.shown = PAGE; applyRender(); }, 140);
   });
-  familyEl.addEventListener("change", () => { state.family = familyEl.value; state.shown = PAGE; render(); });
-  supplierEl.addEventListener("change", () => { state.supplier = supplierEl.value; state.shown = PAGE; render(); });
+  familyEl.addEventListener("change", () => { state.family = familyEl.value; state.shown = PAGE; applyRender(); });
+  supplierEl.addEventListener("change", () => { state.supplier = supplierEl.value; state.shown = PAGE; applyRender(); });
   document.getElementById("cat-sort").addEventListener("change", (e) => { state.sort = e.target.value; state.shown = PAGE; render(); });
   toolbar.addEventListener("click", (e) => {
     const pill = e.target.closest(".cat-pill");
@@ -345,11 +419,20 @@
     state.cat = pill.dataset.cat;
     state.family = "";
     state.supplier = "";
+    resetFacets(); // attributes differ by category
     state.shown = PAGE;
     refreshPills();
     refreshFamilies();
     refreshSuppliers();
-    render();
+    applyRender();
+  });
+  if (facetsEl) facetsEl.addEventListener("change", (e) => {
+    const cb = e.target.closest("input[data-facet]");
+    if (!cb) return;
+    const set = state.facets[cb.dataset.facet]; if (!set) return;
+    if (cb.checked) set.add(cb.value); else set.delete(cb.value);
+    state.shown = PAGE;
+    applyRender();
   });
   grid.addEventListener("click", (e) => {
     const add = e.target.closest(".add-btn");
@@ -369,6 +452,6 @@
   refreshPills();
   refreshFamilies();
   refreshSuppliers();
-  render();
+  applyRender();
   renderDock();
 })();

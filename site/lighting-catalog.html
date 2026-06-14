@@ -52,7 +52,10 @@
       <p class="mt-1">Volume &amp; bulk pricing, plus custom-design and private-label offers for qualifying orders. <span class="font-medium text-brand-800">Ask about preferred-vendor terms for recurring purchases.</span></p>
       <p class="mt-2 text-xs text-slate-500">All applicable taxes &amp; freight are added at checkout, or available <strong>FOB port/factory</strong> on international and direct-factory orders.</p>
     </div>
-    <div id="catalog-grid" class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
+    <div class="mt-5 lg:flex lg:items-start lg:gap-6">
+      <aside id="catalog-facets" class="mb-4 lg:mb-0 lg:w-64 lg:flex-none"></aside>
+      <div id="catalog-grid" class="grid flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+    </div>
   </main>
 
   <!-- floating quote dock -->
@@ -62,6 +65,6 @@
   <script src="assets/catalog-data.js"></script>
   <script src="assets/catalog-suppliers-data.js"></script>
   <script src="assets/sku-photo.js"></script>
-  <script src="assets/catalog-search.js?v=4"></script>
+  <script src="assets/catalog-search.js?v=5"></script>
 </body>
 </html>
