@@ -144,6 +144,28 @@
     return `<span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ${cls}">${text}</span>`;
   }
 
+  // Real Keystone product photos by family (sourced from keystonetech.com).
+  // Maps a family's illustration basename -> a real photo; falls back to the
+  // generated illustration for families without a photo yet.
+  const KS_PHOTO = {
+    "light-par": "par", "light-tube": "tube", "light-ashape": "ashape", "light-br": "br",
+    "light-highbay": "highbay", "light-strip": "strip", "light-wrap": "strip", "light-vapor": "vapor",
+    "light-troffer": "troffer", "light-panel": "troffer", "light-area": "area", "light-wallpack": "wallpack",
+    "light-flood": "flood", "light-bollard": "bollard", "light-driver": "driver", "light-control": "control",
+    "light-exit": "exit", "light-emergency": "emergency", "light-corncob": "corncob", "light-cylinder": "cylinder",
+  };
+  function realPhoto(p) {
+    if (!p.img) return "";
+    const base = p.img.split("/").pop().replace(/\.(png|jpe?g|webp|svg)$/i, "");
+    const f = KS_PHOTO[base];
+    return f ? "assets/img/products/keystone/" + f + ".jpg" : "";
+  }
+  function photoHtml(p) {
+    const rp = realPhoto(p);
+    if (rp) return `<div class="flex h-full items-center justify-center p-2"><img src="${rp}" alt="${p.id}" loading="lazy" class="max-h-28 w-auto object-contain" /></div>`;
+    return window.SKUPhoto ? SKUPhoto.svg(p) : (p.img ? `<div class="flex h-full items-center justify-center p-2"><img src="${p.img}" alt="${p.id}" loading="lazy" class="max-h-28 w-auto object-contain" /></div>` : "");
+  }
+
   function card(p) {
     const inCart = cart.some((l) => l.id === p.id);
     const pl = priceLabel(p);
@@ -156,7 +178,7 @@
     ].filter(Boolean).join(" ");
     return `
       <div class="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
-        <div class="mb-3 h-32 overflow-hidden rounded-lg bg-slate-50">${window.SKUPhoto ? SKUPhoto.svg(p) : (p.img ? `<div class="flex h-full items-center justify-center p-2"><img src="${p.img}" alt="${p.id}" loading="lazy" class="max-h-28 w-auto object-contain" /></div>` : "")}</div>
+        <div class="mb-3 h-32 overflow-hidden rounded-lg bg-white ring-1 ring-slate-100">${photoHtml(p)}</div>
         <div class="flex items-start justify-between gap-2">
           <div>
             <span class="inline-block rounded bg-brand-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-cyan-700">${p.cat}</span>
