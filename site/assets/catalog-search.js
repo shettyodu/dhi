@@ -124,7 +124,11 @@
       }
       return true;
     });
-    if (state.sort === "az") {
+    if (state.sort === "rel") {
+      // Default view leads with real-photo products; accessories/no-image items
+      // (mounting hardware) fall to the end. Stable sort preserves data order within.
+      list.sort((a, b) => (realPhoto(b) ? 1 : 0) - (realPhoto(a) ? 1 : 0));
+    } else if (state.sort === "az") {
       list.sort((a, b) => a.id.localeCompare(b.id));
     } else if (state.sort === "plh" || state.sort === "phl") {
       const dir = state.sort === "plh" ? 1 : -1;
@@ -153,6 +157,8 @@
     "light-troffer": "troffer", "light-panel": "troffer", "light-area": "area", "light-wallpack": "wallpack",
     "light-flood": "flood", "light-bollard": "bollard", "light-driver": "driver", "light-control": "control",
     "light-exit": "exit", "light-emergency": "emergency", "light-corncob": "corncob", "light-cylinder": "cylinder",
+    "light-canopy": "canopy", "light-surface": "surface", "light-downlight-rd": "downlight", "light-downlight-ps": "downlight",
+    "light-candelabra": "candelabra", "light-edison": "edison", "light-globe": "globe",
   };
   function realPhoto(p) {
     if (!p.img) return "";
