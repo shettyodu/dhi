@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LED Savings &amp; ROI Calculator | DHI Lighting</title>
+  <meta name="description" content="Estimate the energy, cost, and CO₂ savings of switching to LED — annual savings, payback period, and 10-year impact. Build a quote with DHI Lighting." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>body{font-family:Inter,system-ui,sans-serif}</style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-brand-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 10%, #f59e0b 0, transparent 38%), radial-gradient(circle at 10% 90%, #06b6d4 0, transparent 40%);"></div>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
+      <nav class="mb-5 flex items-center gap-2 text-sm text-slate-400">
+        <a href="index.html" class="hover:text-cyan-300">Home</a><span>/</span>
+        <a href="lighting.html" class="hover:text-cyan-300">Lighting</a><span>/</span>
+        <span class="text-slate-200">Savings Calculator</span>
+      </nav>
+      <p class="kicker text-sm font-semibold uppercase tracking-wider text-amber-300">Energy Efficiency · ROI</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">LED savings &amp; ROI calculator</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">See what switching to LED saves — annual energy &amp; cost, payback period, 10-year impact, and CO₂ avoided. Built for facility, finance, and procurement decisions.</p>
+    </div>
+  </section>
+
+  <!-- SUBNAV -->
+  <div class="sticky top-16 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 sm:px-6 lg:px-8">
+      <a href="lighting.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Overview</a>
+      <a href="lighting-designer.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Design Your Space</a>
+      <a href="lighting-catalog.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Product Catalog</a>
+      <a href="lighting-roi.html" class="whitespace-nowrap border-b-2 border-cyan-600 px-3 py-3 text-sm font-semibold text-cyan-700">Savings Calculator</a>
+      <a href="lighting-process.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Process &amp; Pricing</a>
+      <a href="lighting-influencers.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Partners &amp; Influencers</a>
+      <a href="contact.html?interest=Lighting%20%26%20Energy%20Efficiency" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Request a Quote</a>
+    </div>
+  </div>
+
+  <!-- CALCULATOR -->
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div class="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6">
+      <div id="roi-form"></div>
+      <div id="roi-results" class="mt-6 lg:mt-0"></div>
+    </div>
+    <p class="mt-6 text-xs text-slate-400">Estimates only. Actual savings vary by fixture, run-time, utility rate, and rebates. CO₂ figure uses the U.S. average grid emissions factor; ask us about available utility rebates for qualifying LED products.</p>
+  </main>
+
+  <script src="assets/components.js"></script>
+  <script src="assets/lighting-roi.js?v=1"></script>
+</body>
+</html>
