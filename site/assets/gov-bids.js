@@ -17,6 +17,20 @@
 
   let secret = localStorage.getItem(SKEY) || "";
   let lastResults = [];
+  let saFilter = new Set(); // active set-aside category filters
+
+  // Bucket a SAM.gov set-aside string into a filterable eligibility category.
+  function saBucket(sa) {
+    const s = String(sa || "").toLowerCase();
+    if (!s) return "Full & open";
+    if (/8\(a\)|\b8a\b/.test(s)) return "8(a)";
+    if (/hubzone/.test(s)) return "HUBZone";
+    if (/wosb|women|edwosb/.test(s)) return "WOSB / EDWOSB";
+    if (/sdvosb|service-disabled|veteran|\bvosb\b/.test(s)) return "SDVOSB / VOSB";
+    if (/small business|total small|partial small|\bsba\b/.test(s)) return "Small Business";
+    return "Other";
+  }
+  const SA_ORDER = ["Small Business", "SDVOSB / VOSB", "8(a)", "WOSB / EDWOSB", "HUBZone", "Full & open", "Other"];
 
   async function api(payload) {
     const r = await fetch(FN, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: JSON.stringify(payload) });
@@ -68,6 +82,7 @@
       return;
     }
     lastResults = d.opportunities || [];
+    saFilter.clear(); // fresh result set → reset set-aside filter
     // note + interpretation
     const note = $("note"); if (d.note) { note.textContent = d.note; note.classList.remove("hidden"); } else note.classList.add("hidden");
     const interp = $("interp"); const iv = d.interpreted || {};
@@ -93,9 +108,18 @@
     return `<span class="${days <= 5 ? "text-amber-700 font-semibold" : "text-slate-600"}">Due in ${days} day${days === 1 ? "" : "s"} · ${date}</span>`;
   }
 
-  function renderResults(list) {
-    if (!list.length) { $("results").innerHTML = `<div class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600">No matching opportunities. Try another vertical or broaden the search.</div>`; return; }
-    $("results").innerHTML = list.map((o, i) => `
+  function renderResults(full) {
+    if (!full.length) { $("results").innerHTML = `<div class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600">No matching opportunities. Try another vertical or broaden the search.</div>`; return; }
+    // Set-aside eligibility filter bar (counts from the full result set).
+    const counts = {}; full.forEach((o) => { const b = saBucket(o.setAside); counts[b] = (counts[b] || 0) + 1; });
+    const chips = SA_ORDER.filter((b) => counts[b]).map((b) => { const on = saFilter.has(b); return `<button data-sa="${esc(b)}" class="rounded-full border px-3 py-1 text-xs font-medium transition-colors ${on ? "border-cyan-600 bg-cyan-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-cyan-400 hover:text-cyan-700"}">${esc(b)} <span class="opacity-60">${counts[b]}</span></button>`; }).join(" ");
+    const list = saFilter.size ? full.filter((o) => saFilter.has(saBucket(o.setAside))) : full;
+    const bar = `<div class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3">
+      <span class="mr-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Set-aside</span>${chips}
+      ${saFilter.size ? `<button id="sa-clear" class="text-xs font-semibold text-cyan-700 hover:underline">Clear</button>` : ""}
+      <span class="ml-auto text-xs text-slate-400">${list.length} of ${full.length}</span></div>`;
+    if (!list.length) { $("results").innerHTML = bar + `<div class="rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-500">No opportunities with the selected set-aside.</div>`; wireSaChips(full); return; }
+    $("results").innerHTML = bar + list.map((o, i) => `
       <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div class="min-w-0">
@@ -126,6 +150,15 @@
     $("results").querySelectorAll("[data-wf]").forEach((b) => b.addEventListener("click", () => toggleWorkflow(+b.dataset.wf, list[+b.dataset.wf])));
     $("results").querySelectorAll("[data-save]").forEach((b) => b.addEventListener("click", () => saveToBoard(list[+b.dataset.save], b)));
     $("results").querySelectorAll("[data-intel]").forEach((b) => b.addEventListener("click", () => toggleIntel(+b.dataset.intel, list[+b.dataset.intel])));
+    wireSaChips(full);
+  }
+
+  function wireSaChips(full) {
+    $("results").querySelectorAll("[data-sa]").forEach((b) => b.addEventListener("click", () => {
+      const v = b.dataset.sa; if (saFilter.has(v)) saFilter.delete(v); else saFilter.add(v);
+      renderResults(full);
+    }));
+    const clr = $("sa-clear"); if (clr) clr.addEventListener("click", () => { saFilter.clear(); renderResults(full); });
   }
 
   // ---------- bid board (pipeline) ----------
