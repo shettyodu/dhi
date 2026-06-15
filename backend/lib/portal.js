@@ -6,11 +6,13 @@ const crypto = require("crypto");
 const { getStore } = require("@netlify/blobs");
 
 const STORE = "portal";
-function store() {
+const LEADS_STORE = "automotive-leads"; // where submit-lead writes inquiries
+function openStore(name) {
   const siteID = process.env.NETLIFY_BLOBS_SITE_ID || process.env.BLOBS_SITE_ID;
   const token = process.env.NETLIFY_BLOBS_TOKEN || process.env.BLOBS_TOKEN;
-  return siteID && token ? getStore({ name: STORE, siteID, token }) : getStore(STORE);
+  return siteID && token ? getStore({ name, siteID, token }) : getStore(name);
 }
+function store() { return openStore(STORE); }
 const clip = (s, n) => String(s == null ? "" : s).trim().slice(0, n || 500);
 const safeId = (s) => String(s || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
 
@@ -41,4 +43,22 @@ async function removeQuote(userId, id) {
   return { status: 200, json: { ok: true } };
 }
 
-module.exports = { saveQuote, listQuotes, removeQuote };
+// The signed-in buyer's submitted inquiries (matched by their account email),
+// so the portal can show request history + status + assigned owner.
+async function listRequests(email) {
+  const e = String(email || "").toLowerCase().trim();
+  if (!e) return { status: 200, json: { ok: true, count: 0, requests: [] } };
+  let blob; try { blob = openStore(LEADS_STORE); } catch (err) { return { status: 200, json: { ok: true, count: 0, requests: [] } }; }
+  const out = [];
+  try {
+    const { blobs } = await blob.list();
+    for (const b of (blobs || []).slice(0, 800)) {
+      const r = await blob.getJSON(b.key).catch(() => null);
+      if (r && r.email && r.email.toLowerCase() === e) out.push({ id: r.id, type: r.type, vertical: r.vertical || "", owner: r.owner || "", status: r.status || "new", submittedAt: r.submittedAt || "" });
+    }
+  } catch (err) { /* empty */ }
+  out.sort((a, b) => (b.submittedAt || "").localeCompare(a.submittedAt || ""));
+  return { status: 200, json: { ok: true, count: out.length, requests: out } };
+}
+
+module.exports = { saveQuote, listQuotes, removeQuote, listRequests };

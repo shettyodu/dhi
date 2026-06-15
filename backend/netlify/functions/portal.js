@@ -4,7 +4,7 @@
    populates context.clientContext.user, which we trust for the user id.
    Body: { action: "save"|"list"|"remove", ... } */
 const { connectLambda } = require("@netlify/blobs");
-const { saveQuote, listQuotes, removeQuote } = require("../../lib/portal");
+const { saveQuote, listQuotes, removeQuote, listRequests } = require("../../lib/portal");
 
 const cors = {
   "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
@@ -24,6 +24,7 @@ exports.handler = async (event, context) => {
   try {
     let r;
     if (body.action === "list") r = await listQuotes(user.sub);
+    else if (body.action === "requests") r = await listRequests(user.email);
     else if (body.action === "remove") r = await removeQuote(user.sub, body.id);
     else r = await saveQuote(user.sub, body);
     return { statusCode: r.status, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify(r.json) };
