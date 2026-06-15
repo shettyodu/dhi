@@ -4,7 +4,8 @@
   "private": true,
   "description": "DHI static storefront + Netlify payment functions (single Netlify site).",
   "scripts": {
-    "build:css": "tailwindcss -i tailwind.input.css -o site/assets/tailwind.css --minify"
+    "build:css": "tailwindcss -i tailwind.input.css -o site/assets/tailwind.css --minify",
+    "build:index": "node scripts/build-search-index.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^8.1.0",
