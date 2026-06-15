@@ -65,6 +65,7 @@
       <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
         <h2 class="font-display text-lg font-bold text-brand-900">Save your current quote</h2>
         <div class="mt-3 space-y-2">${saveCards}</div>
+        <p class="mt-3 text-center"><a href="project.html" class="text-sm font-medium text-cyan-700 hover:underline">View your combined project (lighting + supplies) &rarr;</a></p>
       </div>
       <div class="mt-6">
         <h2 class="font-display text-lg font-bold text-brand-900">Saved quotes</h2>

@@ -421,6 +421,7 @@
             <a id="qd-email" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-center text-sm font-semibold text-brand-800 hover:bg-slate-50">Email list</a>
             <button id="qd-clear" class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-50">Clear</button>
           </div>` : ""}
+          <a href="project.html" class="mb-1 block text-center text-xs font-medium text-cyan-700 hover:underline">View combined project (lighting + supplies) &rarr;</a>
           <a href="contact.html?interest=${encodeURIComponent("Lighting & Energy Efficiency")}" class="block text-center text-xs text-slate-500 hover:text-cyan-700">or request a formal quote &rarr;</a>
         </div>
       </aside>`;
