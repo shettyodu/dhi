@@ -10,6 +10,7 @@
   const FN_PROPOSAL = API_BASE + "/.netlify/functions/gov-proposal";
   const FN_PIPELINE = API_BASE + "/.netlify/functions/gov-pipeline";
   const FN_INTEL = API_BASE + "/.netlify/functions/gov-award-intel";
+  const FN_ALERTS = API_BASE + "/.netlify/functions/gov-bid-alerts";
   const SKEY = "dhi_admin_secret";
   const $ = (id) => document.getElementById(id);
   const usd = (n) => "$" + Math.round(Number(n) || 0).toLocaleString("en-US");
@@ -17,6 +18,7 @@
 
   let secret = localStorage.getItem(SKEY) || "";
   let lastResults = [];
+  let lastSearch = { query: "", vertical: "" }; // for "alert me" subscriptions
   let saFilter = new Set(); // active set-aside category filters
 
   // Bucket a SAM.gov set-aside string into a filterable eligibility category.
@@ -82,6 +84,7 @@
       return;
     }
     lastResults = d.opportunities || [];
+    lastSearch = { query: (payload.query || "").trim(), vertical: (payload.vertical || "").trim() };
     saFilter.clear(); // fresh result set → reset set-aside filter
     // note + interpretation
     const note = $("note"); if (d.note) { note.textContent = d.note; note.classList.remove("hidden"); } else note.classList.add("hidden");
@@ -117,7 +120,8 @@
     const bar = `<div class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3">
       <span class="mr-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Set-aside</span>${chips}
       ${saFilter.size ? `<button id="sa-clear" class="text-xs font-semibold text-cyan-700 hover:underline">Clear</button>` : ""}
-      <span class="ml-auto text-xs text-slate-400">${list.length} of ${full.length}</span></div>`;
+      <span id="alert-host" class="ml-auto">${(lastSearch.query || lastSearch.vertical) ? `<button id="alert-sub" class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-brand-800 hover:border-cyan-400 hover:text-cyan-700">&#128276; Email me new matches</button>` : ""}</span>
+      <span class="text-xs text-slate-400">${list.length} of ${full.length}</span></div>`;
     if (!list.length) { $("results").innerHTML = bar + `<div class="rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-500">No opportunities with the selected set-aside.</div>`; wireSaChips(full); return; }
     $("results").innerHTML = bar + list.map((o, i) => `
       <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -159,6 +163,31 @@
       renderResults(full);
     }));
     const clr = $("sa-clear"); if (clr) clr.addEventListener("click", () => { saFilter.clear(); renderResults(full); });
+    const sub = $("alert-sub"); if (sub) sub.addEventListener("click", showAlertForm);
+  }
+
+  // ---------- saved-search email alerts ----------
+  function showAlertForm() {
+    const host = $("alert-host"); if (!host) return;
+    const term = lastSearch.query || lastSearch.vertical;
+    host.innerHTML = `<span class="inline-flex items-center gap-1.5">
+      <input id="alert-email" type="email" placeholder="you@org.com" class="w-44 rounded-lg border border-slate-300 px-2.5 py-1 text-xs focus:border-cyan-500 focus:outline-none" />
+      <button id="alert-go" class="rounded-lg bg-cyan-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-cyan-700">Notify me</button>
+      <button id="alert-cancel" class="text-xs text-slate-400 hover:text-slate-600">✕</button></span>`;
+    const email = $("alert-email"); if (email) email.focus();
+    $("alert-cancel").addEventListener("click", () => { host.innerHTML = `<button id="alert-sub" class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-brand-800 hover:border-cyan-400 hover:text-cyan-700">&#128276; Email me new matches</button>`; $("alert-sub").addEventListener("click", showAlertForm); });
+    $("alert-go").addEventListener("click", async () => {
+      const e = ($("alert-email").value || "").trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) { $("alert-email").classList.add("border-red-400"); return; }
+      $("alert-go").disabled = true; $("alert-go").textContent = "…";
+      let d = {};
+      try {
+        const r = await fetch(FN_ALERTS, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: JSON.stringify({ action: "subscribe", email: e, query: lastSearch.query, vertical: lastSearch.vertical }) });
+        d = await r.json();
+        if (!r.ok || !d.ok) throw new Error(d.error || "failed");
+      } catch (err) { host.innerHTML = `<span class="text-xs text-red-600">Couldn't subscribe (${esc(err.message)})</span>`; return; }
+      host.innerHTML = `<span class="text-xs font-medium text-emerald-700">&#10003; You'll get daily emails for "${esc(term)}"${d.configured === false ? " (email sending activates once Gmail is connected)" : ""}.</span>`;
+    });
   }
 
   // ---------- bid board (pipeline) ----------

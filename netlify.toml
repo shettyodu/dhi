@@ -19,6 +19,11 @@
 [functions."gov-bids-refresh"]
   schedule = "@daily"
 
+# Daily check of saved bid-alert searches → email new matches (Gmail; dormant
+# until GMAIL_USER + GMAIL_APP_PASSWORD are set).
+[functions."gov-bid-alerts-run"]
+  schedule = "@daily"
+
 # Keep the AutoCommand backend (Render free tier) warm — no cold-start lag on
 # the first buyer search. Every 10 minutes (Render sleeps after ~15 min idle).
 [functions."automotive-keepalive"]
