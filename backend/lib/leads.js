@@ -6,6 +6,7 @@
 const crypto = require("crypto");
 const { getStore } = require("@netlify/blobs");
 const hubspot = require("./hubspot");
+const routing = require("./lead-routing");
 
 const STORE = "automotive-leads";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -33,13 +34,20 @@ async function submitLead(body) {
   if (!name) return { status: 400, json: { error: "Name is required" } };
   if (!EMAIL_RE.test(email)) return { status: 400, json: { error: "A valid email is required" } };
 
+  const vertical = clip(b.vertical, 80);
+  const source = clip(b.source, 160);
+
   // Keep arbitrary form fields (sanitized) so each lead type can carry its own
   // questions without a schema change. Strip the known top-level keys.
   const details = {};
   for (const k of Object.keys(b)) {
-    if (["type", "name", "email", "phone", "referral_code"].includes(k)) continue;
+    if (["type", "name", "email", "phone", "referral_code", "vertical", "source"].includes(k)) continue;
     details[clip(k, 40)] = clip(b[k], 800);
   }
+
+  // Auto-assign an owner by vertical for accountability (Auto→Bill, Lighting→Steve,
+  // Supplies→Karthik, else default). See backend/lib/lead-routing.js.
+  const owner = routing.ownerFor({ type, vertical, source });
 
   const id = `${slug(email)}-${crypto.randomBytes(2).toString("hex")}`;
   const record = {
@@ -48,8 +56,12 @@ async function submitLead(body) {
     name,
     email,
     phone,
+    vertical,
+    source,
     referral_code: clip(b.referral_code, 64),
     details,
+    owner: owner.name,
+    owner_email: owner.email,
     status: "new",
     submittedAt: new Date().toISOString(),
   };
@@ -72,7 +84,12 @@ async function submitLead(body) {
   try { crm = await hubspot.upsertLead(record); }
   catch (e) { console.error("hubspot sync error:", e.message); crm = { ok: false }; }
 
-  return { status: 200, json: { ok: true, id, type, crm: crm.ok ? "synced" : crm.skipped ? "off" : "deferred" } };
+  // Best-effort: email the assigned owner + shared alias (dormant until Gmail set).
+  let notified = { skipped: true };
+  try { notified = await routing.notify(record); }
+  catch (e) { console.error("lead notify error:", e.message); notified = { ok: false }; }
+
+  return { status: 200, json: { ok: true, id, type, owner: owner.name, crm: crm.ok ? "synced" : crm.skipped ? "off" : "deferred", notified: notified.ok ? "sent" : "off" } };
 }
 
 module.exports = { submitLead };
