@@ -218,6 +218,7 @@ function buildHeader() {
         </div>
         ${link("government.html", "Government")}
         ${link("contact.html", "Contact")}
+        ${link("portal.html", "Account")}
         <a href="contact.html" class="ml-2 rounded-md bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 transition-colors">Partner with us</a>
       </nav>
 
@@ -235,6 +236,7 @@ function buildHeader() {
       ${mobileServiceItems}
       <a href="government.html" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Government</a>
       <a href="contact.html" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Contact</a>
+      <a href="portal.html" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Account</a>
       <a href="contact.html" class="mt-2 block rounded-md bg-cyan-600 px-3 py-2 text-center text-sm font-semibold text-white">Partner with us</a>
     </div>
   </div>`;
