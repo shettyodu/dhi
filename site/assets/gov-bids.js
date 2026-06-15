@@ -34,6 +34,16 @@
   }
   const SA_ORDER = ["Small Business", "SDVOSB / VOSB", "8(a)", "WOSB / EDWOSB", "HUBZone", "Full & open", "Other"];
 
+  // Equipment/supply-only filter: hide opportunities that require installation,
+  // construction, or labor — DHI lighting bids supply equipment only. Heuristic
+  // over title + (when available) description text. Defaults ON for lighting.
+  let equipOnly = false;
+  function isInstall(o) {
+    const t = ((o.title || "") + " " + (o.descriptionText || "") + " " + (o.type || "")).toLowerCase();
+    if (/supply only|furnish only|no install|without install|equipment only|materials only|product only|brand name/.test(t)) return false; // explicit supply-only
+    return /\binstall|installation|and install|& install|construction|demolition|electrician|remove and replace|rip and replace|turn-?key|design[- ]build|\blabor\b|repair service|maintenance service|retrofit and install/.test(t);
+  }
+
   async function api(payload) {
     const r = await fetch(FN, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: JSON.stringify(payload) });
     let d = {}; try { d = await r.json(); } catch (e) {}
@@ -86,6 +96,7 @@
     lastResults = d.opportunities || [];
     lastSearch = { query: (payload.query || "").trim(), vertical: (payload.vertical || "").trim() };
     saFilter.clear(); // fresh result set → reset set-aside filter
+    equipOnly = lastSearch.vertical === "lighting"; // lighting = supply equipment only by default
     // note + interpretation
     const note = $("note"); if (d.note) { note.textContent = d.note; note.classList.remove("hidden"); } else note.classList.add("hidden");
     const interp = $("interp"); const iv = d.interpreted || {};
@@ -113,12 +124,17 @@
 
   function renderResults(full) {
     if (!full.length) { $("results").innerHTML = `<div class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600">No matching opportunities. Try another vertical or broaden the search.</div>`; return; }
-    // Set-aside eligibility filter bar (counts from the full result set).
-    const counts = {}; full.forEach((o) => { const b = saBucket(o.setAside); counts[b] = (counts[b] || 0) + 1; });
+    // Equipment/supply-only filter first (hide installation/labor/construction).
+    const installCount = full.filter(isInstall).length;
+    const base = equipOnly ? full.filter((o) => !isInstall(o)) : full;
+    // Set-aside eligibility filter bar (counts from the equipment-filtered set).
+    const counts = {}; base.forEach((o) => { const b = saBucket(o.setAside); counts[b] = (counts[b] || 0) + 1; });
     const chips = SA_ORDER.filter((b) => counts[b]).map((b) => { const on = saFilter.has(b); return `<button data-sa="${esc(b)}" class="rounded-full border px-3 py-1 text-xs font-medium transition-colors ${on ? "border-cyan-600 bg-cyan-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-cyan-400 hover:text-cyan-700"}">${esc(b)} <span class="opacity-60">${counts[b]}</span></button>`; }).join(" ");
-    const list = saFilter.size ? full.filter((o) => saFilter.has(saBucket(o.setAside))) : full;
+    const list = saFilter.size ? base.filter((o) => saFilter.has(saBucket(o.setAside))) : base;
+    const equipToggle = `<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${equipOnly ? "border-cyan-600 bg-cyan-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-cyan-400"}"><input id="equip-only" type="checkbox" ${equipOnly ? "checked" : ""} class="h-3.5 w-3.5 accent-white" /> Equipment/supply only${installCount ? ` <span class="opacity-70">(${installCount} install hidden)</span>` : ""}</label>`;
     const bar = `<div class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3">
-      <span class="mr-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Set-aside</span>${chips}
+      ${equipToggle}
+      <span class="mx-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Set-aside</span>${chips}
       ${saFilter.size ? `<button id="sa-clear" class="text-xs font-semibold text-cyan-700 hover:underline">Clear</button>` : ""}
       <span id="alert-host" class="ml-auto">${(lastSearch.query || lastSearch.vertical) ? `<button id="alert-sub" class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-brand-800 hover:border-cyan-400 hover:text-cyan-700">&#128276; Email me new matches</button>` : ""}</span>
       <span class="text-xs text-slate-400">${list.length} of ${full.length}</span></div>`;
@@ -164,6 +180,7 @@
     }));
     const clr = $("sa-clear"); if (clr) clr.addEventListener("click", () => { saFilter.clear(); renderResults(full); });
     const sub = $("alert-sub"); if (sub) sub.addEventListener("click", showAlertForm);
+    const eq = $("equip-only"); if (eq) eq.addEventListener("change", () => { equipOnly = eq.checked; renderResults(full); });
   }
 
   // ---------- saved-search email alerts ----------
