@@ -9,8 +9,10 @@
   const FN_REFRESH = API_BASE + "/.netlify/functions/gov-bids-refresh";
   const FN_PROPOSAL = API_BASE + "/.netlify/functions/gov-proposal";
   const FN_PIPELINE = API_BASE + "/.netlify/functions/gov-pipeline";
+  const FN_INTEL = API_BASE + "/.netlify/functions/gov-award-intel";
   const SKEY = "dhi_admin_secret";
   const $ = (id) => document.getElementById(id);
+  const usd = (n) => "$" + Math.round(Number(n) || 0).toLocaleString("en-US");
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   let secret = localStorage.getItem(SKEY) || "";
@@ -115,12 +117,15 @@
           <button data-prop="${i}" class="rounded-lg bg-cyan-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-cyan-700">Start a proposal</button>
           <button data-wf="${i}" class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">Submission checklist</button>
           <button data-save="${i}" class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">&#9733; Save to board</button>
+          ${o.naics ? `<button data-intel="${i}" class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">&#128202; Who's winning?</button>` : ""}
         </div>
         <div id="wf-${i}" class="mt-3 hidden rounded-xl bg-slate-50 p-4 text-sm text-slate-700"></div>
+        <div id="intel-${i}" class="mt-3 hidden rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700"></div>
       </div>`).join("");
     $("results").querySelectorAll("[data-prop]").forEach((b) => b.addEventListener("click", () => openProposal(list[+b.dataset.prop])));
     $("results").querySelectorAll("[data-wf]").forEach((b) => b.addEventListener("click", () => toggleWorkflow(+b.dataset.wf, list[+b.dataset.wf])));
     $("results").querySelectorAll("[data-save]").forEach((b) => b.addEventListener("click", () => saveToBoard(list[+b.dataset.save], b)));
+    $("results").querySelectorAll("[data-intel]").forEach((b) => b.addEventListener("click", () => toggleIntel(+b.dataset.intel, list[+b.dataset.intel])));
   }
 
   // ---------- bid board (pipeline) ----------
@@ -202,6 +207,44 @@
     ];
     el.classList.remove("hidden");
     el.innerHTML = `<p class="font-semibold text-brand-900">Submission checklist</p><ol class="mt-2 list-decimal space-y-1.5 pl-5">${steps.map((s) => `<li>${s}</li>`).join("")}</ol>`;
+  }
+
+  // ---------- award intelligence (who's winning this NAICS) ----------
+  async function toggleIntel(i, o) {
+    const el = $("intel-" + i);
+    if (!el.classList.contains("hidden")) { el.classList.add("hidden"); return; }
+    el.classList.remove("hidden");
+    el.innerHTML = `<div class="flex items-center gap-2 text-slate-500"><div class="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-cyan-600"></div> Pulling recent awards for NAICS ${esc(o.naics)}…</div>`;
+    let d = {};
+    try {
+      const r = await fetch(FN_INTEL, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: JSON.stringify({ naics: o.naics, years: 3 }) });
+      d = await r.json();
+      if (!r.ok || !d.ok) throw new Error(d.error || "unavailable");
+    } catch (e) {
+      el.innerHTML = `<p class="text-slate-500">Award data unavailable right now (${esc(e.message)}).</p>`;
+      return;
+    }
+    if (!d.count) {
+      el.innerHTML = `<p class="font-semibold text-brand-900">Award intelligence — NAICS ${esc(d.naics)}</p><p class="mt-1 text-slate-500">No federal contract awards found under this NAICS in the last ${d.window_years} years.</p>`;
+      return;
+    }
+    const recips = (d.topRecipients || []).map((t) => `<li class="flex items-baseline justify-between gap-3"><span class="truncate">${esc(t.name)}</span><span class="flex-none font-semibold text-brand-900">${usd(t.total)}<span class="font-normal text-slate-400"> · ${t.count}</span></span></li>`).join("");
+    const recent = (d.recent || []).slice(0, 5).map((a) => `<li class="flex items-baseline justify-between gap-3 border-t border-slate-200 pt-1"><span class="min-w-0 truncate">${esc(a.recipient)} <span class="text-slate-400">· ${esc(a.agency)}</span></span><span class="flex-none font-medium">${usd(a.amount)}</span></li>`).join("");
+    el.innerHTML = `
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <p class="font-semibold text-brand-900">Award intelligence — NAICS ${esc(d.naics)}</p>
+        <p class="text-xs text-slate-400">Last ${d.window_years} yrs · source: ${esc(d.source)}</p>
+      </div>
+      <div class="mt-2 grid gap-3 sm:grid-cols-3">
+        <div class="rounded-lg bg-white p-2.5 text-center ring-1 ring-slate-200"><div class="text-lg font-bold text-brand-900">${d.count}</div><div class="text-xs text-slate-500">recent awards</div></div>
+        <div class="rounded-lg bg-white p-2.5 text-center ring-1 ring-slate-200"><div class="text-lg font-bold text-brand-900">${usd(d.median_award)}</div><div class="text-xs text-slate-500">median award</div></div>
+        <div class="rounded-lg bg-white p-2.5 text-center ring-1 ring-slate-200"><div class="text-lg font-bold text-brand-900">${usd(d.total)}</div><div class="text-xs text-slate-500">total (top ${d.count})</div></div>
+      </div>
+      <div class="mt-3 grid gap-4 md:grid-cols-2">
+        <div><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Top recipients (incumbents)</p><ul class="mt-1.5 space-y-1">${recips}</ul></div>
+        <div><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Recent awards</p><ul class="mt-1.5 space-y-1">${recent}</ul></div>
+      </div>
+      <p class="mt-3 text-xs text-slate-400">Use this to size your bid, spot the incumbent, and decide bid/no-bid. Figures are federal contract awards under this NAICS.</p>`;
   }
 
   // ---------- proposal outline ----------
