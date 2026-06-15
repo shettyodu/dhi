@@ -71,6 +71,7 @@
           return `<button data-cat="${c}" class="cat-pill rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors">${c} <span class="opacity-60">${n}</span></button>`;
         }).join("")}
         <div class="ml-auto flex items-center gap-3">
+          <button id="cat-quick" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-brand-800 hover:border-cyan-400 hover:text-cyan-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>Quick order</button>
           <span id="cat-count" class="text-sm text-slate-500"></span>
           <div class="inline-flex overflow-hidden rounded-lg border border-slate-300" role="group" aria-label="View">
             <button data-view="grid" title="Grid view" class="view-btn flex items-center justify-center px-2.5 py-1.5"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
@@ -447,6 +448,62 @@
     if (p) p.remove();
   }
 
+  // ---- bulk quick-order (paste catalog #s + qty) ----
+  const byIdLower = Object.fromEntries(PRODUCTS.map((p) => [p.id.toLowerCase(), p]));
+  function parseQuickLine(line) {
+    const toks = line.split(/[\s,;\t]+/).filter(Boolean);
+    let id = null, qty = 1, qtyFound = false;
+    for (const t of toks) {
+      if (!id && byIdLower[t.toLowerCase()]) { id = byIdLower[t.toLowerCase()].id; continue; }
+      if (!qtyFound && /^\d+$/.test(t)) { qty = Math.max(1, parseInt(t, 10)); qtyFound = true; }
+    }
+    return { id, qty, raw: line.trim() };
+  }
+  function closeQuick() { const m = document.getElementById("quick-modal"); if (m) m.remove(); }
+  function openQuickOrder() {
+    closeQuick();
+    const m = document.createElement("div");
+    m.id = "quick-modal";
+    m.className = "fixed inset-0 z-[70] flex items-center justify-center p-4";
+    m.innerHTML = `
+      <div data-qclose class="absolute inset-0 bg-slate-900/50"></div>
+      <div role="dialog" aria-modal="true" class="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <h2 class="text-lg font-bold text-brand-900">Quick order</h2>
+          <button data-qclose class="rounded-md p-1.5 text-slate-500 hover:bg-slate-100"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="px-5 py-4">
+          <p class="text-sm text-slate-500">Paste catalog numbers and quantities — one per line. Formats like <span class="font-mono text-xs">KT-LED9A19-O-827, 24</span> or <span class="font-mono text-xs">KT-LED9A19-O-827 24</span> both work.</p>
+          <textarea id="quick-input" rows="7" class="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none" placeholder="KT-LED9A19-O-827, 24&#10;KTSL-TK1-USB 5&#10;KT-TLP-HV-3PN, 12"></textarea>
+          <div id="quick-result" class="mt-3 hidden rounded-lg p-3 text-sm"></div>
+          <div class="mt-4 flex gap-2">
+            <button data-qclose class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+            <button id="quick-add" class="flex-1 rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700">Add to quote</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(m);
+    m.querySelectorAll("[data-qclose]").forEach((b) => b.addEventListener("click", closeQuick));
+    document.getElementById("quick-add").addEventListener("click", () => {
+      const lines = document.getElementById("quick-input").value.split(/\n/).map((l) => l.trim()).filter(Boolean);
+      let added = 0, qtyTotal = 0; const notFound = [];
+      for (const line of lines) {
+        const { id, qty, raw } = parseQuickLine(line);
+        if (!id) { notFound.push(raw); continue; }
+        const ex = cart.find((l) => l.id === id);
+        if (ex) ex.qty += qty; else cart.push({ id, qty });
+        added++; qtyTotal += qty;
+      }
+      if (added) { saveCart(); renderDock(); render(); }
+      const res = document.getElementById("quick-result");
+      res.classList.remove("hidden");
+      res.className = "mt-3 rounded-lg p-3 text-sm " + (added ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200" : "bg-amber-50 text-amber-800 ring-1 ring-amber-200");
+      res.innerHTML = `${added ? `<p class="font-semibold">Added ${added} item${added === 1 ? "" : "s"} (${qtyTotal} unit${qtyTotal === 1 ? "" : "s"}) to your quote.</p>` : `<p class="font-semibold">No matching catalog numbers found.</p>`}
+        ${notFound.length ? `<p class="mt-1 text-xs">Not found (${notFound.length}): <span class="font-mono">${notFound.slice(0, 8).map((s) => s.replace(/[<>&]/g, "")).join(", ")}${notFound.length > 8 ? "…" : ""}</span></p>` : ""}`;
+    });
+    setTimeout(() => { const ta = document.getElementById("quick-input"); if (ta) ta.focus(); }, 50);
+  }
+
   function toggle(id) {
     const i = cart.findIndex((l) => l.id === id);
     if (i >= 0) cart.splice(i, 1);
@@ -489,6 +546,8 @@
     refreshSuppliers();
     applyRender();
   });
+  const quickBtn = document.getElementById("cat-quick");
+  if (quickBtn) quickBtn.addEventListener("click", openQuickOrder);
   if (facetsEl) facetsEl.addEventListener("change", (e) => {
     const cb = e.target.closest("input[data-facet]");
     if (!cb) return;
