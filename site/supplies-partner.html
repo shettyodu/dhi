@@ -36,6 +36,32 @@
   </section>
 
   <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- SAMPLES & DOMESTIC / BUY-AMERICAN SOURCING -->
+    <div id="sourcing" class="mb-8 rounded-2xl border border-cyan-200 bg-cyan-50/40 p-6 shadow-sm sm:p-8">
+      <span class="inline-block rounded-full bg-cyan-600 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">For buyers</span>
+      <h2 class="mt-3 font-display text-xl font-bold text-brand-900">Request samples &amp; domestic / Buy-American sourcing</h2>
+      <p class="mt-1 max-w-3xl text-sm text-slate-600">Need <strong>domestic-made</strong>, <strong>Buy-American Act</strong>, or <strong>TAA-compliant</strong> supplies — or product <strong>samples</strong> before you commit? Tell us what you need and your sourcing requirement. DHI sources from a network of domestic &amp; international facilities and will match you to compliant options.</p>
+      <form id="sourcing-form" class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <label class="block"><span class="text-sm font-medium text-slate-700">Organization</span><input id="so-company" class="s-in" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Your name</span><input id="so-name" class="s-in" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Email</span><input id="so-email" type="email" class="s-in" /></label>
+        <label class="block sm:col-span-2"><span class="text-sm font-medium text-slate-700">Products of interest</span><input id="so-products" class="s-in" placeholder="e.g. isolation gowns, nitrile gloves, OT packs" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Phone <span class="text-slate-400">(optional)</span></span><input id="so-phone" class="s-in" /></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Sourcing requirement</span>
+          <select id="so-pref" class="s-in"><option value="">Select…</option><option>Domestic (Made in USA)</option><option>Buy-American Act compliant</option><option>TAA-compliant</option><option>Best price — no preference</option></select></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Request type</span>
+          <select id="so-type" class="s-in"><option value="">Select…</option><option>Product samples</option><option>Bulk price quote</option><option>Samples + quote</option></select></label>
+        <label class="block"><span class="text-sm font-medium text-slate-700">Estimated volume</span><input id="so-volume" class="s-in" placeholder="e.g. 10,000 units / month" /></label>
+        <label class="block sm:col-span-2 lg:col-span-3"><span class="text-sm font-medium text-slate-700">Notes <span class="text-slate-400">(specs, certifications, ship-to)</span></span><textarea id="so-notes" rows="2" class="s-in"></textarea></label>
+        <div class="sm:col-span-2 lg:col-span-3">
+          <button id="so-submit" type="submit" class="rounded-lg bg-cyan-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-60">Request samples / sourcing</button>
+          <span id="so-status" class="ml-3 text-sm"></span>
+        </div>
+      </form>
+      <div id="so-result" class="mt-4 hidden"></div>
+    </div>
+
     <div class="grid gap-8 lg:grid-cols-2">
 
       <!-- CUSTOM DESIGN / WHOLESALE REQUEST -->

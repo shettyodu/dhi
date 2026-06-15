@@ -38,6 +38,26 @@
     else { status.className = "ml-3 text-sm text-red-600"; status.textContent = (d && d.error) || "Couldn't send — please try again."; }
   });
 
+  // ----- Samples & domestic / Buy-American sourcing (type: sourcing) -----
+  const sForm = $("sourcing-form");
+  if (sForm) sForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = $("so-status"), btn = $("so-submit");
+    const name = $("so-name").value.trim(), email = $("so-email").value.trim();
+    if (!name || !email) { status.className = "ml-3 text-sm text-red-600"; status.textContent = "Name and email are required."; return; }
+    btn.disabled = true; status.className = "ml-3 text-sm text-slate-500"; status.textContent = "Sending…";
+    const { ok: good, d } = await send({
+      type: "sourcing", name, email, phone: $("so-phone").value.trim(),
+      company: $("so-company").value.trim(), products: $("so-products").value.trim(),
+      sourcing_preference: $("so-pref").value, request_type: $("so-type").value,
+      volume: $("so-volume").value.trim(), notes: $("so-notes").value.trim(),
+      vertical: "Supplies, Textiles & Linens", source: "DHI · Samples / domestic sourcing request",
+    }).catch(() => ({ ok: false, d: {} }));
+    btn.disabled = false;
+    if (good) ok($("so-result"), sForm, "Request received — DHI will follow up with samples and/or compliant sourcing options.", d.id);
+    else { status.className = "ml-3 text-sm text-red-600"; status.textContent = (d && d.error) || "Couldn't send — please try again."; }
+  });
+
   // ----- DHI Procurement Membership (type: membership) -----
   const vForm = $("vendor-form");
   if (vForm) vForm.addEventListener("submit", async (e) => {
