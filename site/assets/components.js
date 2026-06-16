@@ -81,6 +81,14 @@ const VERTICALS = [
     icon: "layers",
   },
   {
+    slug: "nutrition.html",
+    title: "Nutrition & Supplements",
+    menu: "Nutrition & Supplements",
+    summary:
+      "Custom-branded supplements, diagnostic lab kits, and corporate wellness — a searchable Vitalleo/Edison catalog with quote builder.",
+    icon: "heart",
+  },
+  {
     slug: "lighting.html",
     title: "Lighting & Energy Efficiency",
     menu: "Lighting & Energy Efficiency",
@@ -125,7 +133,7 @@ const VERTICAL_CATEGORIES = [
 const VERTICAL_CAT_BY_SLUG = {
   "decentralized-software.html": "tech", "cybersecurity.html": "tech", "data-analytics.html": "tech",
   "wellness.html": "medical", "insurance.html": "medical",
-  "medical-equipment.html": "medical", "clinics.html": "medical", "supplies.html": "medical",
+  "medical-equipment.html": "medical", "clinics.html": "medical", "supplies.html": "medical", "nutrition.html": "medical",
   "lighting.html": "energy", "automotive.html": "energy",
   "government.html": "gov",
 };
@@ -296,7 +304,7 @@ function buildFooter() {
           <span class="text-base font-bold text-white">Digital Health International</span>
         </div>
         <p class="mt-4 text-sm leading-relaxed text-slate-400">
-          Ten verticals. One global platform. Unifying healthcare, energy, and enterprise into a single integrated ecosystem — anywhere in the world.
+          Twelve verticals. One global platform. Unifying healthcare, energy, and enterprise into a single integrated ecosystem — anywhere in the world.
         </p>
         <p class="mt-4 text-xs uppercase tracking-wider text-cyan-400">${SITE.tagline}</p>
       </div>
