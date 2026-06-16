@@ -33,13 +33,15 @@
       return `
         <div>
           <h2 class="${HSIZE} font-bold tracking-tight text-brand-900">${s.heading}</h2>
+          ${s.intro ? `<p class="mt-3 max-w-3xl text-slate-600">${s.intro}</p>` : ""}
           <div class="mt-6 grid gap-5 sm:grid-cols-2">
             ${s.items
               .map(
                 (it) => `
-              <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+              <div class="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                 <h3 class="font-semibold text-brand-900">${it.title}</h3>
-                <p class="mt-2 text-sm leading-relaxed text-slate-600">${it.desc}</p>
+                <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600">${it.desc}</p>
+                ${it.link ? `<a href="${it.link}" target="_blank" rel="noopener" class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-cyan-700 hover:underline">${it.cta || "Get started"} &rarr;</a>` : ""}
               </div>`
               )
               .join("")}

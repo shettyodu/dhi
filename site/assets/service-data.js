@@ -181,12 +181,12 @@ const SERVICE_CONTENT = {
         heading: "CogniFit solutions by audience",
         intro: "Brain-training and assessment programs tailored to each market — available as reseller and white-label offerings:",
         items: [
-          { title: "Healthcare", desc: "Cognitive assessment and training to support clinical and patient brain-health programs." },
-          { title: "Education", desc: "Tools that help schools measure and strengthen students' cognitive skills." },
-          { title: "Employee wellness", desc: "Workplace programs to reduce stress and sharpen focus, agility, and resilience." },
-          { title: "Science & research", desc: "Validated instruments for studies and population cognitive research." },
-          { title: "Athlete performance", desc: "Mental agility and reaction training for competitive and recreational athletes." },
-          { title: "White-label", desc: "Branded CogniFit programs you can offer under your own identity." },
+          { title: "Healthcare", desc: "Cognitive assessment and training to support clinical and patient brain-health programs.", link: "https://www.cognifit.com/reseller/NTgyMzYxNnwx", cta: "Get started for healthcare" },
+          { title: "Education", desc: "Tools that help schools measure and strengthen students' cognitive skills.", link: "https://www.cognifit.com/reseller/NTgyMzYxNnw1", cta: "Get started for education" },
+          { title: "Employee wellness", desc: "Workplace programs to reduce stress and sharpen focus, agility, and resilience.", link: "https://www.cognifit.com/reseller/NTgyMzYxNnw5", cta: "Get started for employee wellbeing" },
+          { title: "Science & research", desc: "Validated instruments for studies and population cognitive research.", link: "https://www.cognifit.com/reseller/NTgyMzYxNnw0", cta: "Get started for research" },
+          { title: "Athlete performance", desc: "Mental agility and reaction training for competitive and recreational athletes.", link: "https://www.cognifit.com/reseller/NTgyMzYxNnwxMg", cta: "Get started for athletes" },
+          { title: "White-label", desc: "Branded CogniFit programs you can offer under your own identity.", link: "https://www.cognifit.com/reseller/NTgyMzYxNnw4", cta: "Explore white-label" },
         ],
       },
       {
