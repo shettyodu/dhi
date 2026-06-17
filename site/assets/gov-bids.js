@@ -44,6 +44,38 @@
     return /\binstall|installation|and install|& install|construction|demolition|electrician|remove and replace|rip and replace|turn-?key|design[- ]build|\blabor\b|repair service|maintenance service|retrofit and install/.test(t);
   }
 
+  // Keystone-eligibility screen (lighting only): DHI only bids lighting it can
+  // fill with Keystone product. No-bid anything brand-locked to a competitor with
+  // no "or equal", or any DLA/NSN part-number buy. Heuristic over title + desc.
+  // Returns { cls: "eligible" | "review" | "nobid", reason }. Defaults ON for lighting.
+  let keystoneOnly = false;
+  const KS_COMPETITORS = /\b(lithonia|acuity|lutron|cree|signify|philips|cooper lighting|eaton|ge lighting|hubbell|juno|halo|holophane|gotham|day-?brite|metalux|columbia lighting|kenall|williams|tcp|maxlite|rab\b)\b/;
+  const KS_OREQUAL = /\bor equal\b|or approved equal|brand name or equal|equivalent acceptable|equal acceptable|may substitut|substitution(s)? (are |is )?(allowed|acceptable|permitted)/;
+  const KS_BRANDLOCK = /no substitut|brand name only|no equal|sole source|only acceptable|exact match required|approved source only/;
+  const KS_CATEGORY = /\bled\b|lighting|luminaire|fixture|troffer|panel|high ?bay|wall ?pack|retrofit kit|lamp|bulb|down ?light|wrap|vapor ?tight|exit sign|emergency light|area light|flood ?light|shoebox|tube/;
+  function keystoneScreen(o) {
+    const title = (o.title || "");
+    const t = (title + " " + (o.descriptionText || "") + " " + (o.type || "") + " " + (o.agency || "")).toLowerCase();
+    // DLA / NSN part-number micro-buys — locked to a specific stock number, not commercial product.
+    if (/^\s*\d{2}--/.test(title) || /\bnsn\b|national stock number|\bdibbs\b|dla\b|defense logistics/.test(t)) {
+      return { cls: "nobid", reason: "DLA/NSN part-number buy — not commercial Keystone product" };
+    }
+    const brand = (t.match(KS_COMPETITORS) || [])[0];
+    if (brand) {
+      if (KS_OREQUAL.test(t) && !KS_BRANDLOCK.test(t)) return { cls: "eligible", reason: `"Brand-name or equal" — Keystone can be offered as the equal (vs. ${brand})` };
+      return { cls: "nobid", reason: `Brand-locked to ${brand} — no "or equal" provision` };
+    }
+    if (KS_OREQUAL.test(t)) return { cls: "eligible", reason: 'Open "or equal" — Keystone quotable' };
+    if (KS_CATEGORY.test(t)) return { cls: "eligible", reason: "Generic spec, no competitor brand lock — Keystone quotable" };
+    return { cls: "review", reason: "No brand lock detected — confirm specs against Keystone catalog" };
+  }
+  function keystoneBadge(o) {
+    const k = keystoneScreen(o);
+    if (k.cls === "eligible") return `<span title="${esc(k.reason)}" class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">Keystone-eligible</span>`;
+    if (k.cls === "nobid") return `<span title="${esc(k.reason)}" class="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-bold text-red-700">No-bid</span>`;
+    return `<span title="${esc(k.reason)}" class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">Review specs</span>`;
+  }
+
   async function api(payload) {
     const r = await fetch(FN, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: JSON.stringify(payload) });
     let d = {}; try { d = await r.json(); } catch (e) {}
@@ -97,6 +129,7 @@
     lastSearch = { query: (payload.query || "").trim(), vertical: (payload.vertical || "").trim() };
     saFilter.clear(); // fresh result set → reset set-aside filter
     equipOnly = lastSearch.vertical === "lighting"; // lighting = supply equipment only by default
+    keystoneOnly = lastSearch.vertical === "lighting"; // lighting = Keystone-eligible only by default
     // note + interpretation
     const note = $("note"); if (d.note) { note.textContent = d.note; note.classList.remove("hidden"); } else note.classList.add("hidden");
     const interp = $("interp"); const iv = d.interpreted || {};
@@ -126,14 +159,19 @@
     if (!full.length) { $("results").innerHTML = `<div class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600">No matching opportunities. Try another vertical or broaden the search.</div>`; return; }
     // Equipment/supply-only filter first (hide installation/labor/construction).
     const installCount = full.filter(isInstall).length;
-    const base = equipOnly ? full.filter((o) => !isInstall(o)) : full;
+    const afterEquip = equipOnly ? full.filter((o) => !isInstall(o)) : full;
+    // Keystone-eligibility screen (hide brand-locked / NSN no-bids when on).
+    const nobidCount = afterEquip.filter((o) => keystoneScreen(o).cls === "nobid").length;
+    const base = keystoneOnly ? afterEquip.filter((o) => keystoneScreen(o).cls !== "nobid") : afterEquip;
     // Set-aside eligibility filter bar (counts from the equipment-filtered set).
     const counts = {}; base.forEach((o) => { const b = saBucket(o.setAside); counts[b] = (counts[b] || 0) + 1; });
     const chips = SA_ORDER.filter((b) => counts[b]).map((b) => { const on = saFilter.has(b); return `<button data-sa="${esc(b)}" class="rounded-full border px-3 py-1 text-xs font-medium transition-colors ${on ? "border-cyan-600 bg-cyan-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-cyan-400 hover:text-cyan-700"}">${esc(b)} <span class="opacity-60">${counts[b]}</span></button>`; }).join(" ");
     const list = saFilter.size ? base.filter((o) => saFilter.has(saBucket(o.setAside))) : base;
+    const isLighting = lastSearch.vertical === "lighting";
     const equipToggle = `<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${equipOnly ? "border-cyan-600 bg-cyan-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-cyan-400"}"><input id="equip-only" type="checkbox" ${equipOnly ? "checked" : ""} class="h-3.5 w-3.5 accent-white" /> Equipment/supply only${installCount ? ` <span class="opacity-70">(${installCount} install hidden)</span>` : ""}</label>`;
+    const keystoneToggle = isLighting ? `<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${keystoneOnly ? "border-emerald-600 bg-emerald-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-emerald-400"}"><input id="keystone-only" type="checkbox" ${keystoneOnly ? "checked" : ""} class="h-3.5 w-3.5 accent-white" /> Keystone-eligible only${nobidCount ? ` <span class="opacity-70">(${nobidCount} no-bid hidden)</span>` : ""}</label>` : "";
     const bar = `<div class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3">
-      ${equipToggle}
+      ${equipToggle}${keystoneToggle}
       <span class="mx-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Set-aside</span>${chips}
       ${saFilter.size ? `<button id="sa-clear" class="text-xs font-semibold text-cyan-700 hover:underline">Clear</button>` : ""}
       <span id="alert-host" class="ml-auto">${(lastSearch.query || lastSearch.vertical) ? `<button id="alert-sub" class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-brand-800 hover:border-cyan-400 hover:text-cyan-700">&#128276; Email me new matches</button>` : ""}</span>
@@ -146,7 +184,7 @@
             <h3 class="font-semibold text-brand-900">${esc(o.title)}</h3>
             <p class="mt-0.5 text-sm text-slate-500">${esc(o.agency || "")}${o.solicitation ? " · " + esc(o.solicitation) : ""}</p>
           </div>
-          ${fitBadge(o.score || 0)}
+          <div class="flex flex-none flex-wrap items-center justify-end gap-1.5">${isLighting ? keystoneBadge(o) : ""}${fitBadge(o.score || 0)}</div>
         </div>
         <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
           ${o.naics ? `<span>NAICS ${esc(o.naics)}</span>` : ""}
@@ -181,6 +219,7 @@
     const clr = $("sa-clear"); if (clr) clr.addEventListener("click", () => { saFilter.clear(); renderResults(full); });
     const sub = $("alert-sub"); if (sub) sub.addEventListener("click", showAlertForm);
     const eq = $("equip-only"); if (eq) eq.addEventListener("change", () => { equipOnly = eq.checked; renderResults(full); });
+    const ks = $("keystone-only"); if (ks) ks.addEventListener("change", () => { keystoneOnly = ks.checked; renderResults(full); });
   }
 
   // ---------- saved-search email alerts ----------
