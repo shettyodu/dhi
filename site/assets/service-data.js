@@ -50,6 +50,7 @@ const SERVICE_CONTENT = {
     partners: [
       { name: "Titan", logo: "assets/img/partners/titan.png", dark: true },
       { name: "CyberFortify", logo: "assets/img/partners/cyberfortify.png", dark: true },
+      { name: "PipIQ", logo: "assets/img/partners/pipiq.png", dark: false },
     ],
     lead:
       "DHI integrates security and compliance into every layer of the platform — from secure communication and data discovery to AI-driven protection for healthcare and enterprise environments.",
@@ -149,6 +150,10 @@ const SERVICE_CONTENT = {
 
   "wellness.html": {
     partner: "GenieMD · Cognifit",
+    partners: [
+      { name: "GenieMD", logo: "assets/img/partners/geniemd.png", dark: false },
+      { name: "CogniFit", logo: "assets/img/partners/cognifit.png", dark: false },
+    ],
     lead:
       "DHI Provider GenieMD delivers telehealth and remote patient monitoring that can be white-labeled for health systems, employers, and government programs. Patients gain easier access to care while organizations gain better visibility and control.",
     highlights: [
@@ -203,6 +208,7 @@ const SERVICE_CONTENT = {
     partner: "Carriers · Brokers · Specialty platforms",
     partners: [
       { name: "Manhattan Life", logo: "assets/img/partners/manhattanlife.png", dark: false },
+      { name: "Squaremouth", logo: "assets/img/partners/squaremouth.png", dark: false },
     ],
     lead:
       "Insure everyone, everywhere. DHI collaborates with carriers, brokers, and specialty platforms — including ManhattanLife, SquareMouth, and Acrisure — to deliver health, supplemental, and specialty insurance designed to improve benefit value, integrate with wellness and care management, and leverage analytics on utilization and outcomes.",
@@ -614,6 +620,9 @@ const SERVICE_CONTENT = {
 
   "lighting.html": {
     partner: "Keystone — full-scale manufacturer",
+    partners: [
+      { name: "Keystone Technologies", logo: "assets/img/partners/keystone.png", dark: false },
+    ],
     lead:
       "DHI partners with a full-scale manufacturer to offer high-quality commercial lighting. Every Keystone fixture includes a Keystone power supply, so we ensure guaranteed performance — products are 100% end-of-line tested, with a defect rate under 0.1%.",
     highlights: [
