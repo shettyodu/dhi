@@ -186,9 +186,26 @@ async function searchInventory(profile) {
     v.deal_terms = dealTermsFor(v);
     vehicles.push(v);
   }
-  applyCohortDeal(vehicles);   // deal rating from comparable set when the provider gives no market value
+  // Relevance safety net: providers sometimes loosely match make/model, returning
+  // (e.g.) every Toyota for a "Camry SE" search. Narrow to the requested model and
+  // trim — but only when that leaves results, so a strict trim never zeroes a page.
+  let matches = vehicles;
+  if (p.model) {
+    const want = String(p.model).toLowerCase();
+    const f = matches.filter((v) => {
+      const m = String(v.model || "").toLowerCase();
+      return m && (m.includes(want) || want.includes(m));
+    });
+    if (f.length) matches = f;
+  }
+  if (p.trim) {
+    const want = String(p.trim).toLowerCase();
+    const f = matches.filter((v) => String(v.trim || "").toLowerCase().includes(want));
+    if (f.length) matches = f;
+  }
+  applyCohortDeal(matches);   // deal rating from comparable set when the provider gives no market value
   // single recommendation bucket so the existing find-vehicle UI renders it as-is
-  return { status: 200, json: { ok: true, provider: PROVIDER, count: vehicles.length, results: { total_count: vehicles.length, buckets: [{ key: "live_inventory", label: "Live inventory matches", vehicles }] } } };
+  return { status: 200, json: { ok: true, provider: PROVIDER, count: matches.length, results: { total_count: matches.length, buckets: [{ key: "live_inventory", label: "Live inventory matches", vehicles: matches }] } } };
 }
 
 // When the provider doesn't return a market value (e.g. Auto.dev), derive a

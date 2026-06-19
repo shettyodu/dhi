@@ -88,8 +88,45 @@
   // into a /search profile entirely in-browser — no LLM round-trip. This keeps the
   // NL box as fast and reliable as the structured form when live inventory is on.
   const MAKES = ["mercedes-benz", "land rover", "alfa romeo", "toyota", "honda", "ford", "chevrolet", "chevy", "nissan", "jeep", "subaru", "hyundai", "kia", "mazda", "volkswagen", "vw", "bmw", "mercedes", "audi", "lexus", "acura", "gmc", "ram", "dodge", "chrysler", "buick", "cadillac", "tesla", "volvo", "porsche", "jaguar", "mitsubishi", "mini", "infiniti", "lincoln", "genesis", "fiat"];
-  const MAKE_FIX = { chevy: "Chevrolet", vw: "Volkswagen" };
+  const MAKE_FIX = { chevy: "Chevrolet", vw: "Volkswagen", bmw: "BMW", gmc: "GMC" };
   const BODY = { suv: "SUV", sedan: "Sedan", pickup: "Truck", truck: "Truck", coupe: "Coupe", hatchback: "Hatchback", minivan: "Minivan", van: "Van", wagon: "Wagon", convertible: "Convertible" };
+  // Model lexicon (display form; matched case-insensitively) — keyed by canonical
+  // make. Lets the search honor the MODEL (Bill: "Camry SE" must return Camrys,
+  // not every Toyota). Not exhaustive, but covers the high-volume sellers.
+  const MODELS = {
+    toyota: ["4Runner", "Land Cruiser", "Camry", "Corolla Cross", "Corolla", "RAV4", "Highlander", "Grand Highlander", "Tacoma", "Tundra", "Prius Prime", "Prius", "Sienna", "Sequoia", "Avalon", "Venza", "C-HR", "Supra", "GR86", "GR Corolla", "Mirai", "bZ4X"],
+    honda: ["CR-V", "HR-V", "Civic", "Accord", "Pilot", "Odyssey", "Passport", "Ridgeline", "Fit", "Insight", "Prologue"],
+    ford: ["F-150 Lightning", "F-150", "F-250", "F-350", "Super Duty", "Mustang Mach-E", "Mustang", "Explorer", "Escape", "Edge", "Expedition", "Bronco Sport", "Bronco", "Ranger", "Maverick", "Fusion", "Focus", "EcoSport"],
+    chevrolet: ["Silverado 1500", "Silverado 2500", "Silverado", "Equinox EV", "Equinox", "Tahoe", "Suburban", "Malibu", "Traverse", "Camaro", "Corvette", "Colorado", "Blazer EV", "Blazer", "Trax", "Trailblazer", "Bolt EUV", "Bolt", "Impala", "Cruze", "Spark"],
+    nissan: ["Altima", "Sentra", "Rogue Sport", "Rogue", "Murano", "Pathfinder", "Frontier", "Titan", "Maxima", "Kicks", "Versa", "Armada", "Leaf", "Ariya", "370Z", "Z"],
+    jeep: ["Grand Cherokee L", "Grand Cherokee", "Cherokee", "Compass", "Renegade", "Gladiator", "Grand Wagoneer", "Wagoneer", "Wrangler"],
+    hyundai: ["Elantra", "Sonata", "Tucson", "Santa Fe", "Santa Cruz", "Kona", "Palisade", "Accent", "Veloster", "Ioniq 5", "Ioniq 6", "Ioniq", "Venue", "Nexo"],
+    kia: ["Forte", "Optima", "K5", "Sportage", "Sorento", "Telluride", "Soul", "Seltos", "Carnival", "Stinger", "Niro", "Rio", "EV6", "EV9"],
+    subaru: ["Outback", "Forester", "Crosstrek", "Impreza", "Legacy", "Ascent", "Solterra", "WRX", "BRZ"],
+    mazda: ["Mazda3", "Mazda6", "CX-3", "CX-30", "CX-5", "CX-50", "CX-9", "CX-90", "MX-5 Miata", "MX-5", "Miata", "MX-30"],
+    volkswagen: ["Jetta", "Passat", "Tiguan", "Atlas Cross Sport", "Atlas", "Golf GTI", "Golf R", "Golf", "GTI", "Taos", "Arteon", "ID.4"],
+    bmw: ["3 Series", "5 Series", "7 Series", "4 Series", "2 Series", "8 Series", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "M3", "M5", "i4", "iX", "i7"],
+    "mercedes-benz": ["C-Class", "E-Class", "S-Class", "A-Class", "CLA", "GLA", "GLB", "GLC", "GLE", "GLS", "G-Class", "EQS", "EQE"],
+    mercedes: ["C-Class", "E-Class", "S-Class", "A-Class", "CLA", "GLA", "GLB", "GLC", "GLE", "GLS", "G-Class", "EQS", "EQE"],
+    lexus: ["RX", "ES", "NX", "GX", "IS", "UX", "LX", "LS", "RC", "LC", "RZ"],
+    audi: ["A3", "A4", "A5", "A6", "A7", "A8", "Q3", "Q5", "Q7", "Q8", "e-tron", "S4", "S5", "RS5"],
+    acura: ["ILX", "TLX", "RLX", "RDX", "MDX", "Integra", "NSX", "ZDX"],
+    gmc: ["Sierra 1500", "Sierra 2500", "Sierra", "Yukon XL", "Yukon", "Acadia", "Terrain", "Canyon", "Hummer EV", "Savana"],
+    ram: ["1500", "2500", "3500", "ProMaster"],
+    dodge: ["Charger", "Challenger", "Durango", "Journey", "Hornet"],
+    chrysler: ["Pacifica", "300"],
+    tesla: ["Model 3", "Model Y", "Model S", "Model X", "Cybertruck"],
+    buick: ["Enclave", "Encore GX", "Encore", "Envision", "Envista"],
+    cadillac: ["Escalade", "XT4", "XT5", "XT6", "CT4", "CT5", "Lyriq"],
+    volvo: ["XC40", "XC60", "XC90", "S60", "S90", "V60", "V90", "C40"],
+    infiniti: ["Q50", "Q60", "QX50", "QX55", "QX60", "QX80"],
+    lincoln: ["Corsair", "Nautilus", "Aviator", "Navigator"],
+    genesis: ["G70", "G80", "G90", "GV70", "GV80", "GV60"],
+    porsche: ["911", "Cayenne", "Macan", "Panamera", "Taycan", "718 Cayman", "718 Boxster"],
+  };
+  // Common trims (display form; matched case-insensitively, longest first).
+  const TRIMS = ["TRD Off-Road", "TRD Pro", "TRD Sport", "King Ranch", "Grand Touring", "Platinum", "Limited", "Touring", "Premium", "Preferred", "Signature", "Titanium", "Lariat", "Laramie", "Rebel", "Denali", "Overland", "Trailhawk", "Latitude", "Altitude", "N-Line", "GT-Line", "XSE", "XLE", "SR5", "EX-L", "Sport", "SEL", "SE", "LE", "EX", "LX", "DX", "SV", "SL", "SR", "LTZ", "LT", "RS", "SS", "GT", "GLI", "Si"];
+  const TRIMS_RE = new RegExp("\\b(" + TRIMS.slice().sort((a, b) => b.length - a.length).map((t) => t.replace(/[-.]/g, "\\$&").replace(/ +/g, "\\s+")).join("|") + ")\\b", "i");
   // Tokens that end a place name (price/keyword words) and words that are never a place.
   const LOC_STOP = new Set(["under", "over", "below", "above", "around", "about", "with", "for", "and", "or", "near", "less", "than", "up", "to", "max", "min", "that", "cost", "costs", "priced", "price", "miles", "mile", "mi", "k", "the", "a", "an"]);
   const BAD_PLACE = new Set(MAKES.concat(["suv", "sedan", "truck", "pickup", "coupe", "hatchback", "minivan", "van", "wagon", "convertible", "hybrid", "electric", "ev", "diesel", "awd", "4wd", "fwd", "rwd", "car", "cars", "vehicle", "vehicles", "sale", "stock", "mileage", "miles", "me", "option", "options"]));
@@ -124,6 +161,18 @@
     const p = {};
     // make (longest names first so "land rover" wins over a stray "rover")
     for (const m of MAKES) { if (new RegExp("\\b" + m.replace(/[-]/g, "\\$&") + "\\b").test(q)) { p.make = MAKE_FIX[m] || titleCase(m); break; } }
+    // --- model + trim (search relevance: "Camry SE" must return Camry SEs) -----
+    let modelRaw = "", trimRaw = "";
+    if (p.make) {
+      const list = (MODELS[p.make.toLowerCase()] || []).slice().sort((a, b) => b.length - a.length);
+      for (const disp of list) {
+        const pat = disp.toLowerCase().replace(/[-.]/g, "\\$&").replace(/ +/g, "\\s+");
+        const mm = q.match(new RegExp("\\b" + pat + "\\b"));
+        if (mm) { p.model = disp; modelRaw = mm[0]; break; }
+      }
+    }
+    const tm = q.match(TRIMS_RE);
+    if (tm) { p.trim = TRIMS.find((t) => t.toLowerCase() === tm[1].toLowerCase().replace(/\s+/g, " ")) || tm[1]; trimRaw = tm[0]; }
     // body style / fuel / drivetrain
     for (const k in BODY) { if (new RegExp("\\b" + k + "s?\\b").test(q)) { p.body_style = BODY[k]; break; } }
     if (/\bhybrids?\b/.test(q)) p.fuel_type = "Hybrid";
@@ -162,6 +211,8 @@
     // price text so they aren't misread as dollars. Leave "35k"-style amounts intact.
     rest = rest.replace(/\b(?:19|20)\d{2}\b/g, " ");
     rest = rest.replace(/\b[a-z]{1,3}-?\d+\b/g, " ");
+    if (modelRaw) rest = rest.replace(modelRaw, " ");   // e.g. Ram "1500", Chrysler "300"
+    if (trimRaw) rest = rest.replace(trimRaw, " ");
     if (zip) rest = rest.replace(zip, " ");
     if (locText) rest = rest.replace(new RegExp(locText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), " ");
     const money = moneyRange(rest);
