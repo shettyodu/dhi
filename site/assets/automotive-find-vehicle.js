@@ -385,7 +385,6 @@
   }
 
   // ---------- Model A handoff: choose a car → record interest + go to source ----
-  let pendingVehicleId = null; // set when "Request this vehicle" is clicked before contact info is entered
   // Demo toggle: ?dealerDemo=1 previews the "Continue to dealer" hand-off even
   // before real dealer clickoff links exist, so the team can walk the flow.
   const DEALER_DEMO = /[?&](dealerdemo|buydirect)=1/i.test(location.search);
@@ -413,35 +412,112 @@
       ? `<span class="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200" title="Buy directly from the dealer — completes on the dealer's site">Buy direct</span>`
       : `<span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500" title="A DHI advisor lines up this vehicle for you">Concierge</span>`;
   }
-  function submitVehicleRequest(v, contact) {
+  // Unique referral/deal ID so DHI can claim + bill the selling dealer.
+  function genDealId() {
+    return "DHI-" + Date.now().toString(36).toUpperCase().slice(-5) + Math.random().toString(36).toUpperCase().slice(2, 5);
+  }
+  function hasContact() { const c = contactFromForm(); return !!(c.name && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.email)); }
+  function submitVehicleRequest(v, contact, dealId) {
     const attr = (window.DHIAttribution ? window.DHIAttribution() : null);
     const r = (attr && attr.ref) || ref || "";
     const lead = {
-      type: "customer", source: "AutoCommand · vehicle request", referral_code: r,
+      type: "customer", vertical: "automotive", source: "AutoCommand referral · vehicle", referral_code: r,
       name: contact.name, email: contact.email, phone: contact.phone,
+      deal_id: dealId || "", referral_tagged: "yes",
       vehicle: vehicleLabel(v), vehicle_id: v.vehicle_id, vin: v.vin || "", asking_price: v.asking_price,
-      listing_source: v.source_name || (v.deal_terms && v.deal_terms.source) || "", listing_url: v.listing_url || "",
+      dealer: v.source_name || (v.deal_terms && v.deal_terms.source) || "", listing_url: v.listing_url || "",
       location: (v.location_city || "") + (v.location_state ? ", " + v.location_state : ""),
+      fulfillment: isBuyDirect(v) ? "buy-direct" : "concierge",
     };
     return fetch(FN("submit-lead"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(lead) }).catch(() => {});
   }
-  async function getCar(id) {
+  // TrueCar-style: the dealer stays concealed on the card. Clicking a vehicle
+  // captures contact info first (if we don't have it), creates a referral-tagged
+  // lead with a Deal ID, THEN reveals the dealer — so DHI can claim/bill the
+  // referral and the shopper can't route around us.
+  function getCar(id) {
     const v = findVehicle(id); if (!v) return;
-    // Path A — buy direct: a real dealer link exists (or demo mode) → show the
-    // visible hand-off so the buyer completes the purchase on the dealer's site.
-    if (isBuyDirect(v)) { openHandoff(v); return; }
-    // Otherwise concierge: request this exact VIN; a DHI advisor sources it.
+    if (hasContact()) revealDealer(v);
+    else openCaptureGate(v);
+  }
+  function revealDealer(v) {
+    const dealId = genDealId();
+    submitVehicleRequest(v, contactFromForm(), dealId);
+    if (isBuyDirect(v)) openHandoff(v, dealId);
+    else openConciergeReveal(v, dealId);
+  }
+  // Contact-capture gate shown before the dealer is revealed.
+  function openCaptureGate(v) {
+    closeHandoff();
     const c = contactFromForm();
-    if (c.email && c.name) {
-      submitVehicleRequest(v, c);
-      pendingVehicleId = null;
-      toast("Request received — a DHI advisor will line up this " + vehicleLabel(v) + " and follow up.");
-    } else {
-      pendingVehicleId = id;
-      const nameEl = $("fv-name");
-      if (nameEl) { nameEl.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => nameEl.focus(), 300); }
-      toast("Add your name & email below, then submit and we'll line up this " + vehicleLabel(v) + ".");
-    }
+    const wrap = document.createElement("div");
+    wrap.id = "dealer-modal";
+    wrap.className = "fixed inset-0 z-[60] flex items-center justify-center p-4";
+    wrap.innerHTML = `
+      <div data-close class="absolute inset-0 bg-brand-950/60"></div>
+      <div role="dialog" aria-modal="true" class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div class="bg-brand-900 px-5 py-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-cyan-300">Unlock the dealer</p>
+          <h3 class="mt-0.5 text-lg font-bold text-white">${esc(vehicleLabel(v))}</h3>
+          <p class="text-sm text-cyan-100">${fmtUSD(v.asking_price)}${v.location_state ? " · " + esc(v.location_state) + " area" : ""}</p>
+        </div>
+        <div class="px-5 py-4">
+          <p class="text-sm text-slate-600">Tell us where to reach you and we'll connect you with the selling dealer for this exact vehicle. DHI manages the introduction — no spam.</p>
+          <div class="mt-3 space-y-2">
+            <input id="cap-name" placeholder="Full name" value="${esc(c.name || "")}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none" />
+            <input id="cap-email" type="email" placeholder="Email" value="${esc(c.email || "")}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none" />
+            <input id="cap-phone" type="tel" placeholder="Phone (optional)" value="${esc(c.phone || "")}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none" />
+          </div>
+          <p id="cap-err" class="mt-2 hidden text-xs text-red-600"></p>
+          <div class="mt-4 flex gap-2">
+            <button data-close class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+            <button id="cap-go" class="flex-1 rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700">Unlock dealer &rarr;</button>
+          </div>
+          <p class="mt-2 text-center text-[11px] text-slate-400">By continuing you agree DHI may share your request with the selling dealer.</p>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeHandoff));
+    document.addEventListener("keydown", onHandoffKey);
+    const go = wrap.querySelector("#cap-go");
+    go.addEventListener("click", () => {
+      const name = ($("cap-name").value || "").trim(), email = ($("cap-email").value || "").trim(), phone = ($("cap-phone").value || "").trim();
+      if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { const e = $("cap-err"); e.textContent = "Please enter your name and a valid email."; e.classList.remove("hidden"); return; }
+      if ($("fv-name")) $("fv-name").value = name;       // persist so the next car doesn't re-prompt
+      if ($("fv-email")) $("fv-email").value = email;
+      if ($("fv-phone") && phone) $("fv-phone").value = phone;
+      revealDealer(v);
+    });
+  }
+  // Concierge reveal (no direct dealer link): dealer revealed + DHI connects you.
+  function openConciergeReveal(v, dealId) {
+    closeHandoff();
+    const dealer = esc(v.source_name || "the selling dealer");
+    const wrap = document.createElement("div");
+    wrap.id = "dealer-modal";
+    wrap.className = "fixed inset-0 z-[60] flex items-center justify-center p-4";
+    wrap.innerHTML = `
+      <div data-close class="absolute inset-0 bg-brand-950/60"></div>
+      <div role="dialog" aria-modal="true" class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div class="bg-brand-900 px-5 py-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-emerald-300">Dealer unlocked ✓</p>
+          <h3 class="mt-0.5 text-lg font-bold text-white">${esc(vehicleLabel(v))}</h3>
+          <p class="text-sm text-cyan-100">${fmtUSD(v.asking_price)}</p>
+        </div>
+        <div class="px-5 py-4">
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Selling dealer</p>
+            <p class="mt-0.5 font-bold text-brand-900">${dealer}</p>
+            <p class="text-sm text-slate-600">${esc(v.location_city || "")}${v.location_city ? ", " : ""}${esc(v.location_state || "")}</p>
+          </div>
+          <p class="mt-3 text-sm text-slate-600">Your request is in — a DHI advisor will connect you with <b>${dealer}</b> for this exact vehicle and stay with your deal.</p>
+          <p class="mt-3 rounded-lg bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-800 ring-1 ring-cyan-200">Your DHI deal ID: <b>${esc(dealId)}</b> — keep this; it ties your purchase to DHI.</p>
+          <button data-close class="mt-4 w-full rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700">Done</button>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeHandoff));
+    document.addEventListener("keydown", onHandoffKey);
   }
 
   // ---- Path A: visible "Continue to dealer" hand-off ----------------------------
@@ -450,7 +526,7 @@
   // exists; ?dealerDemo=1 lets the team preview it before links are connected.
   function closeHandoff() { const m = $("dealer-modal"); if (m) m.remove(); document.removeEventListener("keydown", onHandoffKey); }
   function onHandoffKey(e) { if (e.key === "Escape") closeHandoff(); }
-  function openHandoff(v) {
+  function openHandoff(v, dealId) {
     const d = dealerLink(v); if (!d) return;
     const attr = (window.DHIAttribution ? window.DHIAttribution() : null);
     const r = (attr && attr.ref) || ref || "";
@@ -475,6 +551,7 @@
             <li class="flex gap-2"><span class="font-semibold text-cyan-600">2.</span><span>You complete the purchase with the dealer at their listed price.</span></li>
             <li class="flex gap-2"><span class="font-semibold text-cyan-600">3.</span><span>DHI stays with your deal for support — reach us anytime if you need help.</span></li>
           </ol>
+          <p class="mt-3 rounded-lg bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-800 ring-1 ring-cyan-200">Your DHI deal ID: <b>${esc(dealId || "")}</b> — keep this; it ties your purchase to DHI.</p>
           ${d.demo ? `<p class="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 ring-1 ring-amber-200">Preview mode — with a connected dealer, Continue opens their exact listing. (This demo opens a search for the vehicle.)</p>` : ""}
           <div class="mt-4 flex gap-2">
             <button data-close class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
@@ -486,7 +563,7 @@
     document.body.appendChild(wrap);
     wrap.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeHandoff));
     const go = wrap.querySelector("[data-go]");
-    if (go) go.addEventListener("click", () => { submitVehicleRequest(v, contactFromForm()); closeHandoff(); toast("Opening " + (v.source_name || "the dealer") + " — we're tracking your deal."); });
+    if (go) go.addEventListener("click", () => { closeHandoff(); toast("Opening " + (v.source_name || "the dealer") + " — we're tracking your deal."); });
     document.addEventListener("keydown", onHandoffKey);
   }
 
@@ -564,19 +641,19 @@
           <span>${Number(v.mileage || 0).toLocaleString("en-US")} mi</span>
           ${v.drivetrain ? `<span>${esc(v.drivetrain)}</span>` : ""}
           ${v.fuel_type ? `<span>${esc(v.fuel_type)}</span>` : ""}
-          <span>${esc(v.location_city || "")}${v.location_city ? ", " : ""}${esc(v.location_state || "")}</span>
+          <span>${esc(v.location_state || "")}${v.location_state ? " area" : ""}</span>
         </div>
         <p class="mt-2 text-xs text-slate-500"><span class="font-medium text-slate-600">Why:</span> ${why.join(" · ")}</p>
         <div class="mt-3 flex items-center justify-between gap-2">
           <div class="flex min-w-0 items-center gap-1.5">
-            <span class="truncate text-xs text-slate-400">${esc(v.source_name || v.source_type || "")}</span>
+            <span class="inline-flex items-center gap-1 truncate text-xs text-slate-400" title="Dealer revealed after you connect"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Verified dealer</span>
             ${fulfillmentBadge(v)}
           </div>
           <label class="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs font-medium text-slate-600">
             <input type="checkbox" data-cmp data-id="${id}" ${checked} class="h-4 w-4 rounded border-slate-300 text-cyan-600" /> Compare
           </label>
         </div>
-        <button data-get="${id}" class="mt-3 w-full rounded-lg bg-cyan-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-cyan-700">${isBuyDirect(v) ? "Continue to dealer &rarr;" : "Request this vehicle &rarr;"}</button>
+        <button data-get="${id}" class="mt-3 w-full rounded-lg bg-cyan-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-cyan-700">See dealer &amp; connect &rarr;</button>
       </div>
     </div>`;
   }
@@ -661,13 +738,6 @@
     e.preventDefault();
     const profile = buildProfile();
     const btn = $("fv-submit"); btn.disabled = true; setTimeout(() => (btn.disabled = false), 800);
-    // If the buyer clicked "Request this vehicle" before entering contact info,
-    // attach that specific vehicle to this submission now that we have their details.
-    if (pendingVehicleId) {
-      const v = findVehicle(pendingVehicleId); const c = contactFromForm();
-      if (v && c.email && c.name) { submitVehicleRequest(v, c); toast("Request received — a DHI advisor will line up this " + vehicleLabel(v) + "."); }
-      pendingVehicleId = null;
-    }
     runSearch("automotive-search", profile, leadFromForm());
   });
   const nlGo = $("nl-go");
