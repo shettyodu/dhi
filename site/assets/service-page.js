@@ -186,13 +186,16 @@
     .join("");
 
   // Optional partner-logo card (real brand assets)
+  // Logos hide gracefully if a file is missing (onerror removes the card; if all
+  // fail, the whole strip removes itself) — so the strip can ship before every
+  // asset is in place and the logos appear automatically once added.
   const partnersHtml = (data.partners && data.partners.length)
-    ? `<div class="rounded-2xl border border-slate-200 bg-white p-6">
+    ? `<div id="partners-strip" class="rounded-2xl border border-slate-200 bg-white p-6">
          <h3 class="text-sm font-semibold uppercase tracking-wider text-cyan-700">Powered by</h3>
          <div class="mt-4 grid gap-3">
            ${data.partners.map((p) =>
-             `<div class="flex h-20 items-center justify-center rounded-xl ${p.dark ? "border border-brand-800 bg-brand-900" : "border border-slate-200 bg-white"} p-4">
-                <img src="${p.logo}" alt="${p.name}" class="max-h-12 w-auto object-contain" />
+             `<div class="partner-card flex h-20 items-center justify-center rounded-xl ${p.dark ? "border border-brand-800 bg-brand-900" : "border border-slate-200 bg-white"} p-4">
+                <img src="${p.logo}" alt="${p.name}" class="max-h-12 w-auto object-contain" onerror="var c=this.closest('.partner-card'); if(c) c.remove(); var s=document.getElementById('partners-strip'); if(s &amp;&amp; !s.querySelector('.partner-card')) s.remove();" />
               </div>`).join("")}
          </div>
        </div>`
