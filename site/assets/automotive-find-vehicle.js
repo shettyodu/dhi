@@ -128,6 +128,13 @@
   // Common trims (display form; matched case-insensitively, longest first).
   const TRIMS = ["TRD Off-Road", "TRD Pro", "TRD Sport", "King Ranch", "Grand Touring", "Platinum", "Limited", "Touring", "Premium", "Preferred", "Signature", "Titanium", "Lariat", "Laramie", "Rebel", "Denali", "Overland", "Trailhawk", "Latitude", "Altitude", "N-Line", "GT-Line", "XSE", "XLE", "SR5", "EX-L", "Sport", "SEL", "SE", "LE", "EX", "LX", "DX", "SV", "SL", "SR", "LTZ", "LT", "RS", "SS", "GT", "GLI", "Si"];
   const TRIMS_RE = new RegExp("\\b(" + TRIMS.slice().sort((a, b) => b.length - a.length).map((t) => t.replace(/[-.]/g, "\\$&").replace(/ +/g, "\\s+")).join("|") + ")\\b", "i");
+  // Flat index of every model (with its make) for bare-model searches ("mustang",
+  // "camry se") where the shopper didn't type the make. Longest-first.
+  const MODEL_INDEX = [];
+  for (const mk in MODELS) for (const md of MODELS[mk]) MODEL_INDEX.push({ makeKey: mk, model: md });
+  MODEL_INDEX.sort((a, b) => b.model.length - a.model.length);
+  // Match a model regardless of separator: "F-150" also matches "f150" / "f 150".
+  function modelPat(md) { return md.toLowerCase().replace(/[^a-z0-9]+/g, "[^a-z0-9]?"); }
   // Tokens that end a place name (price/keyword words) and words that are never a place.
   const LOC_STOP = new Set(["under", "over", "below", "above", "around", "about", "with", "for", "and", "or", "near", "less", "than", "up", "to", "max", "min", "that", "cost", "costs", "priced", "price", "miles", "mile", "mi", "k", "the", "a", "an"]);
   const BAD_PLACE = new Set(MAKES.concat(["suv", "sedan", "truck", "pickup", "coupe", "hatchback", "minivan", "van", "wagon", "convertible", "hybrid", "electric", "ev", "diesel", "awd", "4wd", "fwd", "rwd", "car", "cars", "vehicle", "vehicles", "sale", "stock", "mileage", "miles", "me", "option", "options"]));
@@ -164,12 +171,23 @@
     for (const m of MAKES) { if (new RegExp("\\b" + m.replace(/[-]/g, "\\$&") + "s?\\b").test(q)) { p.make = MAKE_FIX[m] || titleCase(m); break; } }
     // --- model + trim (search relevance: "Camry SE" must return Camry SEs) -----
     let modelRaw = "", trimRaw = "";
+    function tryModel(disp, inferKey) {
+      const mm = q.match(new RegExp("\\b" + modelPat(disp) + "\\b"));
+      if (!mm) return false;
+      p.model = disp; modelRaw = mm[0];
+      if (inferKey) p.make = MAKE_FIX[inferKey] || titleCase(inferKey);
+      return true;
+    }
     if (p.make) {
       const list = (MODELS[p.make.toLowerCase()] || []).slice().sort((a, b) => b.length - a.length);
-      for (const disp of list) {
-        const pat = disp.toLowerCase().replace(/[-.]/g, "\\$&").replace(/ +/g, "\\s+");
-        const mm = q.match(new RegExp("\\b" + pat + "\\b"));
-        if (mm) { p.model = disp; modelRaw = mm[0]; break; }
+      for (const disp of list) if (tryModel(disp, null)) break;
+    }
+    if (!p.model && !p.make) {
+      // bare model ("mustang", "camry se") — find it and infer the make. Skip
+      // all-numeric / very short models so stray numbers/words don't false-match.
+      for (const x of MODEL_INDEX) {
+        if (!/[a-z]/i.test(x.model) || x.model.replace(/[^a-z0-9]/gi, "").length < 3) continue;
+        if (tryModel(x.model, x.makeKey)) break;
       }
     }
     const tm = q.match(TRIMS_RE);
@@ -183,45 +201,48 @@
     if (dt) p.drivetrain = dt[1] === "4x4" ? "4WD" : dt[1].toUpperCase();
     // year(s)
     Object.assign(p, years(q));
-    // --- distance / radius vs odometer mileage -------------------------------
-    // "50 miles from norfolk" / "within 50 miles of raleigh" is a search RADIUS,
-    // not odometer mileage — detect it first so the number isn't misread.
-    let radius = null, distSpan = "";
-    let dm = q.match(/(\d+)\s*(?:mi|miles?)\s+(?:from|of|to|near|around|within|outside)\b/);
-    if (!dm) dm = q.match(/\bwithin\s+(\d+)\s*(?:mi|miles?)\b/);
-    if (dm) { radius = parseInt(dm[1], 10); distSpan = dm[0]; }
-    // --- location: a city/place anywhere in the query (+ optional ", ST") ------
+
+    // ---- numeric fields: radius → mileage → monthly → budget → ZIP ----------
+    // Parse in priority order, removing each match from `rest` so a number is
+    // never double-counted (e.g. a price is never later misread as a ZIP).
+    let rest = " " + q + " ", radius = null;
+    // search radius ("within 50 miles of raleigh") — not odometer mileage
+    let dm = rest.match(/(\d+)\s*(?:mi|miles?)\s+(?:from|of|to|near|around|within|outside)\b/) || rest.match(/\bwithin\s+(\d+)\s*(?:mi|miles?)\b/);
+    if (dm) { radius = parseInt(dm[1], 10); rest = rest.replace(dm[0], " "); }
+    // location text / state
     let locText = "", locState = "";
     const place = extractPlace(q);
     if (place) { locText = place.text; locState = place.state; }
     if (!locText) { const cs = q.match(/\b([a-z][a-z.'\- ]+?),\s*([a-z]{2})\b/); if (cs) { locText = cs[1].trim(); locState = cs[2].toUpperCase(); } }
-    const zipM = q.match(/\b(\d{5})\b/); const zip = zipM ? zipM[1] : "";
-    if (zip) p.location_zip = zip;
+    // odometer mileage
+    const mileM = rest.match(/(\d[\d,\.]*)\s*(k)?\s*(?:mi|mile|miles)\b/);
+    if (mileM) { let v = parseFloat(mileM[1].replace(/,/g, "")); if (!isNaN(v)) { if (mileM[2] || v < 1000) v *= 1000; p.mileage_max = Math.round(v); } rest = rest.replace(mileM[0], " "); }
+    // monthly payment ("$500/mo", "around $400 a month") — before budget
+    const moM = rest.match(/\$?\s*(\d[\d,\.]*)\s*(k)?\s*(?:\/\s*mo\b|\/\s*month\b|per\s+month\b|a\s+month\b|monthly\b)/);
+    if (moM) { let v = parseFloat(moM[1].replace(/,/g, "")); if (!isNaN(v)) { if (moM[2]) v *= 1000; p.max_monthly_payment = Math.round(v); } rest = rest.replace(moM[0], " "); }
+    // strip tokens that look like prices but aren't (years, model codes, drivetrain,
+    // engine, "3rd row" / "7 passenger", and the matched model/trim/place name)
+    rest = rest.replace(/\b(?:19|20)\d{2}\b/g, " ").replace(/\b[a-z]{1,3}-?\d+\b/g, " ")
+      .replace(/\b\d+\s*x\s*\d+\b/g, " ").replace(/\b(?:awd|4wd|fwd|rwd|4x4)\b/g, " ").replace(/\bv\s?\d\b/g, " ")
+      .replace(/\b\d+\s*(?:nd|rd|th|st)?\s*(?:row|rows|passenger|passengers|seat|seats|door|doors|cyl(?:inder)?s?|speed|wheel)\b/g, " ");
+    if (modelRaw) rest = rest.replace(modelRaw, " ");
+    if (trimRaw) rest = rest.replace(trimRaw, " ");
+    if (locText) rest = rest.replace(new RegExp(locText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), " ");
+    // budget — explicit money signals only ($, k/grand, or a price keyword + number)
+    const amts = [];
+    const addAmt = (n, suf) => { let v = parseFloat(String(n).replace(/,/g, "")); if (isNaN(v)) return; if (suf && /k|grand/i.test(suf)) v *= 1000; else if (v < 100) v *= 1000; amts.push(Math.round(v)); };
+    rest = rest.replace(/\$\s*(\d[\d,\.]*)\s*(k|grand)?/gi, (m, n, s) => { addAmt(n, s); return " "; });
+    rest = rest.replace(/\b(\d[\d,\.]*)\s*(k|grand)\b/gi, (m, n, s) => { addAmt(n, s); return " "; });
+    rest = rest.replace(/\b(?:under|below|over|above|less than|more than|at least|up ?to|around|about|budget|maximum|max|minimum|min|starting|between|and|to)\s+\$?\s*(\d[\d,\.]*)\s*(k|grand)?/gi, (m, n, s) => { addAmt(n, s); return " "; });
+    const uniq = [...new Set(amts)].sort((a, b) => a - b);
+    if (uniq.length >= 2) { p.budget_min = uniq[0]; p.budget_max = uniq[uniq.length - 1]; }
+    else if (uniq.length === 1) { if (/\b(over|above|more than|at least|starting|minimum|min)\b/.test(q)) p.budget_min = uniq[0]; else p.budget_max = uniq[0]; }
+    // ZIP — from numeric tokens that survived the steps above
+    const zipM = rest.match(/\b(\d{5})\b/);
+    if (zipM) p.location_zip = zipM[1];
     if (locText) p.location_text = locText;
     if (locState) p.location_state = locState;
-    if (radius) p.radius = radius; else if (locText || zip) p.radius = 100; // local default when a place is named
-    // --- odometer mileage (after removing any distance span) ------------------
-    let rest = distSpan ? q.replace(distSpan, " ") : q;
-    const mileM = rest.match(/(\d[\d,\.]*)\s*(k)?\s*(?:mi|mile|miles)\b/);
-    if (mileM) {
-      let v = parseFloat(mileM[1].replace(/,/g, "")); if (isNaN(v)) v = null;
-      if (v != null) { if (mileM[2]) v *= 1000; else if (v < 1000) v *= 1000; p.mileage_max = Math.round(v); }
-      rest = rest.replace(mileM[0], " ");
-    }
-    // strip years, zip, model codes (f-150, q50, cx-5), and the place name from the
-    // price text so they aren't misread as dollars. Leave "35k"-style amounts intact.
-    rest = rest.replace(/\b(?:19|20)\d{2}\b/g, " ");
-    rest = rest.replace(/\b[a-z]{1,3}-?\d+\b/g, " ");
-    if (modelRaw) rest = rest.replace(modelRaw, " ");   // e.g. Ram "1500", Chrysler "300"
-    if (trimRaw) rest = rest.replace(trimRaw, " ");
-    if (zip) rest = rest.replace(zip, " ");
-    if (locText) rest = rest.replace(new RegExp(locText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), " ");
-    const money = moneyRange(rest);
-    if (money.min != null && money.max != null) { p.budget_min = money.min; p.budget_max = money.max; }
-    else if (money.max != null || money.min != null) {
-      const v = money.max != null ? money.max : money.min;
-      if (/\b(over|above|more than|at least|min|starting)\b/.test(q)) p.budget_min = v; else p.budget_max = v;
-    }
+    if (radius) p.radius = radius; else if (locText || p.location_zip) p.radius = 100;
     return p;
   }
 
