@@ -87,8 +87,8 @@
   // Parse a plain-English query ("2022 toyota suv under 35k, below 60k miles, AWD")
   // into a /search profile entirely in-browser — no LLM round-trip. This keeps the
   // NL box as fast and reliable as the structured form when live inventory is on.
-  const MAKES = ["mercedes-benz", "land rover", "alfa romeo", "toyota", "honda", "ford", "chevrolet", "chevy", "nissan", "jeep", "subaru", "hyundai", "kia", "mazda", "volkswagen", "vw", "bmw", "mercedes", "audi", "lexus", "acura", "gmc", "ram", "dodge", "chrysler", "buick", "cadillac", "tesla", "volvo", "porsche", "jaguar", "mitsubishi", "mini", "infiniti", "lincoln", "genesis", "fiat"];
-  const MAKE_FIX = { chevy: "Chevrolet", vw: "Volkswagen", bmw: "BMW", gmc: "GMC" };
+  const MAKES = ["mercedes-benz", "range rover", "land rover", "alfa romeo", "toyota", "honda", "ford", "chevrolet", "chevy", "nissan", "jeep", "subaru", "hyundai", "kia", "mazda", "volkswagen", "vw", "bmw", "mercedes", "audi", "lexus", "acura", "gmc", "ram", "dodge", "chrysler", "buick", "cadillac", "tesla", "volvo", "porsche", "jaguar", "mitsubishi", "mini", "infiniti", "lincoln", "genesis", "fiat"];
+  const MAKE_FIX = { chevy: "Chevrolet", vw: "Volkswagen", bmw: "BMW", gmc: "GMC", "range rover": "Land Rover" };
   const BODY = { suv: "SUV", sedan: "Sedan", pickup: "Truck", truck: "Truck", coupe: "Coupe", hatchback: "Hatchback", minivan: "Minivan", van: "Van", wagon: "Wagon", convertible: "Convertible" };
   // Model lexicon (display form; matched case-insensitively) — keyed by canonical
   // make. Lets the search honor the MODEL (Bill: "Camry SE" must return Camrys,
@@ -123,6 +123,7 @@
     lincoln: ["Corsair", "Nautilus", "Aviator", "Navigator"],
     genesis: ["G70", "G80", "G90", "GV70", "GV80", "GV60"],
     porsche: ["911", "Cayenne", "Macan", "Panamera", "Taycan", "718 Cayman", "718 Boxster"],
+    "land rover": ["Range Rover Velar", "Range Rover Evoque", "Range Rover Sport", "Range Rover", "Discovery Sport", "Discovery", "Defender"],
   };
   // Common trims (display form; matched case-insensitively, longest first).
   const TRIMS = ["TRD Off-Road", "TRD Pro", "TRD Sport", "King Ranch", "Grand Touring", "Platinum", "Limited", "Touring", "Premium", "Preferred", "Signature", "Titanium", "Lariat", "Laramie", "Rebel", "Denali", "Overland", "Trailhawk", "Latitude", "Altitude", "N-Line", "GT-Line", "XSE", "XLE", "SR5", "EX-L", "Sport", "SEL", "SE", "LE", "EX", "LX", "DX", "SV", "SL", "SR", "LTZ", "LT", "RS", "SS", "GT", "GLI", "Si"];
@@ -160,7 +161,7 @@
     const q = " " + String(query || "").toLowerCase() + " ";
     const p = {};
     // make (longest names first so "land rover" wins over a stray "rover")
-    for (const m of MAKES) { if (new RegExp("\\b" + m.replace(/[-]/g, "\\$&") + "\\b").test(q)) { p.make = MAKE_FIX[m] || titleCase(m); break; } }
+    for (const m of MAKES) { if (new RegExp("\\b" + m.replace(/[-]/g, "\\$&") + "s?\\b").test(q)) { p.make = MAKE_FIX[m] || titleCase(m); break; } }
     // --- model + trim (search relevance: "Camry SE" must return Camry SEs) -----
     let modelRaw = "", trimRaw = "";
     if (p.make) {

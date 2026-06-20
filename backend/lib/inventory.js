@@ -190,6 +190,14 @@ async function searchInventory(profile) {
   // (e.g.) every Toyota for a "Camry SE" search. Narrow to the requested model and
   // trim — but only when that leaves results, so a strict trim never zeroes a page.
   let matches = vehicles;
+  if (p.make) {
+    const want = String(p.make).toLowerCase().replace(/[^a-z]/g, "");
+    const f = matches.filter((v) => {
+      const mk = String(v.make || "").toLowerCase().replace(/[^a-z]/g, "");
+      return mk && (mk === want || mk.includes(want) || want.includes(mk));
+    });
+    if (f.length) matches = f;
+  }
   if (p.model) {
     const want = String(p.model).toLowerCase();
     const f = matches.filter((v) => {
