@@ -155,6 +155,7 @@ async function searchInventory(profile) {
       const q = new URLSearchParams();
       if (p.make) q.set("make", p.make);
       if (p.model) q.set("model", p.model);
+      if (p.body_style) q.set("body_style", p.body_style); // honored if supported; client also post-filters
       if (p.budget_max) q.set("price_max", String(Math.round(p.budget_max)));
       if (p.year_min) q.set("year_min", String(p.year_min));
       if (p.year_max) q.set("year_max", String(p.year_max));

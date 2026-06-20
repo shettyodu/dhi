@@ -135,6 +135,63 @@
   MODEL_INDEX.sort((a, b) => b.model.length - a.model.length);
   // Match a model regardless of separator: "F-150" also matches "f150" / "f 150".
   function modelPat(md) { return md.toLowerCase().replace(/[^a-z0-9]+/g, "[^a-z0-9]?"); }
+
+  // ---- descriptive / lifestyle term mapping (Carvana / CarMax style) --------
+  // Make-set descriptors the inventory provider can't filter on are post-filtered
+  // client-side against the returned results.
+  const LUXURY_MAKES = new Set(["bmw", "mercedes-benz", "mercedes", "audi", "lexus", "acura", "infiniti", "cadillac", "lincoln", "genesis", "porsche", "jaguar", "land rover", "volvo", "maserati", "tesla", "alfa romeo", "bentley", "aston martin", "rolls-royce"]);
+  const RELIABLE_MAKES = new Set(["toyota", "honda", "mazda", "subaru", "lexus", "acura"]);
+  // Models that offer a third row (minivans always count, handled separately).
+  const THIRD_ROW = ["highlander", "grand highlander", "sequoia", "sienna", "4runner", "land cruiser", "pilot", "odyssey", "explorer", "expedition", "tahoe", "suburban", "traverse", "yukon", "acadia", "grand cherokee l", "wagoneer", "durango", "pathfinder", "armada", "qx60", "qx80", "mdx", "cx-9", "cx-90", "ascent", "palisade", "telluride", "sorento", "carnival", "atlas", "enclave", "gls", "gle", "x7", "q7", "gx", "lx", "tx", "discovery", "defender", "aviator", "navigator", "escalade", "xt6", "xc90", "pacifica", "model x"];
+  // Whole-word match so "GLE" doesn't false-match inside "wran-gle-r", etc.
+  const THIRD_ROW_RE = THIRD_ROW.map((t) => new RegExp("\\b" + t.replace(/[^a-z0-9]+/g, "[^a-z0-9]?") + "\\b"));
+  function isThirdRow(v) {
+    const b = String(v.body_style || "").toLowerCase();
+    if (b.includes("minivan") || b === "van") return true;
+    const m = String(v.model || "").toLowerCase();
+    return THIRD_ROW_RE.some((re) => re.test(m));
+  }
+  function makeKey(v) { return String(v.make || "").toLowerCase().trim(); }
+  // Provider often omits body_style / fuel_type, so infer them from the model name
+  // (always present) — otherwise "SUV"/"hybrid" filters would fall back to unfiltered.
+  const reList = (arr) => arr.map((t) => new RegExp("\\b" + t.replace(/[^a-z0-9]+/g, "[^a-z0-9]?") + "\\b"));
+  const TRUCK_RE = reList(["f-150", "f-250", "f-350", "super duty", "ranger", "maverick", "silverado", "colorado", "sierra", "canyon", "1500", "2500", "3500", "tacoma", "tundra", "frontier", "titan", "gladiator", "ridgeline", "santa cruz", "cybertruck"]);
+  const SUV_RE = reList(["rav4", "highlander", "4runner", "sequoia", "land cruiser", "c-hr", "corolla cross", "venza", "bz4x", "cr-v", "hr-v", "pilot", "passport", "prologue", "explorer", "escape", "edge", "expedition", "bronco", "mach-e", "ecosport", "equinox", "tahoe", "suburban", "traverse", "blazer", "trax", "trailblazer", "rogue", "murano", "pathfinder", "kicks", "armada", "ariya", "compass", "renegade", "cherokee", "wagoneer", "wrangler", "tucson", "santa fe", "kona", "palisade", "venue", "nexo", "sportage", "sorento", "telluride", "seltos", "ev9", "outback", "forester", "crosstrek", "ascent", "solterra", "cx-3", "cx-30", "cx-5", "cx-50", "cx-9", "cx-90", "mx-30", "tiguan", "atlas", "taos", "id.4", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "gla", "glb", "glc", "gle", "gls", "g-class", "rx", "nx", "gx", "lx", "ux", "rz", "q3", "q5", "q7", "q8", "e-tron", "rdx", "mdx", "zdx", "yukon", "acadia", "terrain", "hummer", "durango", "hornet", "model y", "model x", "enclave", "encore", "envision", "envista", "escalade", "xt4", "xt5", "xt6", "lyriq", "xc40", "xc60", "xc90", "qx50", "qx55", "qx60", "qx80", "corsair", "nautilus", "aviator", "navigator", "gv60", "gv70", "gv80", "cayenne", "macan", "discovery", "defender", "range rover", "evoque", "velar"]);
+  const EV_RE = reList(["model 3", "model y", "model s", "model x", "cybertruck", "leaf", "bolt", "mach-e", "bz4x", "ariya", "ioniq 5", "ioniq 6", "ev6", "ev9", "id.4", "lyriq", "solterra", "i4", "ix", "i7", "e-tron", "eqs", "eqe", "taycan", "rz", "gv60", "hummer ev"]);
+  function inferBody(v) {
+    const b = String(v.body_style || "").toLowerCase(); if (b) return b;
+    const m = String(v.model || "").toLowerCase(); if (!m) return "";
+    if (TRUCK_RE.some((re) => re.test(m))) return "truck";
+    if (SUV_RE.some((re) => re.test(m))) return "suv";
+    return "";
+  }
+  function inferFuel(v) {
+    const f = String(v.fuel_type || "").toLowerCase(); if (f) return f;
+    const mt = (String(v.model || "") + " " + String(v.trim || "")).toLowerCase();
+    if (EV_RE.some((re) => re.test(mt))) return "electric";
+    if (/\bhybrid\b|\b4xe\b|\bprime\b|\bphev\b|plug[-\s]?in/.test(mt)) return "hybrid";
+    return "";
+  }
+  function bodyMatch(v, want) {
+    const b = inferBody(v); if (!b) return false; // drop unknown body so trucks don't leak into "SUV"
+    const syn = { suv: ["suv", "crossover", "sport utility"], truck: ["truck", "pickup"], sedan: ["sedan"], coupe: ["coupe"], minivan: ["minivan", "van"], van: ["van"], hatchback: ["hatch"], wagon: ["wagon"], convertible: ["convert", "cabrio", "roadster"] }[String(want).toLowerCase()] || [String(want).toLowerCase()];
+    return syn.some((s) => b.includes(s));
+  }
+  function fuelMatch(v, want) {
+    const f = inferFuel(v); const w = String(want).toLowerCase();
+    if (w === "hybrid") return f ? f.includes("hybrid") : false;
+    if (w === "electric") return f ? ((f.includes("electric") || f.includes("battery") || f === "ev") && !f.includes("hybrid")) : false;
+    if (w === "diesel") return f.includes("diesel");
+    return true;
+  }
+  function driveMatch(v, want) {
+    const d = String(v.drivetrain || "").toLowerCase(); if (!d) return true; const w = String(want).toLowerCase();
+    if (w === "awd") return d.includes("awd") || d.includes("all");
+    if (w === "4wd") return d.includes("4wd") || d.includes("4x4") || d.includes("four");
+    if (w === "fwd") return d.includes("fwd") || d.includes("front");
+    if (w === "rwd") return d.includes("rwd") || d.includes("rear");
+    return true;
+  }
   // Tokens that end a place name (price/keyword words) and words that are never a place.
   const LOC_STOP = new Set(["under", "over", "below", "above", "around", "about", "with", "for", "and", "or", "near", "less", "than", "up", "to", "max", "min", "that", "cost", "costs", "priced", "price", "miles", "mile", "mi", "k", "the", "a", "an"]);
   const BAD_PLACE = new Set(MAKES.concat(["suv", "sedan", "truck", "pickup", "coupe", "hatchback", "minivan", "van", "wagon", "convertible", "hybrid", "electric", "ev", "diesel", "awd", "4wd", "fwd", "rwd", "car", "cars", "vehicle", "vehicles", "sale", "stock", "mileage", "miles", "me", "option", "options"]));
@@ -243,6 +300,17 @@
     if (locText) p.location_text = locText;
     if (locState) p.location_state = locState;
     if (radius) p.radius = radius; else if (locText || p.location_zip) p.radius = 100;
+
+    // ---- descriptive / lifestyle terms → filters (explicit values always win) -
+    const setIf = (k, v) => { if (p[k] == null || p[k] === "") p[k] = v; };
+    if (/\b(3rd|third)\s*row\b|\bthree\s*row\b|\b[678]\s*(?:seat|seater|seats|passenger|passengers)\b|\bfamily\b|\bspacious\b|\broomy\b|\bcarpool\b/.test(q)) { setIf("body_style", "SUV"); p.seats_third_row = true; }
+    if (/\bfuel[-\s]?efficient\b|\bgood\s+(?:on\s+gas|mpg|gas\s+mileage)\b|\bgas\s+saver\b|\bgreat\s+mpg\b|\bcommuter\b|\bfuel\s+economy\b/.test(q)) setIf("fuel_type", "Hybrid");
+    if (/\boff[-\s]?road\b|\boverland(?:ing)?\b|\btrail\s+rated\b|\b4\s*wheel\s*drive\b/.test(q)) setIf("drivetrain", "4WD");
+    if (/\bwork\s+truck\b|\bhaul(?:ing)?\b|\btow(?:ing)?\b|\bcontractor\b/.test(q)) setIf("body_style", "Truck");
+    if (/\bsporty\b|\bsports?\s+car\b|\bperformance\b/.test(q)) setIf("body_style", "Coupe");
+    if (p.budget_max == null && p.budget_min == null && /\b(cheap|cheapest|affordable|inexpensive|budget|low\s+price|economical)\b/.test(q)) p.budget_max = 20000;
+    if (/\bluxur(?:y|ious)\b|\bpremium\b|\bhigh[-\s]?end\b|\bupscale\b/.test(q)) p.lux = true;
+    if (/\breliable\b|\bdependable\b|\blong[-\s]?lasting\b/.test(q)) p.reliable = true;
     return p;
   }
 
@@ -320,6 +388,9 @@
     const map = { make: "Make", model: "Model", body_style: "Body", fuel_type: "Fuel", drivetrain: "Drive", year_min: "Year ≥", year_max: "Year ≤", mileage_max: "≤ mi", budget_min: "≥ $", budget_max: "≤ $", max_monthly_payment: "$/mo ≤", location_state: "State", location_zip: "ZIP", credit_tier_hint: "Credit" };
     const parts = [];
     Object.keys(map).forEach((k) => { if (profile[k] != null && profile[k] !== "") parts.push(map[k] + " " + (typeof profile[k] === "number" ? profile[k].toLocaleString("en-US") : profile[k])); });
+    if (profile.seats_third_row) parts.push("3rd-row seating");
+    if (profile.lux) parts.push("Luxury");
+    if (profile.reliable) parts.push("Reliable brands");
     if (profile.notes) parts.push(profile.notes);
     return parts.length ? `<div class="mt-3 flex flex-wrap gap-2">${parts.map(chip).join("")}</div>` : "";
   }
@@ -398,7 +469,11 @@
     const list = applyRefine(lastBuckets[i].vehicles);
     const cnt = $("refine-count"); if (cnt) cnt.textContent = list.length + " shown";
     if (!list.length) {
-      grid.innerHTML = `<div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">No vehicles in this group match those filters. Try <strong>All</strong> or another tab.</div>`;
+      const pr = lastProfile || {};
+      const refined = pr.lux || pr.reliable || pr.seats_third_row;
+      grid.innerHTML = `<div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">${refined
+        ? "No vehicles in the current feed match that exactly. Try adding a <strong>make or model</strong> (e.g. \"luxury Lexus SUV\"), or remove a filter to see more."
+        : "No vehicles in this group match those filters. Try <strong>All</strong> or another tab."}</div>`;
       return;
     }
     grid.innerHTML = list.map(vehicleCard).join("");
@@ -619,6 +694,18 @@
   // Filter + sort the active bucket's vehicles per the on-results refine controls.
   function applyRefine(list) {
     let out = list.slice();
+    // Descriptive post-filters the provider can't do (luxury/reliable make sets,
+    // 3rd-row seating). Soft — only narrow when it leaves results.
+    const pr = lastProfile || {};
+    // Approximate attributes (messy provider data): soft — only narrow if it leaves results.
+    if (pr.body_style) { const f = out.filter((v) => bodyMatch(v, pr.body_style)); if (f.length) out = f; }
+    if (pr.fuel_type) { const f = out.filter((v) => fuelMatch(v, pr.fuel_type)); if (f.length) out = f; }
+    if (pr.drivetrain) { const f = out.filter((v) => driveMatch(v, pr.drivetrain)); if (f.length) out = f; }
+    // Precise intent (luxury/reliable/3rd-row): HARD — never show a contradictory
+    // result (a Ram truck under "luxury SUV"). Empty is handled with guidance.
+    if (pr.lux) out = out.filter((v) => LUXURY_MAKES.has(makeKey(v)));
+    if (pr.reliable) out = out.filter((v) => RELIABLE_MAKES.has(makeKey(v)));
+    if (pr.seats_third_row) out = out.filter(isThirdRow);
     if (photosOnly) out = out.filter((v) => v.photos && v.photos[0]);
     if (dealFilter === "great") out = out.filter((v) => { const d = dealRating(v.score || {}); return d && d.key === "great"; });
     else if (dealFilter === "good") out = out.filter((v) => { const d = dealRating(v.score || {}); return d && d.rank >= 4; });
