@@ -877,6 +877,12 @@
   $("cmp-backdrop").addEventListener("click", () => $("cmp-modal").classList.add("hidden"));
 
   // Live external inventory auto-activates the moment a provider key is configured.
-  fetch(FN("automotive-inventory"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "status" }) })
-    .then((r) => r.json()).then((d) => { liveInventory = !!(d && d.configured); }).catch(() => {});
+  // Cache the result per browser for 24h so we don't invoke a function on every
+  // page load (invocation saving under launch traffic).
+  (function () {
+    const KEY = "dhi_inv_status", TTL = 864e5;
+    try { const c = JSON.parse(localStorage.getItem(KEY) || "null"); if (c && Date.now() - c.t < TTL) { liveInventory = !!c.v; return; } } catch (e) {}
+    fetch(FN("automotive-inventory"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "status" }) })
+      .then((r) => r.json()).then((d) => { liveInventory = !!(d && d.configured); try { localStorage.setItem(KEY, JSON.stringify({ v: liveInventory, t: Date.now() })); } catch (e) {} }).catch(() => {});
+  })();
 })();

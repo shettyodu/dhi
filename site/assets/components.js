@@ -16,7 +16,7 @@ const SITE = {
   region: "Research Triangle, North Carolina",
   // Canonical site URL (for SEO/OG tags + sitemap). CHANGE this when the custom
   // domain (e.g. https://digitalhealthinternational.com) goes live.
-  baseUrl: "https://courageous-fairy-0b2d3c.netlify.app",
+  baseUrl: "https://digitalhealthinternational.com",
   // Ad / analytics IDs — leave blank until you have them; pixels inject only when set.
   analytics: { ga4: "", metaPixel: "", linkedinPartnerId: "", googleAdsId: "" },
 };

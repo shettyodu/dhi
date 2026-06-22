@@ -24,7 +24,21 @@
 [functions."gov-bid-alerts-run"]
   schedule = "@daily"
 
-# Keep the AutoCommand backend (Render free tier) warm — no cold-start lag on
-# the first buyer search. Every 10 minutes (Render sleeps after ~15 min idle).
+# Keep the AutoCommand backend (Render free tier) warm. Hourly is plenty now that
+# the primary inventory path is Auto.dev via Netlify functions (the Render backend
+# is only a fallback) — cuts ~130+ idle invocations/day vs the old 10-min schedule.
 [functions."automotive-keepalive"]
-  schedule = "*/10 * * * *"
+  schedule = "0 * * * *"
+
+# Long-cache versioned/static assets so returning visitors stop re-downloading
+# them (big bandwidth saving under traffic). JS is cache-busted via ?v=N and
+# images rarely change; CSS/HTML are left on Netlify defaults so edits propagate.
+[[headers]]
+  for = "/assets/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
