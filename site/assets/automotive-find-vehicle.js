@@ -24,7 +24,6 @@
 
   let lastProfile = null;
   let lastLead = null;
-  let liveInventory = false; // flips true when an inventory provider key is configured
   let lastBuckets = [];
   let curBucket = 0;
   let dealFilter = "all", photosOnly = false, sortBy = "match"; // on-results refine state
@@ -374,18 +373,19 @@
       catch (e) { return { ok: false, status: 0, d: { error: "Network error — please try again." } }; }
     }
     try {
-      if (liveInventory) {
-        // Route to real external inventory. For NL we parse the query into a profile
-        // in-browser (instant, no LLM round-trip) and query live inventory directly —
-        // this avoids the slow Flask /search/nl hop that was timing out (504) against
-        // Netlify's function cap. The AI backend stays as a fallback on provider error.
-        let profile = payload;
-        if (endpoint === "automotive-search-nl") { profile = parseNL(payload.query || ""); lastProfile = profile; }
-        const inv = await hit("automotive-inventory", { action: "search", profile });
-        if (inv.ok) { ok = true; status = inv.status; d = inv.d; if (!d.profile) d.profile = profile; }
-        else { const fb = await hit(endpoint, payload); ok = fb.ok; status = fb.status; d = fb.d; } // provider hiccup → fall back to AI backend
+      // Always try live inventory first. For NL we parse the query into a profile
+      // in-browser (instant, no LLM round-trip). Only fall back to the AI backend if
+      // live inventory is genuinely unavailable (error or not configured) — NOT when
+      // it simply returns zero matches. (Previously this was gated on a separately-
+      // fetched liveInventory flag, which could be stale/unset and route a working
+      // search to the defunct backend → false "No matches yet".)
+      let profile = payload;
+      if (endpoint === "automotive-search-nl") { profile = parseNL(payload.query || ""); lastProfile = profile; }
+      const inv = await hit("automotive-inventory", { action: "search", profile });
+      if (inv.ok && inv.d && inv.d.configured !== false) {
+        ok = true; status = inv.status; d = inv.d; if (!d.profile) d.profile = profile;
       } else {
-        const r = await hit(endpoint, payload); ok = r.ok; status = r.status; d = r.d;
+        const fb = await hit(endpoint, payload); ok = fb.ok; status = fb.status; d = fb.d; // inventory unavailable → AI backend
       }
     } catch (e) { ok = false; d = { error: "Network error — please try again." }; }
     if (!ok) { results.innerHTML = errorHtml(d, status, !!lead); return; }
@@ -912,14 +912,6 @@
   $("cmp-clear").addEventListener("click", () => { selected.clear(); document.querySelectorAll("[data-cmp]").forEach((c) => (c.checked = false)); updateCmpBar(); });
   $("cmp-close").addEventListener("click", () => $("cmp-modal").classList.add("hidden"));
   $("cmp-backdrop").addEventListener("click", () => $("cmp-modal").classList.add("hidden"));
-
-  // Live external inventory auto-activates the moment a provider key is configured.
-  // Cache the result per browser for 24h so we don't invoke a function on every
-  // page load (invocation saving under launch traffic).
-  (function () {
-    const KEY = "dhi_inv_status", TTL = 864e5;
-    try { const c = JSON.parse(localStorage.getItem(KEY) || "null"); if (c && Date.now() - c.t < TTL) { liveInventory = !!c.v; return; } } catch (e) {}
-    fetch(FN("automotive-inventory"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "status" }) })
-      .then((r) => r.json()).then((d) => { liveInventory = !!(d && d.configured); try { localStorage.setItem(KEY, JSON.stringify({ v: liveInventory, t: Date.now() })); } catch (e) {} }).catch(() => {});
-  })();
+  // (Search now always tries live inventory first and falls back only if it's
+  // unavailable — no on-load status probe needed, which also saves a function call.)
 })();

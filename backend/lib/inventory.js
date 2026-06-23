@@ -135,7 +135,13 @@ function normAutodev(r) {
 // profile (AutoCommand schema) → provider query, fetch, normalize, dedupe.
 async function searchInventory(profile) {
   if (!configured()) return { status: 503, json: { ok: false, configured: false, error: "Live inventory isn't configured yet (set INVENTORY_PROVIDER + INVENTORY_API_KEY)." } };
-  const p = profile || {};
+  const p = Object.assign({}, profile);
+  // Auto.dev's make/model query is case-SENSITIVE ("toyota" → 0, "Toyota" → 20).
+  // The structured form passes raw user text (often lowercase), so title-case here
+  // — fixes "camry"/"toyota" returning no matches regardless of how it was typed.
+  const titleCase = (s) => String(s || "").replace(/\b\w/g, (c) => c.toUpperCase());
+  if (p.make) p.make = titleCase(p.make);
+  if (p.model) p.model = titleCase(p.model);
   let raw = [], norm = normMarketcheck;
   try {
     if (PROVIDER === "marketcheck") {
