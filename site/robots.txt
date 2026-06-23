@@ -7,3 +7,4 @@ Disallow: /gov-bids.html
 Disallow: /insurance-ops.html
 
 Sitemap: https://digitalhealthinternational.com/sitemap.xml
+Sitemap: https://digitalhealthinternational.com/sitemap-cars.xml
