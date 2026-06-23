@@ -192,6 +192,30 @@
     if (w === "rwd") return d.includes("rwd") || d.includes("rear");
     return true;
   }
+  // Color — provider returns marketing names ("Barcelona Red", "Blizzard Pearl"),
+  // so match the requested color against a synonym list. Conservative (better to
+  // miss a few than show wrong colors). Unknown/empty color is excluded.
+  const COLOR_KEY = { grey: "gray", burgundy: "red", maroon: "red", beige: "tan", cream: "tan" };
+  const COLOR_SYNS = {
+    red: ["red", "ruby", "crimson", "scarlet", "garnet", "barcelona", "supersonic", "cardinal"],
+    blue: ["blue", "blueprint", "navy", "cobalt", "sapphire", "cavalry"],
+    black: ["black", "midnight", "ebony", "obsidian", "onyx"],
+    white: ["white", "blizzard", "snow", "ivory", "frost"],
+    gray: ["gray", "grey", "graphite", "magnetic", "slate", "gunmetal", "ash", "cement"],
+    silver: ["silver", "sterling", "celestial", "chrome"],
+    green: ["green", "forest", "emerald", "army", "lime"],
+    brown: ["brown", "mocha", "espresso", "bronze"],
+    tan: ["tan", "beige", "sand", "almond", "khaki", "cream"],
+    gold: ["gold", "champagne"],
+    orange: ["orange", "inferno"],
+    yellow: ["yellow"],
+    purple: ["purple", "plum"],
+  };
+  const COLORS_RE = new RegExp("\\b(" + Object.keys(COLOR_SYNS).concat(Object.keys(COLOR_KEY)).join("|") + ")\\b", "i");
+  function colorMatch(v, want) {
+    const c = String(v.exterior_color || "").toLowerCase(); if (!c) return false;
+    return (COLOR_SYNS[want] || [want]).some((s) => c.includes(s));
+  }
   // Tokens that end a place name (price/keyword words) and words that are never a place.
   const LOC_STOP = new Set(["under", "over", "below", "above", "around", "about", "with", "for", "and", "or", "near", "less", "than", "up", "to", "max", "min", "that", "cost", "costs", "priced", "price", "miles", "mile", "mi", "k", "the", "a", "an"]);
   const BAD_PLACE = new Set(MAKES.concat(["suv", "sedan", "truck", "pickup", "coupe", "hatchback", "minivan", "van", "wagon", "convertible", "hybrid", "electric", "ev", "diesel", "awd", "4wd", "fwd", "rwd", "car", "cars", "vehicle", "vehicles", "sale", "stock", "mileage", "miles", "me", "option", "options"]));
@@ -256,6 +280,9 @@
     else if (/\bdiesels?\b/.test(q)) p.fuel_type = "Diesel";
     const dt = q.match(/\b(awd|4wd|4x4|fwd|rwd)\b/);
     if (dt) p.drivetrain = dt[1] === "4x4" ? "4WD" : dt[1].toUpperCase();
+    // exterior color ("red toyota") — normalize grey→gray, burgundy→red, etc.
+    const colM = q.match(COLORS_RE);
+    if (colM) { const w = colM[1].toLowerCase(); p.color = COLOR_KEY[w] || w; }
     // year(s)
     Object.assign(p, years(q));
 
@@ -388,6 +415,7 @@
     const map = { make: "Make", model: "Model", body_style: "Body", fuel_type: "Fuel", drivetrain: "Drive", year_min: "Year ≥", year_max: "Year ≤", mileage_max: "≤ mi", budget_min: "≥ $", budget_max: "≤ $", max_monthly_payment: "$/mo ≤", location_state: "State", location_zip: "ZIP", credit_tier_hint: "Credit" };
     const parts = [];
     Object.keys(map).forEach((k) => { if (profile[k] != null && profile[k] !== "") parts.push(map[k] + " " + (typeof profile[k] === "number" ? profile[k].toLocaleString("en-US") : profile[k])); });
+    if (profile.color) parts.push(profile.color.charAt(0).toUpperCase() + profile.color.slice(1));
     if (profile.seats_third_row) parts.push("3rd-row seating");
     if (profile.lux) parts.push("Luxury");
     if (profile.reliable) parts.push("Reliable brands");
@@ -706,6 +734,7 @@
     if (pr.lux) out = out.filter((v) => LUXURY_MAKES.has(makeKey(v)));
     if (pr.reliable) out = out.filter((v) => RELIABLE_MAKES.has(makeKey(v)));
     if (pr.seats_third_row) out = out.filter(isThirdRow);
+    if (pr.color) out = out.filter((v) => colorMatch(v, pr.color));
     if (photosOnly) out = out.filter((v) => v.photos && v.photos[0]);
     if (dealFilter === "great") out = out.filter((v) => { const d = dealRating(v.score || {}); return d && d.key === "great"; });
     else if (dealFilter === "good") out = out.filter((v) => { const d = dealRating(v.score || {}); return d && d.rank >= 4; });
@@ -859,6 +888,14 @@
   });
   const nlInput = $("nl-q");
   if (nlInput) nlInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); nlGo.click(); } });
+
+  // Deep link: ?q=<query> prefills the search box and runs it once — lets SEO
+  // landing pages (and any shared link) funnel a real user straight into results.
+  // Runs only on a real visit, never on a crawl of those static pages.
+  (function () {
+    const dq = (qs.get("q") || "").trim();
+    if (dq && nlInput && nlGo) { nlInput.value = dq.slice(0, 160); nlGo.click(); }
+  })();
 
   // Down payment auto-defaults to 10% of the price, until the user edits it.
   let downDirty = false;
