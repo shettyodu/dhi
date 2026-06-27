@@ -26,10 +26,10 @@ const SITE = {
 const VERTICALS = [
   {
     slug: "decentralized-software.html",
-    title: "Decentralized Software",
-    menu: "Decentralized Software Solutions",
+    title: "Data Centers & Solutions",
+    menu: "Data Centers & Solutions",
     summary:
-      "EMR/EHR and health-data platforms on distributed, quantum-ready infrastructure with open APIs and modular design.",
+      "AI-ready data centers and decentralized infrastructure — distributed, quantum-ready platforms with open APIs and modular design.",
     icon: "cube",
   },
   {
@@ -41,38 +41,6 @@ const VERTICALS = [
     icon: "shield",
   },
   {
-    slug: "wellness.html",
-    title: "Wellness & Digital Care",
-    menu: "Wellness & Digital Care",
-    summary:
-      "GenieMD telehealth and remote care plus Cognifit cognitive health — a unified, white-label virtual care platform.",
-    icon: "heart",
-  },
-  {
-    slug: "insurance.html",
-    title: "Insurance & Risk Solutions",
-    menu: "Insurance & Risk Solutions",
-    summary:
-      "Health, supplemental, and specialty insurance with carriers and brokers, integrated with wellness and analytics.",
-    icon: "umbrella",
-  },
-  {
-    slug: "medical-equipment.html",
-    title: "Medical Equipment & Technology",
-    menu: "Medical Equipment & Technology",
-    summary:
-      "Access to 1,200+ products through our GPDI global sourcing partnership in South Korea — diagnostics to lifecycle support.",
-    icon: "pulse",
-  },
-  {
-    slug: "clinics.html",
-    title: "Clinics & Modules",
-    menu: "Clinics & Modules",
-    summary:
-      "Scalable, modular health infrastructure — prefab clinics and mobile medical units deployable in days for remote, disaster-relief, and underserved regions.",
-    icon: "clinic",
-  },
-  {
     slug: "supplies.html",
     title: "Supplies, Textiles & Linens",
     menu: "Supplies, Textiles & Linens",
@@ -81,28 +49,12 @@ const VERTICALS = [
     icon: "layers",
   },
   {
-    slug: "nutrition.html",
-    title: "Nutrition & Supplements",
-    menu: "Nutrition & Supplements",
-    summary:
-      "Custom-branded supplements, diagnostic lab kits, and corporate wellness — a searchable Vitalleo/Edison catalog with quote builder.",
-    icon: "heart",
-  },
-  {
     slug: "lighting.html",
     title: "Lighting & Energy Efficiency",
     menu: "Lighting & Energy Efficiency",
     summary:
       "Keystone-backed LED lighting and retrofits — 100% end-of-line tested, with a defect rate under 0.1%.",
     icon: "bolt",
-  },
-  {
-    slug: "data-analytics.html",
-    title: "Data & Analytics",
-    menu: "Data & Analytics (Titan)",
-    summary:
-      "Unified data services, interoperability layers, and AI decision support across the DHI ecosystem.",
-    icon: "chart",
   },
   {
     slug: "automotive.html",
@@ -120,20 +72,45 @@ const VERTICALS = [
       "SAM.gov-registered prime contractor and subcontractor for federal, state, local, and international B-to-G engagements.",
     icon: "building",
   },
+  {
+    slug: "insurance.html",
+    title: "Insurance & Risk Solutions",
+    menu: "Insurance & Risk Solutions",
+    summary:
+      "Health, supplemental, and specialty insurance with carriers and brokers — including the ITH SmartCare access plans.",
+    icon: "umbrella",
+  },
+  {
+    slug: "wellness.html",
+    title: "Wellness & Digital Care",
+    menu: "Wellness & Digital Care",
+    summary:
+      "GenieMD telehealth and remote care plus Cognifit cognitive health — a unified, white-label virtual care platform.",
+    icon: "heart",
+    soon: "2027",
+  },
+  {
+    slug: "medical-equipment.html",
+    title: "Medical Equipment & Technology",
+    menu: "Medical Equipment & Technology",
+    summary:
+      "Access to 1,200+ products through our GPDI global sourcing partnership in South Korea — diagnostics to lifecycle support.",
+    icon: "pulse",
+    soon: "2027",
+  },
 ];
 
 /* Parent categories used as an index into the twelve verticals (home page).
    Each vertical maps to exactly one category via VERTICAL_CAT_BY_SLUG. */
 const VERTICAL_CATEGORIES = [
-  { id: "medical", label: "Medical & Care", blurb: "Clinics, equipment, supplies, wellness, nutrition & insurance — for hospitals, GPOs, associations & buying groups.", icon: "pulse" },
-  { id: "tech", label: "Technology & Data", blurb: "Decentralized software, cybersecurity & infrastructure, and data & analytics.", icon: "cube" },
+  { id: "tech", label: "Technology & Data", blurb: "AI-ready data centers & solutions and cybersecurity & infrastructure.", icon: "cube" },
+  { id: "medical", label: "Medical & Care", blurb: "Hospital supplies, textiles & linens and insurance & risk — with wellness/telehealth and medical equipment coming 2027.", icon: "pulse" },
   { id: "energy", label: "Energy & Mobility", blurb: "Lighting & energy efficiency and the AutoCommand AI vehicle marketplace.", icon: "bolt" },
   { id: "gov", label: "Government & Procurement", blurb: "SAM.gov-ready contracting and public-sector modernization.", icon: "building" },
 ];
 const VERTICAL_CAT_BY_SLUG = {
-  "decentralized-software.html": "tech", "cybersecurity.html": "tech", "data-analytics.html": "tech",
-  "wellness.html": "medical", "insurance.html": "medical",
-  "medical-equipment.html": "medical", "clinics.html": "medical", "supplies.html": "medical", "nutrition.html": "medical",
+  "decentralized-software.html": "tech", "cybersecurity.html": "tech",
+  "supplies.html": "medical", "insurance.html": "medical", "wellness.html": "medical", "medical-equipment.html": "medical",
   "lighting.html": "energy", "automotive.html": "energy",
   "government.html": "gov",
 };
@@ -188,7 +165,7 @@ function buildHeader() {
       `<a href="${v.slug}" class="flex items-start gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-50 group">
          <span class="mt-0.5 text-cyan-600 group-hover:text-cyan-700">${icon(v.icon, "h-5 w-5")}</span>
          <span>
-           <span class="block text-sm font-semibold text-brand-900">${v.menu}</span>
+           <span class="block text-sm font-semibold text-brand-900">${v.menu}${v.soon ? ` <span class="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-amber-700">Coming ${v.soon}</span>` : ""}</span>
            <span class="block text-xs text-slate-500 leading-snug">${v.summary}</span>
          </span>
        </a>`
@@ -196,7 +173,7 @@ function buildHeader() {
 
   const mobileServiceItems = VERTICALS.map(
     (v) =>
-      `<a href="${v.slug}" class="block rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-800">${v.menu}</a>`
+      `<a href="${v.slug}" class="block rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-800">${v.menu}${v.soon ? ` <span class="text-xs font-semibold uppercase text-amber-600">· Coming ${v.soon}</span>` : ""}</a>`
   ).join("");
 
   const header = document.createElement("header");
@@ -283,13 +260,13 @@ function buildFooter() {
   const col1 = VERTICALS.slice(0, 5)
     .map(
       (v) =>
-        `<li><a href="${v.slug}" class="text-slate-300 hover:text-cyan-400 transition-colors">${v.title}</a></li>`
+        `<li><a href="${v.slug}" class="text-slate-300 hover:text-cyan-400 transition-colors">${v.title}${v.soon ? ` <span class="text-xs font-semibold uppercase text-amber-500">· ${v.soon}</span>` : ""}</a></li>`
     )
     .join("");
   const col2 = VERTICALS.slice(5)
     .map(
       (v) =>
-        `<li><a href="${v.slug}" class="text-slate-300 hover:text-cyan-400 transition-colors">${v.title}</a></li>`
+        `<li><a href="${v.slug}" class="text-slate-300 hover:text-cyan-400 transition-colors">${v.title}${v.soon ? ` <span class="text-xs font-semibold uppercase text-amber-500">· ${v.soon}</span>` : ""}</a></li>`
     )
     .join("");
 
@@ -304,7 +281,7 @@ function buildFooter() {
           <span class="text-base font-bold text-white">Digital Health International</span>
         </div>
         <p class="mt-4 text-sm leading-relaxed text-slate-400">
-          Twelve verticals. One global platform. Unifying healthcare, energy, and enterprise into a single integrated ecosystem — anywhere in the world.
+          Nine verticals. One global platform. Unifying data, energy, healthcare, and enterprise into a single integrated ecosystem — anywhere in the world.
         </p>
         <p class="mt-4 text-xs uppercase tracking-wider text-cyan-400">${SITE.tagline}</p>
       </div>

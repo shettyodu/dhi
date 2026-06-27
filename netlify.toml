@@ -38,7 +38,10 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# JS revalidates (cheap 304s) rather than immutable-caching: components.js is
+# shared sitewide and loaded UNVERSIONED, so an immutable pin would serve stale
+# nav/footer/verticals to returning visitors. Per-page bundles still cache-bust via ?v=N.
 [[headers]]
   for = "/assets/*.js"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=0, must-revalidate"
