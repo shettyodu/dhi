@@ -6,8 +6,8 @@
   const FIND = "automotive-find-vehicle.html";
   const CONTACT = "contact.html?interest=Automotive";
   // Bill's direct line for "call about a deal" — CONFIRM before launch.
-  const BILL_TEL = "";            // e.g. "+17575550100"; empty hides the call link
-  const BILL_TEL_LABEL = "(call line — confirm)";
+  const BILL_TEL = "+19196493161";   // Bill's direct line
+  const BILL_TEL_LABEL = "(919) 649-3161";
 
   // 9 launch angles. headline split into two lines (h1/h2 two-tone); cta funnels in.
   const CAMPAIGNS = {
