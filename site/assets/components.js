@@ -89,15 +89,6 @@ const VERTICALS = [
     icon: "heart",
     soon: "2027",
   },
-  {
-    slug: "medical-equipment.html",
-    title: "Medical Equipment & Technology",
-    menu: "Medical Equipment & Technology",
-    summary:
-      "Access to 1,200+ products through our GPDI global sourcing partnership in South Korea — diagnostics to lifecycle support.",
-    icon: "pulse",
-    soon: "2027",
-  },
 ];
 
 /* Parent categories used as an index into the twelve verticals (home page).
@@ -110,7 +101,7 @@ const VERTICAL_CATEGORIES = [
 ];
 const VERTICAL_CAT_BY_SLUG = {
   "aicore.html": "tech", "cybersecurity.html": "tech",
-  "supplies.html": "medical", "insurance.html": "medical", "wellness.html": "medical", "medical-equipment.html": "medical",
+  "supplies.html": "medical", "insurance.html": "medical", "wellness.html": "medical",
   "lighting.html": "energy", "automotive.html": "energy",
   "government.html": "gov",
 };
@@ -281,7 +272,7 @@ function buildFooter() {
           <span class="text-base font-bold text-white">Digital Health International</span>
         </div>
         <p class="mt-4 text-sm leading-relaxed text-slate-400">
-          Nine verticals. One global platform. Unifying data, energy, healthcare, and enterprise into a single integrated ecosystem — anywhere in the world.
+          Eight verticals. One global platform. Unifying data, energy, healthcare, and enterprise into a single integrated ecosystem — anywhere in the world.
         </p>
         <p class="mt-4 text-xs uppercase tracking-wider text-cyan-400">${SITE.tagline}</p>
       </div>
