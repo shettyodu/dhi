@@ -26,10 +26,10 @@ const SITE = {
 const VERTICALS = [
   {
     slug: "aicore.html",
-    title: "AICORE Data Centers",
-    menu: "AICORE Data Centers",
+    title: "AICORE Datacenter",
+    menu: "AICORE Datacenter",
     summary:
-      "End-to-end data center solutions — construction, power, cooling, compute, agentic AI, managed operations, and lifecycle support. One partner, every stage.",
+      "Quantum-ready, AI-optimized data centers — distributed, future-proof infrastructure built and operated end to end: power, cooling, compute, agentic AI, and 24/7 managed operations.",
     icon: "cube",
   },
   {
