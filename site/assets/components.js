@@ -25,11 +25,11 @@ const SITE = {
    the services hub grid, and the footer. */
 const VERTICALS = [
   {
-    slug: "decentralized-software.html",
-    title: "Data Centers & Solutions",
-    menu: "Data Centers & Solutions",
+    slug: "aicore.html",
+    title: "AICORE Data Centers",
+    menu: "AICORE Data Centers",
     summary:
-      "AI-ready data centers and decentralized infrastructure — distributed, quantum-ready platforms with open APIs and modular design.",
+      "End-to-end data center solutions — construction, power, cooling, compute, agentic AI, managed operations, and lifecycle support. One partner, every stage.",
     icon: "cube",
   },
   {
@@ -109,7 +109,7 @@ const VERTICAL_CATEGORIES = [
   { id: "gov", label: "Government & Procurement", blurb: "SAM.gov-ready contracting and public-sector modernization.", icon: "building" },
 ];
 const VERTICAL_CAT_BY_SLUG = {
-  "decentralized-software.html": "tech", "cybersecurity.html": "tech",
+  "aicore.html": "tech", "cybersecurity.html": "tech",
   "supplies.html": "medical", "insurance.html": "medical", "wellness.html": "medical", "medical-equipment.html": "medical",
   "lighting.html": "energy", "automotive.html": "energy",
   "government.html": "gov",

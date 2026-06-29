@@ -45,3 +45,11 @@
   for = "/assets/*.js"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+# Vertical-1 was rebranded from the CCG/Titan "decentralized software" concept to
+# DHI AICORE (data centers). Preserve old inbound links / SEO with a 301.
+[[redirects]]
+  from = "/decentralized-software.html"
+  to = "/aicore.html"
+  status = 301
+  force = true
