@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="T2 Contracting, Inc.">
+  <!-- outer black ring, white gap, black disc -->
+  <circle cx="120" cy="120" r="117" fill="#000"/>
+  <circle cx="120" cy="120" r="107" fill="#fff"/>
+  <circle cx="120" cy="120" r="101" fill="#000"/>
+  <!-- T (serif slab) with superscript 2 -->
+  <text x="112" y="150" text-anchor="middle" fill="#fff"
+        font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="158">T</text>
+  <text x="190" y="72" text-anchor="middle" fill="#fff"
+        font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="62">2</text>
+  <!-- curved CONTRACTING, INC. along the bottom inside the disc -->
+  <defs>
+    <path id="t2arc" d="M 44 166 A 82 82 0 0 0 196 166" fill="none"/>
+  </defs>
+  <text fill="#fff" font-family="Georgia, 'Times New Roman', serif" font-weight="700"
+        font-size="14.5" letter-spacing="1.5">
+    <textPath href="#t2arc" startOffset="50%" text-anchor="middle">CONTRACTING, INC.</textPath>
+  </text>
+</svg>
