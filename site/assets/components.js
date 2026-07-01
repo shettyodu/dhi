@@ -29,7 +29,7 @@ const VERTICALS = [
     title: "AICORE Datacenter",
     menu: "AICORE Datacenter",
     summary:
-      "Quantum-ready, AI-optimized data centers — distributed, future-proof infrastructure built and operated end to end: power, cooling, compute, agentic AI, and 24/7 managed operations.",
+      "Quantum-ready, end-to-end data center solutions — planning, construction, power, cooling, racks, compute, agentic AI, managed operations, and lifecycle support. One partner, every stage.",
     icon: "cube",
   },
   {
