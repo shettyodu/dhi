@@ -244,6 +244,9 @@
     return cands.find((c) => c.state) || cands.find((c) => c.strong) || cands[cands.length - 1] || null;
   }
   function titleCase(s) { return s.replace(/\b\w/g, (c) => c.toUpperCase()); }
+  // Full US state (and DC) names → USPS abbreviation, so "in Virginia" filters by
+  // state instead of geocoding to one point. (Two-letter codes are handled inline.)
+  const US_STATES = { "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR", "california": "CA", "colorado": "CO", "connecticut": "CT", "delaware": "DE", "district of columbia": "DC", "washington dc": "DC", "florida": "FL", "georgia": "GA", "hawaii": "HI", "idaho": "ID", "illinois": "IL", "indiana": "IN", "iowa": "IA", "kansas": "KS", "kentucky": "KY", "louisiana": "LA", "maine": "ME", "maryland": "MD", "massachusetts": "MA", "michigan": "MI", "minnesota": "MN", "mississippi": "MS", "missouri": "MO", "montana": "MT", "nebraska": "NE", "nevada": "NV", "new hampshire": "NH", "new jersey": "NJ", "new mexico": "NM", "new york": "NY", "north carolina": "NC", "north dakota": "ND", "ohio": "OH", "oklahoma": "OK", "oregon": "OR", "pennsylvania": "PA", "rhode island": "RI", "south carolina": "SC", "south dakota": "SD", "tennessee": "TN", "texas": "TX", "utah": "UT", "vermont": "VT", "virginia": "VA", "washington": "WA", "west virginia": "WV", "wisconsin": "WI", "wyoming": "WY" };
   function parseNL(query) {
     const q = " " + String(query || "").toLowerCase() + " ";
     const p = {};
@@ -297,6 +300,10 @@
     const place = extractPlace(q);
     if (place) { locText = place.text; locState = place.state; }
     if (!locText) { const cs = q.match(/\b([a-z][a-z.'\- ]+?),\s*([a-z]{2})\b/); if (cs) { locText = cs[1].trim(); locState = cs[2].toUpperCase(); } }
+    // A bare full state name ("in Virginia") → filter by STATE, not a geocoded
+    // point + radius (which would hide most of the state's inventory).
+    const locStripText = locText;
+    if (locText && !locState) { const ab = US_STATES[locText.toLowerCase().replace(/\s+/g, " ").trim()]; if (ab) { locState = ab; locText = ""; } }
     // odometer mileage
     const mileM = rest.match(/(\d[\d,\.]*)\s*(k)?\s*(?:mi|mile|miles)\b/);
     if (mileM) { let v = parseFloat(mileM[1].replace(/,/g, "")); if (!isNaN(v)) { if (mileM[2] || v < 1000) v *= 1000; p.mileage_max = Math.round(v); } rest = rest.replace(mileM[0], " "); }
@@ -310,7 +317,7 @@
       .replace(/\b\d+\s*(?:nd|rd|th|st)?\s*(?:row|rows|passenger|passengers|seat|seats|door|doors|cyl(?:inder)?s?|speed|wheel)\b/g, " ");
     if (modelRaw) rest = rest.replace(modelRaw, " ");
     if (trimRaw) rest = rest.replace(trimRaw, " ");
-    if (locText) rest = rest.replace(new RegExp(locText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), " ");
+    if (locStripText) rest = rest.replace(new RegExp(locStripText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), " ");
     // budget — explicit money signals only ($, k/grand, or a price keyword + number)
     const amts = [];
     const addAmt = (n, suf) => { let v = parseFloat(String(n).replace(/,/g, "")); if (isNaN(v)) return; if (suf && /k|grand/i.test(suf)) v *= 1000; else if (v < 100) v *= 1000; amts.push(Math.round(v)); };
@@ -428,12 +435,17 @@
     selected.clear(); updateCmpBar(); // fresh search → reset compare selection
     dealFilter = "all"; photosOnly = false; sortBy = "match"; curBucket = 0; // fresh search → reset refine
     const r = d.results || {};
-    lastBuckets = Array.isArray(r.buckets) ? r.buckets.filter((b) => b.vehicles && b.vehicles.length) : [];
-    // Prefer an explicit total from the backend; otherwise derive it from the
-    // buckets we actually rendered (the live-inventory response has no total_count).
-    const total = r.total_count != null ? r.total_count
-      : (d.count != null ? d.count
-        : lastBuckets.reduce((n, b) => n + (b.vehicles ? b.vehicles.length : 0), 0));
+    const pr = lastProfile || {};
+    // Apply search-intent narrowing to each bucket up front, so the header count,
+    // the bucket tabs, and the grid all agree (previously the color/luxury filters
+    // ran later in showBucket, producing "N matches" with an empty grid).
+    let colorRelaxed = false;
+    lastBuckets = (Array.isArray(r.buckets) ? r.buckets : [])
+      .filter((b) => b.vehicles && b.vehicles.length)
+      .map((b) => { const fr = intentFilter(b.vehicles); if (fr.colorRelaxed) colorRelaxed = true; return Object.assign({}, b, { vehicles: fr.vehicles }); })
+      .filter((b) => b.vehicles.length);
+    // Count reflects what's actually shown after intent narrowing.
+    const total = lastBuckets.reduce((n, b) => n + b.vehicles.length, 0);
     if (!lastBuckets.length) {
       results.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         <p class="font-semibold text-brand-900">No matches yet</p>
@@ -448,6 +460,7 @@
         <div>
           <h2 class="font-display text-2xl font-bold text-brand-900">${total.toLocaleString("en-US")} matching ${total === 1 ? "vehicle" : "vehicles"}</h2>
           <p class="text-sm text-slate-500">Ranked into the picks that matter — each shows <strong>why</strong> it made the list.</p>
+          ${colorRelaxed && pr.color ? `<p class="mt-1 text-xs font-medium text-amber-600">No exact ${esc(pr.color)} matches in stock — showing the closest ${esc(pr.make || "vehicles")}.</p>` : ""}
         </div>
       </div>
       ${interpreted(d.profile)}
@@ -720,21 +733,32 @@
   }
 
   // Filter + sort the active bucket's vehicles per the on-results refine controls.
-  function applyRefine(list) {
-    let out = list.slice();
-    // Descriptive post-filters the provider can't do (luxury/reliable make sets,
-    // 3rd-row seating). Soft — only narrow when it leaves results.
+  // Search-intent narrowing, applied ONCE when buckets are built — so the header
+  // count and bucket tabs always match what's actually shown. Soft filters
+  // (body/fuel/drive/color) only narrow when that leaves results; category intent
+  // (luxury/reliable/3rd-row) is HARD (never show a Ram truck under "luxury SUV").
+  // Color is soft: prefer exact-color matches, but rather than dead-end when the
+  // provider set has none (e.g. "red nissan" with no red in stock), keep the make
+  // matches and flag colorRelaxed so the UI can say so.
+  function intentFilter(vehicles) {
     const pr = lastProfile || {};
-    // Approximate attributes (messy provider data): soft — only narrow if it leaves results.
-    if (pr.body_style) { const f = out.filter((v) => bodyMatch(v, pr.body_style)); if (f.length) out = f; }
-    if (pr.fuel_type) { const f = out.filter((v) => fuelMatch(v, pr.fuel_type)); if (f.length) out = f; }
-    if (pr.drivetrain) { const f = out.filter((v) => driveMatch(v, pr.drivetrain)); if (f.length) out = f; }
-    // Precise intent (luxury/reliable/3rd-row): HARD — never show a contradictory
-    // result (a Ram truck under "luxury SUV"). Empty is handled with guidance.
+    let out = vehicles.slice();
+    const soft = (pred) => { const f = out.filter(pred); if (f.length) out = f; };
+    if (pr.body_style) soft((v) => bodyMatch(v, pr.body_style));
+    if (pr.fuel_type) soft((v) => fuelMatch(v, pr.fuel_type));
+    if (pr.drivetrain) soft((v) => driveMatch(v, pr.drivetrain));
     if (pr.lux) out = out.filter((v) => LUXURY_MAKES.has(makeKey(v)));
     if (pr.reliable) out = out.filter((v) => RELIABLE_MAKES.has(makeKey(v)));
     if (pr.seats_third_row) out = out.filter(isThirdRow);
-    if (pr.color) out = out.filter((v) => colorMatch(v, pr.color));
+    let colorRelaxed = false;
+    if (pr.color) { const f = out.filter((v) => colorMatch(v, pr.color)); if (f.length) out = f; else colorRelaxed = true; }
+    return { vehicles: out, colorRelaxed: colorRelaxed };
+  }
+
+  function applyRefine(list) {
+    let out = list.slice();
+    // Interactive refine only — search-intent narrowing is already baked into the
+    // buckets (see intentFilter), so counts stay consistent with what's rendered.
     if (photosOnly) out = out.filter((v) => v.photos && v.photos[0]);
     if (dealFilter === "great") out = out.filter((v) => { const d = dealRating(v.score || {}); return d && d.key === "great"; });
     else if (dealFilter === "good") out = out.filter((v) => { const d = dealRating(v.score || {}); return d && d.rank >= 4; });
