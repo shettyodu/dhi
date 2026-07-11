@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supply Spend Check — free medical-supply price benchmark | DHI</title>
+  <meta name="description" content="Paste your medical-supply line items and instantly see where you may be overpaying — benchmarked against DHI's supply catalog. Free, no sign-up to run." />
+  <link rel="canonical" href="https://digitalhealthinternational.com/supply-spend-check.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Supply Spend Check — see what you're overpaying on supplies" />
+  <meta property="og:description" content="Free tool: benchmark your medical-supply prices against DHI and see potential savings in seconds." />
+  <meta property="og:url" content="https://digitalhealthinternational.com/supply-spend-check.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>body{font-family:Inter,system-ui,sans-serif}.font-display{font-family:Montserrat,Inter,sans-serif}.in{margin-top:.35rem;width:100%;border-radius:.6rem;border:1px solid #cbd5e1;padding:.55rem .7rem;font-size:.9rem}.in:focus{outline:none;border-color:#0891b2;box-shadow:0 0 0 3px rgba(8,145,178,.15)}</style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-brand-950">
+    <div class="dhi-hero-bg absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 12%, #06b6d4 0, transparent 42%), radial-gradient(circle at 8% 95%, #10b981 0, transparent 44%);"></div>
+    <div data-reveal="0" class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
+      <nav class="mb-5 flex items-center gap-2 text-sm text-slate-400">
+        <a href="index.html" class="hover:text-cyan-300">Home</a><span>/</span>
+        <a href="supplies.html" class="hover:text-cyan-300">Supplies</a><span>/</span>
+        <span class="text-slate-200">Supply Spend Check</span>
+      </nav>
+      <p class="kicker text-sm font-semibold uppercase tracking-wider text-cyan-300">DHI Supplies · Free tool</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">See what you're overpaying on supplies</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">Paste your supply line items and get an instant, indicative benchmark against DHI's catalog — hospitals and health systems pay up to <span class="font-semibold text-white">100% more</span> for the same item. Free to run, no sign-up required.</p>
+      <a href="#tool" class="mt-6 inline-flex rounded-xl bg-cyan-500 px-6 py-3 text-sm font-bold text-brand-950 shadow-lg transition hover:bg-cyan-400">Check my spend &rarr;</a>
+    </div>
+  </section>
+
+  <main id="tool" class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid gap-8 lg:grid-cols-5">
+      <!-- INPUT -->
+      <section class="lg:col-span-3">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="font-display text-xl font-bold text-brand-900">Paste your supply lines</h2>
+          <p class="mt-1 text-sm text-slate-500">One item per line: <span class="font-mono text-xs text-slate-600">item description, unit price, quantity</span> — commas or tabs (paste straight from a spreadsheet).</p>
+          <textarea id="ssc-input" rows="9" class="in mt-4 font-mono !text-xs" placeholder="Isolation gown AAMI level 2, 3.60, 1200&#10;Coverall type 5/6, 6.20, 500&#10;Disposable scrub set, 16.00, 300"></textarea>
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <button id="ssc-run" class="rounded-xl bg-brand-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-800">Analyze my spend</button>
+            <button id="ssc-sample" class="text-sm font-semibold text-cyan-700 hover:underline">Load a sample</button>
+            <span id="ssc-status" class="text-sm text-slate-500"></span>
+          </div>
+        </div>
+        <p class="mt-3 px-1 text-xs leading-relaxed text-slate-400">Benchmark is DHI's catalog price (an indicative comparison, not a guarantee). Exact product equivalents, units, and pricing are confirmed by our team. We do not store what you paste.</p>
+      </section>
+
+      <!-- WHY -->
+      <aside class="lg:col-span-2 space-y-6">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="font-display text-lg font-bold text-brand-900">Why it matters</h2>
+          <ul class="mt-3 space-y-2.5 text-sm text-slate-600">
+            <li class="flex gap-2"><span class="mt-0.5 flex-none text-emerald-600">▹</span><span>Same item, same maker — prices vary up to <b>100%</b> across providers.</span></li>
+            <li class="flex gap-2"><span class="mt-0.5 flex-none text-emerald-600">▹</span><span>Typical supply savings run <b>5–15%</b> of external spend.</span></li>
+            <li class="flex gap-2"><span class="mt-0.5 flex-none text-emerald-600">▹</span><span>We can <b>supply the flagged items</b> — savings you can actually capture.</span></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="ssc-results" class="mt-8 hidden"></div>
+
+    <!-- LEAD -->
+    <div id="ssc-lead" class="mt-8 hidden">
+      <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+        <h2 class="font-display text-lg font-bold text-brand-900">Get the full report &amp; quotes on the flagged items</h2>
+        <p class="mt-1 text-sm text-slate-600">We'll confirm exact equivalents and send firm pricing — no obligation.</p>
+        <form id="ssc-form" class="mt-4 grid gap-3 sm:grid-cols-3">
+          <input id="ssc-name" class="in" placeholder="Your name" autocomplete="name" />
+          <input id="ssc-email" type="email" class="in" placeholder="Work email" autocomplete="email" />
+          <input id="ssc-org" class="in" placeholder="Clinic / practice" autocomplete="organization" />
+          <div class="sm:col-span-3 flex items-center gap-3">
+            <button id="ssc-send" type="submit" class="rounded-xl bg-brand-900 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-800">Send me the report</button>
+            <span id="ssc-lead-status" class="text-sm text-slate-500"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-lg bg-brand-900 px-4 py-2 text-sm font-medium text-white opacity-0 shadow-lg transition-opacity duration-300"></div>
+
+  <script src="assets/components.js"></script>
+  <script src="assets/supply-spend-check.js?v=1"></script>
+</body>
+</html>

@@ -451,6 +451,13 @@ const SERVICE_CONTENT = {
     sections: [
       {
         type: "prose",
+        heading: "Free: are you overpaying on supplies?",
+        paragraphs: [
+          "Paste your supply line items and get an instant, indicative benchmark against DHI's catalog — providers pay up to <b>100% more</b> for the same item. No sign-up to run. <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"supply-spend-check.html\">Run the free Supply Spend Check &rarr;</a>",
+        ],
+      },
+      {
+        type: "prose",
         heading: "Shop PPE with live pricing",
         paragraphs: [
           "Browse certified coveralls, isolation &amp; surgical gowns, scrubs, covers, and masks with list pricing — add items to a quote and check out with tax, freight, card, or purchase order. <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"supplies-catalog.html\">Open the supplies &amp; PPE catalog &rarr;</a>",
