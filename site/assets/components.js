@@ -49,6 +49,14 @@ const VERTICALS = [
     icon: "layers",
   },
   {
+    slug: "supply-spend-check.html",
+    title: "Supply Price Intelligence",
+    menu: "Supply Price Intelligence",
+    summary:
+      "AI supply-price benchmarking — see where you're overpaying, capture the savings, and source at DHI pricing. Free to run.",
+    icon: "chart",
+  },
+  {
     slug: "lighting.html",
     title: "Lighting & Energy Efficiency",
     menu: "Lighting & Energy Efficiency",
@@ -101,7 +109,7 @@ const VERTICAL_CATEGORIES = [
 ];
 const VERTICAL_CAT_BY_SLUG = {
   "aicore.html": "tech", "cybersecurity.html": "tech",
-  "supplies.html": "medical", "insurance.html": "medical", "wellness.html": "medical",
+  "supplies.html": "medical", "supply-spend-check.html": "medical", "insurance.html": "medical", "wellness.html": "medical",
   "lighting.html": "energy", "automotive.html": "energy",
   "government.html": "gov",
 };
@@ -272,7 +280,7 @@ function buildFooter() {
           <span class="text-base font-bold text-white">Digital Health International</span>
         </div>
         <p class="mt-4 text-sm leading-relaxed text-slate-400">
-          Eight verticals. One global platform. Unifying data, energy, healthcare, and enterprise into a single integrated ecosystem — anywhere in the world.
+          Nine verticals. One global platform. Unifying data, energy, healthcare, and enterprise into a single integrated ecosystem — anywhere in the world.
         </p>
         <p class="mt-4 text-xs uppercase tracking-wider text-cyan-400">${SITE.tagline}</p>
       </div>
