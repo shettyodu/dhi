@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Supply Price Benchmark — prepared for Sentara Health | DHI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}.font-display{font-family:Montserrat,Inter,sans-serif}
+    .in{margin-top:.35rem;width:100%;border-radius:.6rem;border:1px solid #cbd5e1;padding:.55rem .7rem;font-size:.9rem}
+    .in:focus{outline:none;border-color:#0891b2;box-shadow:0 0 0 3px rgba(8,145,178,.15)}
+    #drop.drag{border-color:#0891b2;background:#ecfeff}
+    /* Print: a clean one-page report only */
+    @media print{
+      .no-print{display:none !important}
+      body{background:#fff}
+      #report{box-shadow:none !important;border:none !important}
+      @page{margin:14mm}
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <!-- ACCESS GATE -->
+  <div id="gate" class="mx-auto mt-24 max-w-sm rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+    <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">DHI · Private pilot</p>
+    <h1 class="mt-1 font-display text-xl font-bold text-brand-900">Sentara Supply Price Benchmark</h1>
+    <p class="mt-1 text-sm text-slate-500">Enter the access code from your DHI contact to open your benchmarking workspace.</p>
+    <form id="gate-form" class="mt-4 space-y-3">
+      <input id="gate-code" type="password" class="in" placeholder="Access code" autocomplete="off" />
+      <button class="w-full rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Open workspace</button>
+      <p id="gate-msg" class="text-sm text-red-600"></p>
+    </form>
+    <p class="mt-4 text-xs text-slate-400">Prepared for Sentara Health. This is a private pilot proposal — not a public tool. Your uploaded data is analyzed in-session and is <b>not</b> added to any shared index.</p>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <!-- HERO -->
+    <section class="relative overflow-hidden bg-brand-950 no-print">
+      <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+      <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 12%, #06b6d4 0, transparent 42%), radial-gradient(circle at 8% 95%, #10b981 0, transparent 44%);"></div>
+      <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
+        <p class="text-sm font-semibold uppercase tracking-wider text-cyan-300">Prepared for Sentara Health · Powered by DHI</p>
+        <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Supply Price Benchmark</h1>
+        <p class="mt-3 max-w-2xl text-lg text-slate-300">Upload a supply-spend export and see, in seconds, where your pricing runs above market — and which items DHI can supply at a lower cost. Indicative, buy-side, and confidential to your team.</p>
+      </div>
+    </section>
+
+    <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+      <!-- INPUT -->
+      <section class="no-print rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="font-display text-xl font-bold text-brand-900">Upload your supply spend</h2>
+            <p class="mt-1 text-sm text-slate-500">A CSV export from your procurement/ERP system. Columns we read: <span class="font-mono text-xs">description, quantity, unit price, vendor</span> (price &amp; vendor optional).</p>
+          </div>
+          <button id="sample" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">Load a sample file</button>
+        </div>
+
+        <label id="drop" for="file" class="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center transition">
+          <svg class="h-8 w-8 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <p class="mt-2 text-sm font-semibold text-brand-900">Drop a CSV here, or click to choose</p>
+          <p id="file-name" class="mt-1 text-xs text-slate-400">Accepted: .csv or .txt (tabs or commas)</p>
+          <input id="file" type="file" accept=".csv,.txt,text/csv,text/plain" class="hidden" />
+        </label>
+
+        <details class="mt-3">
+          <summary class="cursor-pointer text-sm font-semibold text-slate-500 hover:text-slate-700">…or paste rows instead</summary>
+          <p class="mt-2 text-xs text-slate-500">One item per line: <span class="font-mono">description, quantity, unit price, vendor</span></p>
+          <textarea id="paste" rows="6" class="in mt-1 font-mono !text-xs" placeholder="Isolation gown AAMI level 2, 1200, 3.60, Medline&#10;Coverall type 5/6, 500, 6.20, Uline"></textarea>
+        </details>
+
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <button id="run" class="rounded-xl bg-brand-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-800">Run benchmark</button>
+          <span id="status" class="text-sm text-slate-500"></span>
+        </div>
+      </section>
+
+      <!-- REPORT -->
+      <section id="report" class="mt-8 hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <!-- letterhead -->
+        <div class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-5">
+          <div>
+            <img src="assets/img/dhi-logo.svg" alt="Digital Health International" onerror="this.style.display='none'" class="h-8 w-auto" />
+            <p class="mt-2 font-display text-lg font-bold text-brand-900">Supply Price Benchmark — Opportunity Report</p>
+            <p class="text-sm text-slate-500">Prepared for <b>Sentara Health</b> · Powered by Digital Health International</p>
+          </div>
+          <div class="text-right text-xs text-slate-400">
+            <p id="report-date"></p>
+            <p>Indicative · confidential · buy-side</p>
+          </div>
+        </div>
+        <div id="report-body" class="mt-6"></div>
+
+        <!-- capability + sourcing note -->
+        <div class="mt-6 grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p class="text-sm font-semibold text-brand-900">Domestic sourcing available</p>
+            <p class="mt-1 text-sm text-slate-600">On request, DHI can prioritize domestic-manufactured equivalents for flagged items — relevant for resilience and Buy-American preferences.</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p class="text-sm font-semibold text-brand-900">How to read this</p>
+            <p class="mt-1 text-sm text-slate-600">Savings are indicative, benchmarked on the items DHI currently catalogs. Exact equivalents and firm pricing are confirmed by our team before any order.</p>
+          </div>
+        </div>
+
+        <div class="no-print mt-6 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-5">
+          <button id="print" class="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700">Print / save as PDF</button>
+          <button id="book" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">Request a full review with DHI</button>
+          <span id="book-status" class="text-sm text-slate-500"></span>
+        </div>
+      </section>
+
+      <!-- BOOK FORM -->
+      <section id="book-form" class="no-print mt-6 hidden">
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+          <h2 class="font-display text-lg font-bold text-brand-900">Request a full review</h2>
+          <p class="mt-1 text-sm text-slate-600">We'll confirm exact equivalents and send firm DHI pricing on the flagged items — no obligation.</p>
+          <form id="book-fields" class="mt-4 grid gap-3 sm:grid-cols-3">
+            <input id="b-name" class="in" placeholder="Your name" autocomplete="name" />
+            <input id="b-email" type="email" class="in" placeholder="Work email" autocomplete="email" />
+            <input id="b-org" class="in" placeholder="Department / facility" autocomplete="organization" value="Sentara Health" />
+            <div class="sm:col-span-3 flex items-center gap-3">
+              <button id="b-send" type="submit" class="rounded-xl bg-brand-900 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-800">Send request</button>
+              <span id="b-status" class="text-sm text-slate-500"></span>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-lg bg-brand-900 px-4 py-2 text-sm font-medium text-white opacity-0 shadow-lg transition-opacity duration-300"></div>
+
+  <script src="assets/sentara-benchmark.js?v=1"></script>
+</body>
+</html>
