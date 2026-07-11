@@ -1,7 +1,7 @@
 /* Netlify Function: POST /.netlify/functions/market-report
    Admin-only DHI-vs-market pricing report from the captured price index.
    Auth: header  x-dhi-admin: <ADMIN_SECRET> */
-const { report } = require("../../lib/market-report");
+const { report, clearDemo } = require("../../lib/market-report");
 const { connectLambda } = require("@netlify/blobs");
 
 const cors = {
@@ -19,8 +19,11 @@ exports.handler = async (event) => {
   const secret = event.headers["x-dhi-admin"] || "";
   if (secret !== process.env.ADMIN_SECRET) return { statusCode: 401, headers: cors, body: JSON.stringify({ error: "Unauthorized" }) };
 
+  let body = {};
+  try { body = JSON.parse(event.body || "{}"); } catch (e) { /* ignore */ }
+
   try {
-    const r = await report();
+    const r = body.action === "clear-demo" ? await clearDemo() : await report();
     return { statusCode: r.status, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify(r.json) };
   } catch (e) {
     console.error("market-report error:", e.message);

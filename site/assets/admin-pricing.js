@@ -68,9 +68,24 @@
     $("report").innerHTML = `<div><h2 class="mb-2 font-display text-lg font-bold text-brand-900">Pricing vs. market <span class="text-sm font-normal text-slate-400">(rows flagged DHI HIGH → renegotiate)</span></h2>${itemsHtml}</div>${unm ? `<div>${unm}</div>` : ""}${vend ? `<div>${vend}</div>` : ""}`;
   }
 
+  async function clearDemo() {
+    const secret = $("secret").value.trim();
+    if (!secret) { $("status").textContent = "Enter the admin key first."; return; }
+    if (!confirm("Delete all demo/seed pricing (vendors labeled \"Demo —\")? Real captured data is not touched.")) return;
+    $("status").className = "mt-3 text-sm text-slate-500"; $("status").textContent = "Clearing demo data…";
+    try {
+      const r = await fetch(FN("market-report"), { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret }, body: JSON.stringify({ action: "clear-demo" }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.ok) { $("status").className = "mt-3 text-sm text-red-600"; $("status").textContent = d.error || `Failed (HTTP ${r.status}).`; return; }
+      $("status").className = "mt-3 text-sm text-emerald-700"; $("status").textContent = `Removed ${d.removed} demo batch(es); kept ${d.kept} real.`;
+      load();
+    } catch (e) { $("status").className = "mt-3 text-sm text-red-600"; $("status").textContent = "Network error."; }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     const saved = localStorage.getItem("dhi_admin_key"); if (saved) $("secret").value = saved;
     $("load").addEventListener("click", load);
+    $("clear").addEventListener("click", clearDemo);
     $("secret").addEventListener("keydown", (e) => { if (e.key === "Enter") load(); });
   });
 })();

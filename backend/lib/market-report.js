@@ -73,4 +73,22 @@ async function report() {
   };
 }
 
-module.exports = { report };
+// Delete only blobs whose records are ALL demo/seed (vendor starts with "Demo").
+// Real captured data is never touched.
+async function clearDemo() {
+  const s = store();
+  let blobs = [];
+  try { ({ blobs } = await s.list({ prefix: "pricing/" })); }
+  catch (e) { return { status: 503, json: { error: "Price index not available." } }; }
+  let removed = 0, kept = 0;
+  for (const b of blobs || []) {
+    let d = null; try { d = await s.get(b.key, { type: "json" }); } catch (e) { continue; }
+    const recs = (d && Array.isArray(d.records)) ? d.records : [];
+    const allDemo = recs.length > 0 && recs.every((r) => /^demo\b/i.test(String(r.vendor || "").trim()));
+    if (allDemo) { try { await s.delete(b.key); removed++; } catch (e) { /* skip */ } }
+    else kept++;
+  }
+  return { status: 200, json: { ok: true, removed, kept } };
+}
+
+module.exports = { report, clearDemo };

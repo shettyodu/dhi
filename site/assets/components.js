@@ -50,8 +50,8 @@ const VERTICALS = [
   },
   {
     slug: "supply-spend-check.html",
-    title: "Supply Price Intelligence",
-    menu: "Supply Price Intelligence",
+    title: "SupplyScope",
+    menu: "SupplyScope — Price Intelligence",
     summary:
       "AI supply-price benchmarking — see where you're overpaying, capture the savings, and source at DHI pricing. Free to run.",
     icon: "chart",
