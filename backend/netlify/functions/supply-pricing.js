@@ -1,7 +1,7 @@
 /* Netlify Function: POST /.netlify/functions/supply-pricing
    action:"public" → storefront price list (no auth).
    action:"list" | "set" → admin (x-dhi-admin: ADMIN_SECRET). */
-const { list, setPrice, publicList } = require("../../lib/supply-pricing");
+const { list, setPrice, setBulk, publicList } = require("../../lib/supply-pricing");
 const { connectLambda } = require("@netlify/blobs");
 
 const cors = {
@@ -29,7 +29,7 @@ exports.handler = async (event) => {
     if (!process.env.ADMIN_SECRET) return { statusCode: 503, headers: cors, body: JSON.stringify({ error: "Admin not configured (set ADMIN_SECRET)" }) };
     if ((event.headers["x-dhi-admin"] || "") !== process.env.ADMIN_SECRET) return { statusCode: 401, headers: cors, body: JSON.stringify({ error: "Unauthorized" }) };
 
-    const r = action === "set" ? await setPrice(body) : await list();
+    const r = action === "bulk" ? await setBulk(body) : action === "set" ? await setPrice(body) : await list();
     return { statusCode: r.status, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify(r.json) };
   } catch (e) {
     console.error("supply-pricing error:", e.message);

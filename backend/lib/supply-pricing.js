@@ -34,6 +34,22 @@ async function setPrice(body) {
   return { status: 200, json: { ok: true, ...rec } };
 }
 
+// Bulk set — one call writes many rows (paste-from-spreadsheet import). Unknown
+// ids are skipped and reported rather than failing the whole batch.
+async function setBulk(body) {
+  const rows = Array.isArray(body.rows) ? body.rows : [];
+  if (!rows.length) return { status: 400, json: { error: "No rows provided" } };
+  let saved = 0; const skipped = [];
+  for (const r of rows) {
+    const id = String((r && r.id) || "").trim();
+    if (!id || !CATALOG.find((x) => x.id === id)) { skipped.push(id || "(blank)"); continue; }
+    const rec = { id, cost: num(r.cost), sell: num(r.sell), updated: new Date().toISOString() };
+    try { await store().setJSON(`price/${id}`, rec); saved++; }
+    catch (e) { skipped.push(id); }
+  }
+  return { status: 200, json: { ok: true, saved, skipped } };
+}
+
 // Admin view — cost, sell, margin, and a market-median reference (from the index).
 async function list() {
   const ov = await overrides();
@@ -61,4 +77,4 @@ async function publicList() {
   return { status: 200, json: { ok: true, items } };
 }
 
-module.exports = { list, setPrice, publicList };
+module.exports = { list, setPrice, setBulk, publicList };
