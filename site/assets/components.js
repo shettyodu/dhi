@@ -55,6 +55,7 @@ const VERTICALS = [
     summary:
       "AI supply-price benchmarking — see where you're overpaying, capture the savings, and source at DHI pricing. Free to run.",
     icon: "chart",
+    store: { slug: "supplies-store.html", label: "Shop the DHI Supplies store" },
   },
   {
     slug: "lighting.html",
@@ -159,20 +160,38 @@ function buildHeader() {
     }">${label}</a>`;
   };
 
-  const serviceItems = VERTICALS.map(
-    (v) =>
-      `<a href="${v.slug}" class="flex items-start gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-50 group">
+  const serviceItems = VERTICALS.flatMap(
+    (v) => {
+      const rows = [
+        `<a href="${v.slug}" class="flex items-start gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-50 group">
          <span class="mt-0.5 text-cyan-600 group-hover:text-cyan-700">${icon(v.icon, "h-5 w-5")}</span>
          <span>
            <span class="block text-sm font-semibold text-brand-900">${v.menu}${v.soon ? ` <span class="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-amber-700">Coming ${v.soon}</span>` : ""}</span>
            <span class="block text-xs text-slate-500 leading-snug">${v.summary}</span>
          </span>
+       </a>`,
+      ];
+      if (v.store)
+        rows.push(
+          `<a href="${v.store.slug}" class="flex items-center gap-3 rounded-lg py-2 pl-11 pr-3 hover:bg-slate-50 group">
+         <span class="text-sm font-semibold text-cyan-700 group-hover:text-cyan-800">${v.store.label} &rarr;</span>
        </a>`
+        );
+      return rows;
+    }
   ).join("");
 
-  const mobileServiceItems = VERTICALS.map(
-    (v) =>
-      `<a href="${v.slug}" class="block rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-800">${v.menu}${v.soon ? ` <span class="text-xs font-semibold uppercase text-amber-600">· Coming ${v.soon}</span>` : ""}</a>`
+  const mobileServiceItems = VERTICALS.flatMap(
+    (v) => {
+      const rows = [
+        `<a href="${v.slug}" class="block rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-800">${v.menu}${v.soon ? ` <span class="text-xs font-semibold uppercase text-amber-600">· Coming ${v.soon}</span>` : ""}</a>`,
+      ];
+      if (v.store)
+        rows.push(
+          `<a href="${v.store.slug}" class="block rounded-md py-2 pl-6 pr-3 text-sm font-semibold text-cyan-700 hover:bg-slate-50 hover:text-cyan-800">${v.store.label} &rarr;</a>`
+        );
+      return rows;
+    }
   ).join("");
 
   const header = document.createElement("header");
