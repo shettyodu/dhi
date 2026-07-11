@@ -70,17 +70,20 @@ const qtyOf = (x) => { const n = Number(String(x).replace(/[^0-9.\-]/g, "")); re
 function analyze(lines) {
   const rows = (Array.isArray(lines) ? lines : []).slice(0, 250).map((ln) => {
     const desc = String(ln.desc || ln.item || "").slice(0, 160).trim();
-    const price = money(ln.unit_price != null ? ln.unit_price : ln.price);
+    const priceRaw = ln.unit_price != null ? ln.unit_price : ln.price;
+    const price = (priceRaw === "" || priceRaw == null) ? null : money(priceRaw); // current price is optional
     const qty = qtyOf(ln.qty != null ? ln.qty : 1);
-    const m = desc && price > 0 ? bestMatch(desc, price) : null;
-    if (!m || price == null || price <= 0) {
-      return { desc, qty, unit_price: price, matched: false };
-    }
+    const m = desc ? bestMatch(desc, price || 0) : null;
+    if (!m) return { desc, qty, unit_price: price, matched: false };
     const bench = Number(m.item.p);
-    // Guard against unit mismatches (e.g. per-each vs per-box): if the two prices
-    // differ by more than ~12x either way, it's not a comparable line — skip it
-    // rather than report a bogus saving.
-    if (!(bench > 0) || price / bench > 12 || bench / price > 12) {
+    if (!(bench > 0)) return { desc, qty, unit_price: price, matched: false };
+    // No current price given → quote mode: show what DHI would charge, no "savings".
+    if (price == null || price <= 0) {
+      return { desc, qty, unit_price: null, matched: true, quote_only: true, benchmark_name: m.item.name, benchmark_price: bench, unit: m.item.unit, over_pct: null, line_spend: 0, line_savings: 0 };
+    }
+    // Guard against unit mismatches (per-each vs per-box): >12x either way isn't
+    // comparable — skip rather than report a bogus saving.
+    if (price / bench > 12 || bench / price > 12) {
       return { desc, qty, unit_price: price, matched: false };
     }
     const over = price - bench;
