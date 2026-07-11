@@ -52,4 +52,42 @@ function assess(result) {
   return { headline, findings };
 }
 
-module.exports = { assess };
+/* Optional LLM narrative — a short, natural-language summary written from ONLY the
+   computed findings (no new numbers/vendors/claims). Gated on OPENAI_API_KEY;
+   returns null on any error/timeout so it never blocks or breaks the result. */
+const API_KEY = process.env.OPENAI_API_KEY || "";
+const MODEL = process.env.OPENAI_MODEL_NAME || "gpt-4o-mini";
+const BASE = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+const NARR_TIMEOUT_MS = Number(process.env.SUPPLYSCOPE_LLM_TIMEOUT_MS || 6000);
+
+const SYS = [
+  "You are SupplyScope Advisor, a procurement analyst for medical-supply buyers (clinics, practices).",
+  "Write a concise 2–3 sentence, plain-English summary for the buyer, based ONLY on the findings provided.",
+  "Hard rules: do NOT invent or alter any number, dollar amount, percentage, vendor, or product — use only what's in the findings.",
+  "Stay strictly buy-side: help them purchase smarter. NEVER advise on what to charge patients or on setting retail/patient prices.",
+  "No hype, no guarantees; 'indicative' framing is fine. Address the buyer as 'you'.",
+].join(" ");
+
+async function narrate(assessment) {
+  if (!API_KEY || !assessment || !Array.isArray(assessment.findings) || !assessment.findings.length) return null;
+  const facts = { headline: assessment.headline, findings: assessment.findings.map((f) => ({ title: f.title, detail: f.detail })) };
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), NARR_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE}/chat/completions`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: MODEL, temperature: 0.3, max_tokens: 160, messages: [
+        { role: "system", content: SYS },
+        { role: "user", content: "Findings:\n" + JSON.stringify(facts) },
+      ] }),
+      signal: ctrl.signal,
+    });
+    const data = await res.json().catch(() => ({}));
+    const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    return text ? String(text).trim().slice(0, 600) : null;
+  } catch (e) { return null; }
+  finally { clearTimeout(timer); }
+}
+
+module.exports = { assess, narrate };

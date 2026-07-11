@@ -102,7 +102,8 @@
     return `<div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div class="flex items-center gap-2"><span class="rounded-md bg-brand-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-cyan-300">SupplyScope Advisor</span></div>
       <p class="mt-3 font-display text-lg font-bold text-brand-900">${esc(a.headline)}</p>
-      <div class="mt-3 grid gap-2.5 sm:grid-cols-2">${items}</div>
+      ${a.narrative ? `<p class="mt-2 border-l-2 border-cyan-300 pl-3 text-sm italic leading-relaxed text-slate-600">${esc(a.narrative)}</p>` : ""}
+      <div class="mt-4 grid gap-2.5 sm:grid-cols-2">${items}</div>
     </div>`;
   }
 

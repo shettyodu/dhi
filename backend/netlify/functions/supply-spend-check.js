@@ -2,7 +2,7 @@
    Benchmarks a provider's supply line items against DHI's catalog and returns
    potential savings. Read-only analysis — no storage, no lead required. */
 const { analyze } = require("../../lib/spend-benchmark");
-const { assess } = require("../../lib/supply-advisor");
+const { assess, narrate } = require("../../lib/supply-advisor");
 const market = require("../../lib/market-index");
 const { connectLambda } = require("@netlify/blobs");
 
@@ -25,6 +25,7 @@ exports.handler = async (event) => {
   try {
     const result = analyze(lines);
     const assessment = assess(result); // agentic buy-side advisor, grounded in the result
+    try { assessment.narrative = await narrate(assessment); } catch (e) { assessment.narrative = null; } // optional LLM layer
     // Build the proprietary price index — anonymized, opt-in. Never blocks the result.
     if (body.consent) { try { await market.capture(result.rows); } catch (e) { /* best-effort */ } }
     return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, ...result, assessment }) };
