@@ -84,6 +84,28 @@
     finally { $("ssc-run").disabled = false; }
   }
 
+  const TONE = {
+    win: { bd: "border-emerald-200", bg: "bg-emerald-50", dot: "text-emerald-600", ico: "M20 6L9 17l-5-5" },
+    risk: { bd: "border-rose-200", bg: "bg-rose-50", dot: "text-rose-600", ico: "M12 9v4m0 4h.01M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3.1l-8-14a2 2 0 00-3.4 0z" },
+    action: { bd: "border-cyan-200", bg: "bg-cyan-50", dot: "text-cyan-600", ico: "M13 2L4.5 13.5H11l-1 8.5L19.5 10H13z" },
+    info: { bd: "border-slate-200", bg: "bg-white", dot: "text-slate-400", ico: "M12 8h.01M11 12h1v4h1" },
+  };
+  function assessmentHtml(a) {
+    if (!a || !a.findings) return "";
+    const items = a.findings.map((f) => {
+      const t = TONE[f.tone] || TONE.info;
+      return `<div class="flex gap-3 rounded-xl border ${t.bd} ${t.bg} p-3">
+        <svg class="mt-0.5 h-5 w-5 flex-none ${t.dot}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${t.ico}"/></svg>
+        <div><p class="text-sm font-semibold text-brand-900">${esc(f.title)}</p><p class="text-sm text-slate-600">${esc(f.detail)}</p></div>
+      </div>`;
+    }).join("");
+    return `<div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center gap-2"><span class="rounded-md bg-brand-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-cyan-300">SupplyScope Advisor</span></div>
+      <p class="mt-3 font-display text-lg font-bold text-brand-900">${esc(a.headline)}</p>
+      <div class="mt-3 grid gap-2.5 sm:grid-cols-2">${items}</div>
+    </div>`;
+  }
+
   function render(d) {
     const s = d.summary;
     const matched = d.rows.filter((r) => r.matched);
@@ -97,6 +119,7 @@
       </tr>`).join("");
 
     $("ssc-results").innerHTML = `
+      ${assessmentHtml(d.assessment)}
       <div class="grid gap-4 sm:grid-cols-3">
         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Spend analyzed</p>
