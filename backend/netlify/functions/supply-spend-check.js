@@ -2,6 +2,8 @@
    Benchmarks a provider's supply line items against DHI's catalog and returns
    potential savings. Read-only analysis — no storage, no lead required. */
 const { analyze } = require("../../lib/spend-benchmark");
+const market = require("../../lib/market-index");
+const { connectLambda } = require("@netlify/blobs");
 
 const cors = {
   "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
@@ -10,6 +12,7 @@ const cors = {
 };
 
 exports.handler = async (event) => {
+  try { connectLambda(event); } catch (e) { /* auto-context fallback */ }
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: cors, body: JSON.stringify({ error: "Method not allowed" }) };
 
@@ -20,6 +23,8 @@ exports.handler = async (event) => {
 
   try {
     const result = analyze(lines);
+    // Build the proprietary price index — anonymized, opt-in. Never blocks the result.
+    if (body.consent) { try { await market.capture(result.rows); } catch (e) { /* best-effort */ } }
     return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, ...result }) };
   } catch (e) {
     console.error("supply-spend-check error:", e.message);

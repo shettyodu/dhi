@@ -13,12 +13,12 @@
   function toast(m) { const t = $("toast"); if (!t) return; t.textContent = m; t.classList.remove("opacity-0"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.add("opacity-0"), 2600); }
 
   const SAMPLE = [
-    ["Isolation gown AAMI level 2", "1200", "3.60"],
-    ["Surgical isolation gown level 3", "800", "6.75"],
-    ["Coverall type 5/6 protective", "500", "6.20"],
-    ["Reinforced coverall type 3/4", "200", "11.50"],
-    ["Disposable scrub set", "300", "16.00"],
-    ["Surgical drape reinforced", "600", ""],
+    ["Isolation gown AAMI level 2", "1200", "3.60", "Medline"],
+    ["Surgical isolation gown level 3", "800", "6.75", "Cardinal Health"],
+    ["Coverall type 5/6 protective", "500", "6.20", "Uline"],
+    ["Reinforced coverall type 3/4", "200", "11.50", ""],
+    ["Disposable scrub set", "300", "16.00", "Medline"],
+    ["Surgical drape reinforced", "600", "", ""],
   ];
   const INP = 'w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-cyan-600 focus:outline-none';
 
@@ -27,9 +27,10 @@
     tr.innerHTML = `
       <td class="py-1 pr-2"><input class="ssc-d ${INP}" placeholder="e.g. Isolation gown level 2" /></td>
       <td class="py-1 px-2"><input class="ssc-q ${INP}" inputmode="numeric" placeholder="Qty" /></td>
-      <td class="py-1 pl-2"><input class="ssc-p ${INP}" inputmode="decimal" placeholder="$ (optional)" /></td>`;
+      <td class="py-1 px-2"><input class="ssc-p ${INP}" inputmode="decimal" placeholder="$ (opt.)" /></td>
+      <td class="py-1 pl-2"><input class="ssc-v ${INP}" placeholder="Vendor (opt.)" /></td>`;
     $("ssc-rows").appendChild(tr);
-    if (vals) { tr.querySelector(".ssc-d").value = vals[0] || ""; tr.querySelector(".ssc-q").value = vals[1] || ""; tr.querySelector(".ssc-p").value = vals[2] || ""; }
+    if (vals) { tr.querySelector(".ssc-d").value = vals[0] || ""; tr.querySelector(".ssc-q").value = vals[1] || ""; tr.querySelector(".ssc-p").value = vals[2] || ""; tr.querySelector(".ssc-v").value = vals[3] || ""; }
     return tr;
   }
   function seedRows(n) { $("ssc-rows").innerHTML = ""; for (let i = 0; i < n; i++) addRow(); }
@@ -41,11 +42,12 @@
       if (!desc) return;
       const qty = tr.querySelector(".ssc-q").value.trim();
       const price = tr.querySelector(".ssc-p").value.trim();
-      out.push({ desc, qty: qty || 1, unit_price: price === "" ? null : price });
+      const vendor = tr.querySelector(".ssc-v").value.trim();
+      out.push({ desc, qty: qty || 1, unit_price: price === "" ? null : price, vendor: vendor || null });
     });
     return out;
   }
-  // paste order matches the headings: Description, Quantity, Current price (optional)
+  // paste order matches the headings: Description, Quantity, Current price, Current vendor (last two optional)
   function readPaste() {
     const out = [];
     for (const raw of String($("ssc-input").value || "").split(/\r?\n/)) {
@@ -54,7 +56,8 @@
       const desc = parts[0]; if (!desc) continue;
       const qty = parts[1] || 1;
       const price = parts.length >= 3 && parts[2] !== "" ? parts[2] : null;
-      out.push({ desc, qty, unit_price: price });
+      const vendor = parts.length >= 4 && parts[3] !== "" ? parts[3] : null;
+      out.push({ desc, qty, unit_price: price, vendor });
     }
     return out;
   }
@@ -72,7 +75,8 @@
     if (!lines.length) { status.className = "text-sm text-red-600"; status.textContent = "Add at least one item (a description)."; return; }
     status.className = "text-sm text-slate-500"; status.textContent = "Analyzing…"; $("ssc-run").disabled = true;
     try {
-      const r = await fetch(FN("supply-spend-check"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lines }) });
+      const consent = !$("ssc-consent") || $("ssc-consent").checked;
+      const r = await fetch(FN("supply-spend-check"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lines, consent }) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) { status.className = "text-sm text-red-600"; status.textContent = d.error || "Couldn't analyze — try again."; return; }
       status.textContent = ""; lastSummary = d.summary; render(d);
