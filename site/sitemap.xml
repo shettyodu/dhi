@@ -2,6 +2,9 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://digitalhealthinternational.com/</loc><lastmod>2026-06-09</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://digitalhealthinternational.com/about.html</loc><lastmod>2026-06-09</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://digitalhealthinternational.com/privacy.html</loc><lastmod>2026-07-12</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://digitalhealthinternational.com/terms.html</loc><lastmod>2026-07-12</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://digitalhealthinternational.com/trust.html</loc><lastmod>2026-07-12</lastmod><changefreq>yearly</changefreq><priority>0.5</priority></url>
   <url><loc>https://digitalhealthinternational.com/automotive-find-vehicle.html</loc><lastmod>2026-06-09</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://digitalhealthinternational.com/automotive-influencers.html</loc><lastmod>2026-06-09</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://digitalhealthinternational.com/automotive-partners.html</loc><lastmod>2026-06-09</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>

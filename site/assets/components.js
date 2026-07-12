@@ -326,8 +326,13 @@ function buildFooter() {
     </div>
 
     <div class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row">
-      <p>&copy; 2025 Digital Health International Inc. — Research Triangle, NC. All rights reserved.</p>
-      <p>SAM.gov registered &middot; CAGE V93LC35DCVN5 &middot; UEI 33-4356283</p>
+      <p>&copy; 2026 Digital Health International Inc. — Research Triangle, NC. All rights reserved.</p>
+      <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+        <a href="privacy.html" class="hover:text-cyan-400">Privacy</a>
+        <a href="terms.html" class="hover:text-cyan-400">Terms</a>
+        <a href="trust.html" class="hover:text-cyan-400">Trust &amp; Security</a>
+        <span>SAM.gov registered &middot; UEI V93LC35DCVN5</span>
+      </div>
     </div>
   </div>`;
 

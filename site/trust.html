@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trust &amp; Security — Digital Health International Inc.</title>
+  <meta name="description" content="How DHI protects your data: procurement data only (no PHI), in-session analysis, encryption in transit, access controls, and our compliance roadmap." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>body{font-family:Inter,system-ui,sans-serif}.prose p,.prose li{color:#475569;line-height:1.7}.prose ul{list-style:disc;padding-left:1.25rem;margin:.5rem 0}.prose a{color:#0891b2}</style>
+</head>
+<body class="bg-white text-slate-700 antialiased">
+  <section class="relative overflow-hidden bg-brand-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 12%, #06b6d4 0, transparent 42%);"></div>
+    <div class="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <p class="kicker text-sm font-semibold uppercase tracking-wider text-cyan-300">Trust &amp; Security</p>
+      <h1 class="mt-3 text-4xl font-extrabold tracking-tight text-white">How we protect your data</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">Built for healthcare buyers: procurement data only, analyzed privately, never sold. Here's exactly how it works.</p>
+    </div>
+  </section>
+
+  <main class="py-14">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <!-- posture cards -->
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><h3 class="font-bold text-brand-900">No PHI collected</h3><p class="mt-1 text-sm text-slate-600">Our tools process business/procurement data — product, quantity, price, vendor, department. We never ask for, and you should never upload, patient or clinical data.</p></div>
+        <div class="rounded-2xl border border-cyan-200 bg-cyan-50 p-5"><h3 class="font-bold text-brand-900">Your data stays yours</h3><p class="mt-1 text-sm text-slate-600">Private pilot workspaces analyze your upload <b>in-session</b> and don't store it in any shared index. Nothing is pooled or sold.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5"><h3 class="font-bold text-brand-900">Encrypted in transit</h3><p class="mt-1 text-sm text-slate-600">All traffic uses TLS/HTTPS. Stored data (leads, orders, pricing) is held with access controls behind authenticated admin tools.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5"><h3 class="font-bold text-brand-900">No payment data on-site</h3><p class="mt-1 text-sm text-slate-600">Orders are requests, not charges — we don't process card or bank data on the website.</p></div>
+      </div>
+
+      <div class="prose mt-10">
+        <h2 class="text-xl font-bold text-brand-900">Data handling</h2>
+        <ul>
+          <li><b>What we process:</b> supply-spend line items, product searches, and contact/order details you submit.</li>
+          <li><b>In-session analysis:</b> for pilot/benchmark workspaces, uploads are processed to produce your report and are not retained in a shared index. Any "improve our benchmarks" option is opt-in and retains only <b>anonymized</b> item/price/vendor data — never tied to your identity.</li>
+          <li><b>Buy-side and honest by design:</b> every figure traces to real data or is labeled an estimate; our tools never fabricate a price or a clinical-safety claim.</li>
+        </ul>
+
+        <h2 class="text-xl font-bold text-brand-900">Sub-processors</h2>
+        <ul>
+          <li><b>Netlify</b> — hosting and encrypted data storage.</li>
+          <li><b>OpenAI</b> — AI features (advisor summaries, Product Finder, invoice reading, categorization). Only the text needed for the feature is sent; the advisor receives computed findings, not raw line items. Do not enter PHI.</li>
+          <li><b>HubSpot</b> — CRM for leads and inquiries.</li>
+        </ul>
+
+        <h2 class="text-xl font-bold text-brand-900">Access &amp; administration</h2>
+        <p>Administrative and pricing tools are protected behind authentication and are not publicly accessible. Access is limited to authorized DHI personnel.</p>
+
+        <h2 class="text-xl font-bold text-brand-900">Compliance posture &amp; roadmap</h2>
+        <ul>
+          <li><b>HIPAA:</b> because we do not collect or process PHI, DHI does not act as a HIPAA Business Associate for these tools. If an engagement ever requires PHI, we would scope it and execute a Business Associate Agreement first.</li>
+          <li><b>SOC 2 Type II:</b> on our compliance roadmap; we are building toward a formal attestation and can share our current security documentation on request.</li>
+          <li><b>Domestic operations</b> and SAM.gov-registered prime contractor (UEI V93LC35DCVN5).</li>
+        </ul>
+
+        <h2 class="text-xl font-bold text-brand-900">Security questions or a vendor review?</h2>
+        <p>We're glad to complete a security questionnaire or walk your team through our controls. Contact <a href="mailto:steve@digitalhealthinternational.com">steve@digitalhealthinternational.com</a> · (919) 275-2474.</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/components.js"></script>
+</body>
+</html>
