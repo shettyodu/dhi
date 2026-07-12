@@ -147,6 +147,26 @@
     "General surgery major OT pack,Surgery / OR,900,,Cardinal Health",
   ].join("\n");
 
+  // Senior-living / non-acute sample (WellLink demo) — items and facilities that
+  // match that membership; duplicates across facilities drive the variance demo.
+  const SAMPLE_SENIOR = [
+    "description,department,quantity,unit price,vendor",
+    "Isolation gown AAMI level 2,Skilled Nursing,2600,5.40,Medline",
+    "Isolation gown AAMI level 2,Assisted Living,1800,6.20,Cardinal Health",
+    "Disposable scrub set,Staff,1200,15.50,Medline",
+    "Coverall type 5/6 protective,Environmental Svcs,600,9.20,Uline",
+    "Nitrile exam glove (box),Skilled Nursing,3000,7.80,Medline",
+    "Nitrile exam glove box,Assisted Living,2200,9.10,McKesson",
+    "Nitrile exam glove (box),Memory Care,1800,8.60,Cardinal Health",
+    "Adult incontinence brief large,Skilled Nursing,4000,0.42,Medline",
+    "Adult incontinence brief large,Assisted Living,3000,0.55,Uline",
+    "Underpad chux 23x36,Skilled Nursing,6000,0.19,Medline",
+    "Underpad chux 23x36,Memory Care,4000,0.24,McKesson",
+    "Hand sanitizer gel,Housekeeping,1200,2.10,GOJO",
+  ].join("\n");
+
+  const sampleFor = () => (TKEY === "welllink" ? SAMPLE_SENIOR : SAMPLE);
+
   // --- Internal price variance (their own data — no external pricing) ---------
   const normKey = (s) => String(s || "").toLowerCase()
     .replace(/[^a-z0-9 ]+/g, " ")
@@ -593,7 +613,7 @@
     drop.addEventListener("drop", (e) => { const fs = e.dataTransfer && e.dataTransfer.files; if (fs && fs.length) loadFiles(fs); });
     $("ai-read").addEventListener("click", readInvoiceAI);
 
-    $("sample").addEventListener("click", () => { pending = ""; $("paste").value = SAMPLE; $("file-name").textContent = `Sample loaded — ${toLines(SAMPLE).length} lines`; toast("Sample spend file loaded"); });
+    $("sample").addEventListener("click", () => { const s = sampleFor(); pending = ""; $("paste").value = s; $("file-name").textContent = `Sample loaded — ${toLines(s).length} lines`; toast("Sample spend file loaded"); });
     $("run").addEventListener("click", run);
     $("print").addEventListener("click", () => window.print());
     $("book").addEventListener("click", () => { $("book-form").classList.remove("hidden"); $("book-form").scrollIntoView({ behavior: "smooth" }); });
