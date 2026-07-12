@@ -19,7 +19,10 @@ async function limited(event, name, max = 20, windowSec = 60) {
   try { connectLambda(event); } catch (e) { /* auto-context fallback */ }
   const ip = clientIp(event);
   const bucket = Math.floor(Date.now() / 1000 / windowSec);
-  const key = `rl/${name}/${ip}/${bucket}`;
+  // Sanitize: Blobs keys can't contain ':' etc., and IPv6 addresses (common on
+  // cloud egress) are full of colons — an unsanitized key silently fails to write.
+  const safeIp = ip.replace(/[^a-zA-Z0-9]/g, "_");
+  const key = `rl/${name}/${safeIp}/${bucket}`;
   let n = 0;
   // Strong consistency: Blobs get() defaults to eventual, which would read a stale
   // counter under a burst and never trip the limit.
