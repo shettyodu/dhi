@@ -5,7 +5,6 @@ const { analyze } = require("../../lib/spend-benchmark");
 const { assess, narrate } = require("../../lib/supply-advisor");
 const market = require("../../lib/market-index");
 const { enrich } = require("../../lib/reference-prices");
-const { limited, tooMany } = require("../../lib/rate-limit");
 const { connectLambda } = require("@netlify/blobs");
 
 const cors = {
@@ -23,9 +22,6 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body || "{}"); } catch (e) { /* ignore */ }
   const lines = Array.isArray(body.lines) ? body.lines : [];
   if (!lines.length) return { statusCode: 400, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ error: "Add at least one line item." }) };
-
-  const rl = await limited(event, "supply-spend-check", 20, 60);
-  if (rl.over) return tooMany(cors, rl.retryAfter);
 
   try {
     const result = analyze(lines);
