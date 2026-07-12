@@ -24,9 +24,10 @@ async function limited(event, name, max = 20, windowSec = 60) {
   const safeIp = ip.replace(/[^a-zA-Z0-9]/g, "_");
   const key = `rl/${name}/${safeIp}/${bucket}`;
   let n = 0;
-  // Strong consistency: Blobs get() defaults to eventual, which would read a stale
-  // counter under a burst and never trip the limit.
-  try { const cur = await store().get(key, { type: "json", consistency: "strong" }); n = (cur && cur.n) || 0; }
+  // Eventual-consistency read (strong reads require an edge URL this runtime lacks
+  // and would throw). Reads may lag a sub-second burst, but sustained abuse — the
+  // thing we actually care about — trips reliably as the counter propagates.
+  try { const cur = await store().get(key, { type: "json" }); n = (cur && cur.n) || 0; }
   catch (e) { return { over: false, ip }; } // fail-open
   if (n >= max) return { over: true, ip, retryAfter: windowSec };
   try { await store().setJSON(key, { n: n + 1 }); } catch (e) { /* best-effort */ }
