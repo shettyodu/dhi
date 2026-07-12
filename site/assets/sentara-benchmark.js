@@ -289,6 +289,125 @@
     finally { $("pf-run").disabled = false; }
   }
 
+  // --- Phase 3: full procurement list → Supply Proposal ----------------------
+  const lineSpend = (l) => { const p = l.unit_price == null ? null : Number(l.unit_price); const q = Number(l.qty) || 1; return (p != null && !isNaN(p)) ? p * q : 0; };
+
+  async function benchmarkRows(lines) {
+    if (last && last.rows && last.rows.length === lines.length) return last.rows; // reuse the quick run
+    const rows = [];
+    for (let i = 0; i < lines.length; i += 200) { // analyze() caps at 250/call
+      const chunk = lines.slice(i, i + 200);
+      try {
+        const r = await fetch(FN("supply-spend-check"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lines: chunk, consent: false }) });
+        const d = await r.json().catch(() => ({}));
+        if (d && Array.isArray(d.rows)) rows.push(...d.rows); else chunk.forEach(() => rows.push({ matched: false }));
+      } catch (e) { chunk.forEach(() => rows.push({ matched: false })); }
+    }
+    return rows;
+  }
+
+  async function categorizeLines(lines, onProgress) {
+    const cats = new Array(lines.length).fill(null);
+    const B = 50;
+    for (let i = 0; i < lines.length; i += B) {
+      const batch = lines.slice(i, i + B).map((l, j) => ({ i: i + j, desc: l.desc }));
+      try {
+        const r = await fetch(FN("categorize"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: batch }) });
+        const d = await r.json().catch(() => ({}));
+        (d.results || []).forEach((x) => { if (typeof x.i === "number") cats[x.i] = { department: x.department, category: x.category }; });
+      } catch (e) { /* leave nulls -> Other */ }
+      if (onProgress) onProgress(Math.min(i + B, lines.length), lines.length);
+    }
+    return cats;
+  }
+
+  async function buildProposal() {
+    const lines = lastLines || [];
+    const st = $("proposal-status");
+    if (!lines.length) { st.className = "text-sm text-red-600"; st.textContent = "Run a benchmark first."; return; }
+    $("build-proposal").disabled = true; st.className = "text-sm text-slate-500"; st.textContent = "Analyzing full list…";
+    try {
+      const rows = await benchmarkRows(lines);
+      const cats = await categorizeLines(lines, (done, total) => { st.textContent = `Categorizing ${done}/${total}…`; });
+      st.textContent = ""; renderProposal(lines, rows, cats);
+    } catch (e) { st.className = "text-sm text-red-600"; st.textContent = "Couldn't build the proposal — try again."; }
+    finally { $("build-proposal").disabled = false; }
+  }
+
+  function renderProposal(lines, rows, cats) {
+    const varc = computeVariance(lines);
+    const varTotal = varc.reduce((s, x) => s + x.savings, 0);
+    const deptAgg = {}; const scope = [];
+    let totalSpend = 0, addressable = 0, dhiSavings = 0;
+    lines.forEach((l, k) => {
+      const row = rows[k] || {};
+      const dept = (l.dept && l.dept.trim()) || (cats[k] && cats[k].department) || "Other";
+      const spend = lineSpend(l); totalSpend += spend;
+      const d = deptAgg[dept] = deptAgg[dept] || { dept, lines: 0, spend: 0, addr: 0, sav: 0, sku: 0 };
+      d.lines++; d.spend += spend;
+      if (row.matched) {
+        addressable += spend; d.addr += spend; d.sku++;
+        const sv = Number(row.line_savings) || 0; dhiSavings += sv; d.sav += sv;
+        scope.push({ desc: l.desc, dept, dhi: row.benchmark_price, name: row.benchmark_name, savings: sv, spend });
+      }
+    });
+    const projected = dhiSavings + varTotal;
+    const pct = totalSpend > 0 ? Math.round((projected / totalSpend) * 1000) / 10 : 0;
+    const depts = Object.values(deptAgg).sort((a, b) => b.spend - a.spend);
+    scope.sort((a, b) => (b.savings - a.savings) || (b.spend - a.spend));
+
+    const deptRows = depts.map((d) => `<tr class="border-b border-slate-100">
+      <td class="py-2 pr-3 text-sm text-slate-700">${esc(d.dept)}</td>
+      <td class="px-2 py-2 text-right text-sm text-slate-500">${d.lines}</td>
+      <td class="px-2 py-2 text-right text-sm">${usd0(d.spend)}</td>
+      <td class="px-2 py-2 text-right text-sm">${d.addr > 0 ? usd0(d.addr) : "—"}</td>
+      <td class="px-2 py-2 pr-2 text-right text-sm font-semibold ${d.sav > 0 ? "text-emerald-700" : "text-slate-400"}">${d.sav > 0 ? usd0(d.sav) : "—"}</td>
+    </tr>`).join("");
+
+    const scopeRows = scope.slice(0, 14).map((r) => `<tr class="border-b border-slate-100">
+      <td class="py-2 pr-3 text-sm text-slate-700">${esc(r.desc)}<div class="text-xs text-emerald-600">${esc(r.name)} · ${esc(r.dept)}</div></td>
+      <td class="px-2 py-2 text-right text-sm">${usd(r.dhi)}</td>
+      <td class="px-2 py-2 pr-2 text-right text-sm font-bold ${r.savings > 0 ? "text-emerald-700" : "text-slate-400"}">${r.savings > 0 ? usd(r.savings) : "—"}</td>
+    </tr>`).join("");
+
+    $("proposal-body").innerHTML = `
+      <p class="text-sm text-slate-600">Across <b>${lines.length}</b> line items in <b>${depts.length}</b> departments, DHI can supply <b>${scope.length}</b> items directly. Projected savings combine DHI pricing on those items with standardizing your own internal price variance.</p>
+      <div class="mt-5 grid gap-4 sm:grid-cols-4">
+        <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Spend analyzed</p><p class="mt-1 font-display text-xl font-extrabold text-brand-900">${usd0(totalSpend)}</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-400">DHI-addressable</p><p class="mt-1 font-display text-xl font-extrabold text-brand-900">${usd0(addressable)}</p></div>
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"><p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Projected savings</p><p class="mt-1 font-display text-xl font-extrabold text-emerald-700">${usd0(projected)}</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Savings rate</p><p class="mt-1 font-display text-xl font-extrabold text-brand-900">${pct}%</p></div>
+      </div>
+      <p class="mt-2 text-xs text-slate-400">Projected savings = DHI pricing on suppliable items (${usd0(dhiSavings)}) + standardizing internal price variance (${usd0(varTotal)}).</p>
+
+      <h3 class="mt-6 font-display text-base font-bold text-brand-900">By department</h3>
+      <div class="mt-2 overflow-x-auto rounded-2xl border border-slate-200"><table class="w-full border-collapse">
+        <thead><tr class="border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-500">
+          <th class="py-2.5 pl-4 pr-3 text-left font-semibold">Department</th>
+          <th class="px-2 py-2.5 text-right font-semibold">Lines</th>
+          <th class="px-2 py-2.5 text-right font-semibold">Spend</th>
+          <th class="px-2 py-2.5 text-right font-semibold">DHI-addressable</th>
+          <th class="px-2 py-2.5 pr-2 text-right font-semibold">DHI savings</th>
+        </tr></thead><tbody>${deptRows}</tbody></table></div>
+
+      ${scope.length ? `<h3 class="mt-6 font-display text-base font-bold text-brand-900">DHI supply scope — proposed items</h3>
+      <div class="mt-2 overflow-x-auto rounded-2xl border border-slate-200"><table class="w-full border-collapse">
+        <thead><tr class="border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-500">
+          <th class="py-2.5 pl-4 pr-3 text-left font-semibold">Item · DHI equivalent · dept</th>
+          <th class="px-2 py-2.5 text-right font-semibold">DHI price</th>
+          <th class="px-2 py-2.5 pr-2 text-right font-semibold">Est. savings</th>
+        </tr></thead><tbody>${scopeRows}</tbody></table></div>
+      ${scope.length > 14 ? `<p class="mt-2 text-xs text-slate-400">+ ${scope.length - 14} more suppliable items in the full analysis.</p>` : ""}` : ""}
+
+      <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+        <b>Proposed next step:</b> DHI confirms exact equivalents and firm pricing on the ${scope.length} suppliable items and delivers under a supply agreement — capturing the DHI savings, while your team standardizes the internal-variance items. Figures are indicative, on covered categories; nothing here is stored or shared.
+      </div>`;
+
+    try { $("proposal-date").textContent = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }); } catch (e) { /* ignore */ }
+    $("proposal").classList.remove("hidden");
+    $("proposal").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   // --- Request a full review (lead) ------------------------------------------
   async function sendBook(e) {
     e.preventDefault();
@@ -332,5 +451,9 @@
 
     $("pf-run").addEventListener("click", findProduct);
     $("pf-q").addEventListener("keydown", (e) => { if (e.key === "Enter") findProduct(); });
+
+    $("build-proposal").addEventListener("click", buildProposal);
+    $("print-proposal").addEventListener("click", () => window.print());
+    $("book2").addEventListener("click", () => { $("book-form").classList.remove("hidden"); $("book-form").scrollIntoView({ behavior: "smooth" }); });
   });
 })();

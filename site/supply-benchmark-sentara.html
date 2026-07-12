@@ -131,9 +131,28 @@
         </div>
 
         <div class="no-print mt-6 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-5">
+          <button id="build-proposal" class="rounded-xl bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Build full supply proposal &rarr;</button>
           <button id="print" class="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700">Print / save as PDF</button>
           <button id="book" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">Request a full review with DHI</button>
+          <span id="proposal-status" class="text-sm text-slate-500"></span>
           <span id="book-status" class="text-sm text-slate-500"></span>
+        </div>
+      </section>
+
+      <!-- PHASE 3: SUPPLY PROPOSAL -->
+      <section id="proposal" class="mt-8 hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-5">
+          <div>
+            <img src="assets/img/dhi-logo.svg" alt="Digital Health International" onerror="this.style.display='none'" class="h-8 w-auto" />
+            <p class="mt-2 font-display text-lg font-bold text-brand-900">Supply Proposal — full procurement analysis</p>
+            <p class="text-sm text-slate-500">Prepared for <b>Sentara Health</b> · Powered by Digital Health International</p>
+          </div>
+          <div class="text-right text-xs text-slate-400"><p id="proposal-date"></p><p>Indicative · confidential · buy-side</p></div>
+        </div>
+        <div id="proposal-body" class="mt-6"></div>
+        <div class="no-print mt-6 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-5">
+          <button id="print-proposal" class="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700">Print / save as PDF</button>
+          <button id="book2" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">Discuss a supply agreement with DHI</button>
         </div>
       </section>
 
@@ -158,6 +177,6 @@
 
   <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-lg bg-brand-900 px-4 py-2 text-sm font-medium text-white opacity-0 shadow-lg transition-opacity duration-300"></div>
 
-  <script src="assets/sentara-benchmark.js?v=3"></script>
+  <script src="assets/sentara-benchmark.js?v=4"></script>
 </body>
 </html>
