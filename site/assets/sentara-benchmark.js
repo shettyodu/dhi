@@ -1,7 +1,10 @@
-/* Sentara Supply Price Benchmark — private pilot. Ingests a CSV/paste spend
-   export, benchmarks via /supply-spend-check (consent OFF — the pilot's data is
-   NOT added to the shared index), renders a printable Opportunity Report, and
-   lets procurement request a full review. Buy-side, indicative. */
+/* Sentara Supply Price Benchmark — private pilot.
+   1) Benchmark: ingest a CSV/paste spend export (department-aware) → catalog
+      benchmark + internal price-variance ("savings in your own purchasing").
+   2) Product Finder: search ANY item across departments → DHI price when we carry
+      it + AI identification + one-click links to shop the major sources.
+   consent OFF — the pilot's data is analyzed in-session, never added to any
+   shared index. Buy-side, indicative. */
 (function () {
   const qs = new URLSearchParams(location.search);
   const API_BASE = (qs.get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
@@ -15,12 +18,9 @@
   // --- Access gate (lightweight pilot gate, not hardened auth) ---------------
   const ACCESS = "SENTARA-2026";
   function unlock() { $("gate").classList.add("hidden"); $("app").classList.remove("hidden"); }
-  function tryUnlock(code) {
-    if (String(code || "").trim().toUpperCase() === ACCESS) { localStorage.setItem("dhi_sentara_ok", "1"); unlock(); return true; }
-    return false;
-  }
+  function tryUnlock(code) { if (String(code || "").trim().toUpperCase() === ACCESS) { localStorage.setItem("dhi_sentara_ok", "1"); unlock(); return true; } return false; }
 
-  // --- CSV / paste parsing ----------------------------------------------------
+  // --- CSV / paste parsing (department-aware) ---------------------------------
   function splitRow(line) {
     if (line.indexOf("\t") >= 0) return line.split("\t");
     const out = []; let cur = "", q = false;
@@ -36,17 +36,17 @@
   const num = (s) => { const v = String(s == null ? "" : s).replace(/[$,\s]/g, ""); return v !== "" && !isNaN(Number(v)) ? v : ""; };
   const has = (hay, list) => list.some((k) => hay.indexOf(k) >= 0);
 
-  // Turn raw rows into benchmark line items {desc, qty, unit_price, vendor}.
   function toLines(text) {
     const rows = String(text || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (!rows.length) return [];
-    let col = { desc: 0, qty: 1, price: 2, vendor: 3 }, start = 0;
+    let col = { desc: 0, dept: -1, qty: 1, price: 2, vendor: 3 }, start = 0;
     const head = splitRow(rows[0]).map((s) => s.trim().toLowerCase());
     const looksHeader = head.some((h) => has(h, ["desc", "item", "product", "material", "name"]));
     if (looksHeader) {
       const find = (keys) => { for (let i = 0; i < head.length; i++) if (has(head[i], keys)) return i; return -1; };
       col = {
         desc: find(["description", "item", "product", "material", "name"]),
+        dept: find(["department", "dept", "cost center", "costcenter", "location", "facility", "site"]),
         qty: find(["qty", "quantity", "units", "count", "eaches"]),
         price: find(["unit price", "unitprice", "price", "unit cost", "cost", "each"]),
         vendor: find(["vendor", "supplier", "manufacturer", "mfr", "distributor"]),
@@ -61,12 +61,13 @@
       const qty = col.qty >= 0 ? num(f[col.qty]) : "";
       const price = col.price >= 0 ? num(f[col.price]) : "";
       const vendor = col.vendor >= 0 ? (f[col.vendor] || "").trim() : "";
-      out.push({ desc, qty: qty || 1, unit_price: price === "" ? null : price, vendor: vendor || null });
+      const dept = col.dept >= 0 ? (f[col.dept] || "").trim() : "";
+      out.push({ desc, qty: qty || 1, unit_price: price === "" ? null : price, vendor: vendor || null, dept: dept || null });
     }
     return out;
   }
 
-  let pending = ""; // raw text loaded from a file
+  let pending = "";
   function loadFile(file) {
     if (!file) return;
     const rd = new FileReader();
@@ -76,29 +77,57 @@
   }
 
   const SAMPLE = [
-    "description,quantity,unit price,vendor",
-    "Isolation gown AAMI level 2,4800,3.55,Medline",
-    "Surgical isolation gown level 3,2600,6.90,Cardinal Health",
-    "Coverall type 5/6 protective,1500,6.30,Uline",
-    "Reinforced coverall type 3/4,600,11.80,O&M",
-    "Disposable scrub set,1800,15.40,Medline",
-    "Surgical drape reinforced,3200,4.20,Cardinal Health",
-    "Bouffant cap,20000,0.045,Uline",
-    "Nitrile exam glove (box),9000,7.80,Medline",
-    "N95 respirator,12000,1.05,3M",
-    "General surgery major OT pack,900,,Cardinal Health",
+    "description,department,quantity,unit price,vendor",
+    "Nitrile exam glove (box),Lab,3000,7.80,Medline",
+    "Nitrile exam glove box,Central Sterile,2500,9.20,McKesson",
+    "Nitrile exam glove (box),Patient Care,3500,8.50,Cardinal Health",
+    "Isolation gown AAMI level 2,Surgery / OR,2600,3.55,Medline",
+    "Isolation gown AAMI level 2,Patient Care,2200,4.10,Cardinal Health",
+    "Enzymatic instrument cleaner (gallon),Central Sterile,400,18.00,Ruhof",
+    "Coverall type 5/6 protective,Engineering / Facilities,1500,6.30,Uline",
+    "Disposable scrub set,Surgery / OR,1800,15.40,Medline",
+    "Surgical drape reinforced,Surgery / OR,3200,4.20,Cardinal Health",
+    "General surgery major OT pack,Surgery / OR,900,,Cardinal Health",
   ].join("\n");
 
+  // --- Internal price variance (their own data — no external pricing) ---------
+  const normKey = (s) => String(s || "").toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\b(each|ea|box|case|pack|ct|count|pkg|bx|cs|kit|set|gallon|gal|pair)\b/g, " ")
+    .replace(/\s+/g, " ").trim();
+
+  function computeVariance(lines) {
+    const groups = {};
+    (lines || []).forEach((l) => {
+      const p = l.unit_price == null ? null : Number(l.unit_price);
+      if (p == null || isNaN(p) || p <= 0) return;
+      const k = normKey(l.desc); if (!k) return;
+      (groups[k] = groups[k] || { label: l.desc, rows: [] }).rows.push({ price: p, qty: Number(l.qty) || 1, dept: l.dept || null });
+    });
+    const out = [];
+    Object.values(groups).forEach((g) => {
+      const prices = g.rows.map((r) => r.price);
+      const min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
+      const distinct = new Set(prices.map((p) => p.toFixed(4))).size;
+      if (g.rows.length >= 2 && distinct >= 2) {
+        const savings = g.rows.reduce((s, r) => s + r.qty * (r.price - min), 0);
+        const depts = Array.from(new Set(g.rows.map((r) => r.dept).filter(Boolean)));
+        if (savings > 0) out.push({ label: g.label, min, max, savings, depts, count: g.rows.length });
+      }
+    });
+    return out.sort((a, b) => b.savings - a.savings);
+  }
+
   // --- Run benchmark ----------------------------------------------------------
-  let last = null;
+  let last = null, lastLines = [];
   async function run() {
     const status = $("status");
     const paste = ($("paste").value || "").trim();
     const lines = toLines(paste || pending);
     if (!lines.length) { status.className = "text-sm text-red-600"; status.textContent = "Upload a CSV or paste rows first."; return; }
+    lastLines = lines;
     status.className = "text-sm text-slate-500"; status.textContent = `Analyzing ${lines.length} line(s)…`; $("run").disabled = true;
     try {
-      // consent:false — the pilot's data stays theirs, never enters the shared index.
       const r = await fetch(FN("supply-spend-check"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lines, consent: false }) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) { status.className = "text-sm text-red-600"; status.textContent = d.error || "Couldn't analyze — try again."; return; }
@@ -127,6 +156,29 @@
       <p class="mt-3 font-display text-lg font-bold text-brand-900">${esc(a.headline)}</p>
       ${a.narrative ? `<p class="mt-2 border-l-2 border-cyan-300 pl-3 text-sm italic leading-relaxed text-slate-600">${esc(a.narrative)}</p>` : ""}
       <div class="mt-4 grid gap-2.5 sm:grid-cols-2">${items}</div>
+    </div>`;
+  }
+
+  function varianceHtml() {
+    const v = computeVariance(lastLines);
+    if (!v.length) return "";
+    const total = v.reduce((s, x) => s + x.savings, 0);
+    const rows = v.slice(0, 8).map((x) => `<tr class="border-b border-amber-100">
+      <td class="py-2 pr-3 text-sm text-slate-700">${esc(x.label)}</td>
+      <td class="px-2 py-2 text-xs text-slate-500">${x.depts.length ? esc(x.depts.join(", ")) : x.count + " lines"}</td>
+      <td class="px-2 py-2 text-right text-sm">${usd(x.min)}–${usd(x.max)}</td>
+      <td class="px-2 py-2 pr-2 text-right text-sm font-bold text-emerald-700">${usd(x.savings)}</td>
+    </tr>`).join("");
+    return `<div class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+      <p class="font-display text-lg font-bold text-brand-900">Savings hiding in your own purchasing</p>
+      <p class="mt-1 text-sm text-slate-600">The same item is being bought at different prices across departments. Standardizing each to <b>your own lowest price paid</b> would save about <b>${usd0(total)}</b> — before changing a single supplier.</p>
+      <div class="mt-3 overflow-x-auto"><table class="w-full border-collapse">
+        <thead><tr class="border-b border-amber-200 text-[11px] uppercase tracking-wide text-amber-700">
+          <th class="py-2 pr-3 text-left font-semibold">Item</th>
+          <th class="px-2 py-2 text-left font-semibold">Departments</th>
+          <th class="px-2 py-2 text-right font-semibold">Price range</th>
+          <th class="px-2 py-2 pr-2 text-right font-semibold">Standardize saving</th>
+        </tr></thead><tbody>${rows}</tbody></table></div>
     </div>`;
   }
 
@@ -161,6 +213,7 @@
           <p class="text-xs text-slate-400">of benchmarked spend</p>
         </div>
       </div>
+      ${varianceHtml()}
       ${matched.length ? `
       <div class="mt-5 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
         <table class="w-full border-collapse">
@@ -173,12 +226,57 @@
           </tr></thead>
           <tbody>${rowsHtml}</tbody>
         </table>
-      </div>` : `<p class="mt-5 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">None of these items matched our current catalog categories (PPE, gowns, coveralls, drapes, scrubs, OT packs). We're expanding coverage — send the full list and we'll benchmark it.</p>`}
-      ${s.unmatched ? `<p class="mt-3 text-xs text-slate-400">${s.unmatched} item${s.unmatched > 1 ? "s" : ""} not benchmarked (outside current catalog coverage or unclear units).</p>` : ""}`;
+      </div>` : `<p class="mt-5 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">None of these items matched our current catalog categories yet — but the internal-variance analysis above works on any item. Use Product Finder to price the rest.</p>`}
+      ${s.unmatched ? `<p class="mt-3 text-xs text-slate-400">${s.unmatched} item${s.unmatched > 1 ? "s" : ""} not benchmarked against our catalog (outside current coverage) — still counted in the variance analysis where priced.</p>` : ""}`;
 
     try { $("report-date").textContent = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }); } catch (e) { /* ignore */ }
     $("report").classList.remove("hidden");
     $("report").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // --- Product Finder ---------------------------------------------------------
+  function renderFinder(d) {
+    const parts = [];
+    if (d.dhi) {
+      parts.push(`<div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">DHI can supply this</p>
+        <p class="mt-1 font-semibold text-brand-900">${esc(d.dhi.name)}</p>
+        <p class="mt-0.5 font-display text-xl font-extrabold text-emerald-700">${usd(d.dhi.price)}<span class="text-xs font-normal text-emerald-700/70"> · DHI price</span></p>
+        <button id="pf-add" class="mt-2 rounded-lg bg-brand-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-800">Request a quote &rarr;</button>
+      </div>`);
+    }
+    if (d.ai) {
+      const a = d.ai;
+      const range = (a.indicative_low != null && a.indicative_high != null) ? `${usd(a.indicative_low)}–${usd(a.indicative_high)}` : null;
+      parts.push(`<div class="rounded-xl border border-slate-200 bg-white p-4">
+        <div class="flex flex-wrap items-center gap-2"><span class="rounded-md bg-brand-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-cyan-300">AI identified</span>${a.category ? `<span class="text-xs text-slate-400">${esc(a.category)}${a.department ? ` · ${esc(a.department)}` : ""}</span>` : ""}</div>
+        <p class="mt-2 font-semibold text-brand-900">${esc(a.normalized_name)}</p>
+        ${a.note ? `<p class="mt-1 text-sm text-slate-600">${esc(a.note)}</p>` : ""}
+        ${a.considerations && a.considerations.length ? `<ul class="mt-2 space-y-1">${a.considerations.map((c) => `<li class="flex gap-2 text-xs text-slate-500"><span class="text-cyan-600">▹</span><span>${esc(c)}</span></li>`).join("")}</ul>` : ""}
+        ${range ? `<p class="mt-3 text-sm"><span class="font-semibold text-brand-900">${range}</span> <span class="text-xs text-amber-600">est. ${esc(a.price_basis)} — verify, not contract pricing</span></p>` : ""}
+      </div>`);
+    }
+    const links = (d.sources || []).map((x) => `<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-brand-800 hover:bg-slate-50">${esc(x.label)} &rarr;</a>`).join("");
+    $("pf-results").innerHTML = `
+      ${parts.length ? `<div class="grid gap-3 sm:grid-cols-2">${parts.join("")}</div>` : `<p class="text-sm text-slate-500">We couldn't identify that automatically${d.ai_enabled ? "" : " (AI layer is offline)"} — use the source links below to compare.</p>`}
+      <div class="mt-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Shop &amp; compare from one place</p><div class="mt-2 flex flex-wrap gap-2">${links}</div></div>`;
+    $("pf-results").classList.remove("hidden");
+    const add = $("pf-add");
+    if (add) add.addEventListener("click", () => { $("book-form").classList.remove("hidden"); $("book-form").scrollIntoView({ behavior: "smooth" }); toast("Add your details and we'll quote it"); });
+  }
+
+  async function findProduct() {
+    const q = ($("pf-q").value || "").trim(); const dept = $("pf-dept").value;
+    const st = $("pf-status");
+    if (q.length < 2) { st.className = "text-sm text-red-600"; st.textContent = "Enter a product to search."; return; }
+    st.className = "text-sm text-slate-500"; st.textContent = "Searching…"; $("pf-run").disabled = true;
+    try {
+      const r = await fetch(FN("product-finder"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: q, department: dept }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.ok) { st.className = "text-sm text-red-600"; st.textContent = d.error || "Search failed — try again."; return; }
+      st.textContent = ""; renderFinder(d);
+    } catch (e) { st.className = "text-sm text-red-600"; st.textContent = "Network error — try again."; }
+    finally { $("pf-run").disabled = false; }
   }
 
   // --- Request a full review (lead) ------------------------------------------
@@ -207,11 +305,9 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Gate: remember unlock; allow ?key= for a shared demo link.
     if (localStorage.getItem("dhi_sentara_ok") === "1" || tryUnlock(qs.get("key"))) unlock();
     $("gate-form").addEventListener("submit", (e) => { e.preventDefault(); if (!tryUnlock($("gate-code").value)) $("gate-msg").textContent = "That code isn't right — check with your DHI contact."; });
 
-    // File upload + drag/drop
     const drop = $("drop");
     $("file").addEventListener("change", (e) => loadFile(e.target.files && e.target.files[0]));
     ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("drag"); }));
@@ -223,5 +319,8 @@
     $("print").addEventListener("click", () => window.print());
     $("book").addEventListener("click", () => { $("book-form").classList.remove("hidden"); $("book-form").scrollIntoView({ behavior: "smooth" }); });
     $("book-fields").addEventListener("submit", sendBook);
+
+    $("pf-run").addEventListener("click", findProduct);
+    $("pf-q").addEventListener("keydown", (e) => { if (e.key === "Enter") findProduct(); });
   });
 })();
