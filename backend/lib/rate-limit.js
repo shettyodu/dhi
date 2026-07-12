@@ -21,7 +21,9 @@ async function limited(event, name, max = 20, windowSec = 60) {
   const bucket = Math.floor(Date.now() / 1000 / windowSec);
   const key = `rl/${name}/${ip}/${bucket}`;
   let n = 0;
-  try { const cur = await store().get(key, { type: "json" }); n = (cur && cur.n) || 0; }
+  // Strong consistency: Blobs get() defaults to eventual, which would read a stale
+  // counter under a burst and never trip the limit.
+  try { const cur = await store().get(key, { type: "json", consistency: "strong" }); n = (cur && cur.n) || 0; }
   catch (e) { return { over: false, ip }; } // fail-open
   if (n >= max) return { over: true, ip, retryAfter: windowSec };
   try { await store().setJSON(key, { n: n + 1 }); } catch (e) { /* best-effort */ }
