@@ -78,7 +78,7 @@
     const lines = Object.keys(cart).map((id) => { const it = ITEMS.find((x) => x.id === id) || {}; return `${cart[id]}× ${it.name || id} @ ${usd(it.price)}`; });
     if (!lines.length) { st.textContent = "Your order is empty."; return; }
     st.className = "text-sm text-slate-500"; st.textContent = "Sending…"; $("o-send").disabled = true;
-    const payload = { type: "po", vertical: "supplies", source: "store", name, email, company: org, order: lines.join(" · "), items: Object.keys(cart).length };
+    const payload = { type: "po", vertical: "supplies", source: "store", name, email, company: org, order: lines.join(" · "), items: Object.keys(cart).length, hp: ($("o-hp") || {}).value || "" };
     try {
       const r = await fetch(FN("submit-lead"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const d = await r.json().catch(() => ({}));

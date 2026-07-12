@@ -589,6 +589,7 @@
       analyzed_spend: last ? last.summary.total_spend : null,
       potential_savings: last ? last.summary.total_savings : null,
       items_matched: last ? last.summary.matched : null,
+      hp: ($("b-hp") || {}).value || "",
     };
     try {
       const r = await fetch(FN("submit-lead"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });

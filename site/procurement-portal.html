@@ -167,6 +167,7 @@
           <h2 class="font-display text-lg font-bold text-brand-900">Request a full review</h2>
           <p class="mt-1 text-sm text-slate-600">We'll confirm exact equivalents and send firm DHI pricing on the flagged items — no obligation.</p>
           <form id="book-fields" class="mt-4 grid gap-3 sm:grid-cols-3">
+            <input id="b-hp" name="hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
             <input id="b-name" class="in" placeholder="Your name" autocomplete="name" />
             <input id="b-email" type="email" class="in" placeholder="Work email" autocomplete="email" />
             <input id="b-org" class="in" placeholder="Department / facility" autocomplete="organization" />
@@ -182,6 +183,6 @@
 
   <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-lg bg-brand-900 px-4 py-2 text-sm font-medium text-white opacity-0 shadow-lg transition-opacity duration-300"></div>
 
-  <script src="assets/sentara-benchmark.js?v=8"></script>
+  <script src="assets/sentara-benchmark.js?v=9"></script>
 </body>
 </html>

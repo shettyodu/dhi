@@ -170,6 +170,7 @@
       analyzed_spend: lastSummary ? lastSummary.total_spend : null,
       potential_savings: lastSummary ? lastSummary.total_savings : null,
       items_matched: lastSummary ? lastSummary.matched : null,
+      hp: ($("ssc-hp") || {}).value || "",
     };
     try {
       const r = await fetch(FN("submit-lead"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
