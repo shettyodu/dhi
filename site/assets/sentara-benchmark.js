@@ -68,12 +68,51 @@
   }
 
   let pending = "";
-  function loadFile(file) {
-    if (!file) return;
-    const rd = new FileReader();
-    rd.onload = () => { pending = String(rd.result || ""); $("file-name").textContent = `${file.name} — ${toLines(pending).length} line(s) detected`; };
-    rd.onerror = () => { $("file-name").textContent = "Couldn't read that file."; };
-    rd.readAsText(file);
+  // Batch: read one or many files, merge into the pending buffer.
+  function loadFiles(fileList) {
+    const files = Array.from(fileList || []); if (!files.length) return;
+    let done = 0; const texts = [];
+    files.forEach((f, idx) => {
+      const rd = new FileReader();
+      rd.onload = () => { texts[idx] = String(rd.result || ""); if (++done === files.length) mergeLoaded(files, texts); };
+      rd.onerror = () => { texts[idx] = ""; if (++done === files.length) mergeLoaded(files, texts); };
+      rd.readAsText(f);
+    });
+  }
+  function mergeLoaded(files, texts) {
+    // Merge files, de-duplicating repeated header rows so a multi-file batch parses cleanly.
+    const merged = []; let headerSeen = false;
+    texts.forEach((t) => {
+      String(t || "").split(/\r?\n/).forEach((ln) => {
+        if (!ln.trim()) return;
+        const isHeader = /(^|,|\t)\s*(description|item|product)\b/i.test(ln) && /(qty|quantity|price|vendor|dept|department)/i.test(ln);
+        if (isHeader) { if (headerSeen) return; headerSeen = true; }
+        merged.push(ln);
+      });
+    });
+    pending = merged.join("\n");
+    const n = toLines(pending).length;
+    $("file-name").textContent = `${files.length} file${files.length > 1 ? "s" : ""} · ${n} line item${n === 1 ? "" : "s"} detected`;
+  }
+
+  async function readInvoiceAI() {
+    const st = $("ai-read-status"); const raw = ($("paste").value || "").trim();
+    if (raw.length < 10) { st.className = "text-xs text-red-600"; st.textContent = "Paste an invoice or some rows first."; return; }
+    st.className = "text-xs text-slate-500"; st.textContent = "Reading invoice…"; $("ai-read").disabled = true;
+    try {
+      const r = await fetch(FN("parse-invoice"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: raw }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.ok) { st.className = "text-xs text-red-600"; st.textContent = d.error || "Couldn't read that."; return; }
+      if (!d.lines.length) { st.className = "text-xs text-red-600"; st.textContent = "No line items found."; return; }
+      // Rewrite the paste box as clean CSV so the normal run path picks it up.
+      const csv = ["description,department,quantity,unit price,vendor"].concat(d.lines.map((l) =>
+        [l.desc, l.dept || "", l.qty != null ? l.qty : "", l.unit_price != null ? l.unit_price : "", l.vendor || ""]
+          .map((c) => { c = String(c); return /[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(","))).join("\n");
+      $("paste").value = csv; pending = "";
+      st.className = "text-xs text-emerald-700"; st.textContent = `Read ${d.count} line item${d.count === 1 ? "" : "s"} — review, then Run benchmark.`;
+      toast(`AI read ${d.count} items from your invoice`);
+    } catch (e) { st.className = "text-xs text-red-600"; st.textContent = "Network error — try again."; }
+    finally { $("ai-read").disabled = false; }
   }
 
   const SAMPLE = [
@@ -191,6 +230,32 @@
       `<span class="${REF_STYLE[x.source] || "text-slate-500"}">${esc(x.label)}: <b>${usd(x.price)}</b></span>`).join("")}</div>`;
   }
 
+  // Value Analysis substitution panel — lower-cost equivalents for committee review.
+  // Honest: DHI supplies COST data only; clinical equivalence is the facility's call.
+  function substitutionHtml(matched) {
+    const subs = matched.filter((r) => Number(r.line_savings) > 0).sort((a, b) => b.line_savings - a.line_savings);
+    if (!subs.length) return "";
+    const total = subs.reduce((s, r) => s + Number(r.line_savings || 0), 0);
+    const rows = subs.slice(0, 12).map((r) => `<tr class="border-b border-violet-100">
+      <td class="py-2 pr-3 text-sm text-slate-700">${esc(r.desc)}</td>
+      <td class="px-2 py-2 text-sm text-slate-600">${esc(r.benchmark_name)}</td>
+      <td class="px-2 py-2 text-right text-sm">${usd(r.unit_price)} → <span class="font-semibold text-brand-900">${usd(r.benchmark_price)}</span></td>
+      <td class="px-2 py-2 pr-2 text-right text-sm font-bold text-emerald-700">${usd(r.line_savings)}</td>
+    </tr>`).join("");
+    return `<div class="mt-6 rounded-2xl border border-violet-200 bg-violet-50 p-5">
+      <p class="font-display text-lg font-bold text-brand-900">Value Analysis — substitution candidates</p>
+      <p class="mt-1 text-sm text-slate-600">Lower-cost equivalents to bring to your Value Analysis Committee — about <b>${usd0(total)}</b> in candidate savings.</p>
+      <div class="mt-3 overflow-x-auto"><table class="w-full border-collapse">
+        <thead><tr class="border-b border-violet-200 text-[11px] uppercase tracking-wide text-violet-700">
+          <th class="py-2 pr-3 text-left font-semibold">Current item</th>
+          <th class="px-2 py-2 text-left font-semibold">DHI equivalent</th>
+          <th class="px-2 py-2 text-right font-semibold">Price →</th>
+          <th class="px-2 py-2 pr-2 text-right font-semibold">Saving</th>
+        </tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="mt-3 text-xs text-violet-700">DHI provides <b>cost data only</b>. Clinical equivalence and product suitability are your facility's decision — confirm through your Value Analysis / clinical review (e.g. Lumere) before any switch.</p>
+    </div>`;
+  }
+
   function renderReport(d) {
     const s = d.summary;
     const matched = d.rows.filter((r) => r.matched);
@@ -236,6 +301,7 @@
           <tbody>${rowsHtml}</tbody>
         </table>
       </div>` : `<p class="mt-5 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">None of these items matched our current catalog categories yet — but the internal-variance analysis above works on any item. Use Product Finder to price the rest.</p>`}
+      ${substitutionHtml(matched)}
       ${s.unmatched ? `<p class="mt-3 text-xs text-slate-400">${s.unmatched} item${s.unmatched > 1 ? "s" : ""} not benchmarked against our catalog (outside current coverage) — still counted in the variance analysis where priced.</p>` : ""}`;
 
     try { $("report-date").textContent = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }); } catch (e) { /* ignore */ }
@@ -477,10 +543,11 @@
     $("gate-form").addEventListener("submit", (e) => { e.preventDefault(); if (!tryUnlock($("gate-code").value)) $("gate-msg").textContent = "That code isn't right — check with your DHI contact."; });
 
     const drop = $("drop");
-    $("file").addEventListener("change", (e) => loadFile(e.target.files && e.target.files[0]));
+    $("file").addEventListener("change", (e) => loadFiles(e.target.files));
     ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("drag"); }));
     ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("drag"); }));
-    drop.addEventListener("drop", (e) => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f); });
+    drop.addEventListener("drop", (e) => { const fs = e.dataTransfer && e.dataTransfer.files; if (fs && fs.length) loadFiles(fs); });
+    $("ai-read").addEventListener("click", readInvoiceAI);
 
     $("sample").addEventListener("click", () => { pending = ""; $("paste").value = SAMPLE; $("file-name").textContent = `Sample loaded — ${toLines(SAMPLE).length} lines`; toast("Sample spend file loaded"); });
     $("run").addEventListener("click", run);
