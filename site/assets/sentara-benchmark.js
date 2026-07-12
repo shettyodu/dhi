@@ -244,7 +244,45 @@
   }
 
   // --- Product Finder ---------------------------------------------------------
-  function renderFinder(d) {
+  // Context-aware: cross-reference the buyer's OWN uploaded spend for the query —
+  // the thing a generic web search structurally cannot do.
+  const tokens = (s) => normKey(s).split(" ").filter((t) => t.length > 2);
+  function yourSpendFor(query) {
+    if (!lastLines || !lastLines.length) return null;
+    const qt = new Set(tokens(query)); if (!qt.size) return null;
+    const matches = [];
+    lastLines.forEach((l) => {
+      const lt = tokens(l.desc); if (!lt.length) return;
+      const overlap = lt.filter((t) => qt.has(t)).length;
+      if (overlap >= 2 || (qt.size <= 2 && overlap === qt.size)) {
+        const p = l.unit_price == null ? null : Number(l.unit_price);
+        matches.push({ desc: l.desc, dept: (l.dept && l.dept.trim()) || "Unspecified", price: (p != null && !isNaN(p)) ? p : null, qty: Number(l.qty) || 1 });
+      }
+    });
+    if (!matches.length) return null;
+    const priced = matches.filter((m) => m.price != null);
+    const prices = priced.map((m) => m.price);
+    const min = prices.length ? Math.min.apply(null, prices) : null;
+    const max = prices.length ? Math.max.apply(null, prices) : null;
+    const variance = (prices.length >= 2 && new Set(prices.map((p) => p.toFixed(4))).size >= 2) ? priced.reduce((s, m) => s + m.qty * (m.price - min), 0) : 0;
+    return { priced, min, max, variance, count: matches.length };
+  }
+  function contextHtml(ctx) {
+    if (!ctx) return "";
+    const byDept = {};
+    ctx.priced.forEach((m) => { if (!byDept[m.dept] || m.price < byDept[m.dept]) byDept[m.dept] = m.price; });
+    const chips = Object.keys(byDept).map((d) => `<span class="inline-flex items-baseline gap-1"><span class="font-semibold text-brand-900">${usd(byDept[d])}</span><span class="text-xs text-slate-500">${esc(d)}</span></span>`).join('<span class="px-1 text-slate-300">·</span>');
+    const rangeLine = (ctx.min != null && ctx.max != null && ctx.min !== ctx.max) ? `Range ${usd(ctx.min)}–${usd(ctx.max)} across your departments.` : "";
+    const varLine = ctx.variance > 0 ? ` Standardizing to your own lowest saves <b>${usd0(ctx.variance)}</b>.` : "";
+    return `<div class="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+      <div class="flex flex-wrap items-center gap-2"><span class="rounded-md bg-amber-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Your purchasing</span><span class="text-xs text-amber-700">from your own uploaded spend</span></div>
+      <p class="mt-2 text-sm text-slate-700">You currently pay: ${chips || '<span class="text-slate-400">matched, no price on file</span>'}</p>
+      ${(rangeLine || varLine) ? `<p class="mt-1 text-sm text-slate-600">${rangeLine}${varLine}</p>` : ""}
+      <p class="mt-2 text-xs text-amber-700">A web search can't see this — only your portal knows what you already pay.</p>
+    </div>`;
+  }
+
+  function renderFinder(d, ctx) {
     const parts = [];
     if (d.dhi) {
       parts.push(`<div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
@@ -268,6 +306,7 @@
     }
     const links = (d.sources || []).map((x) => `<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-brand-800 hover:bg-slate-50">${esc(x.label)} &rarr;</a>`).join("");
     $("pf-results").innerHTML = `
+      ${contextHtml(ctx)}
       ${parts.length ? `<div class="grid gap-3 sm:grid-cols-2">${parts.join("")}</div>` : `<p class="text-sm text-slate-500">We couldn't identify that automatically${d.ai_enabled ? "" : " (AI layer is offline)"} — use the source links below to compare.</p>`}
       <div class="mt-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Shop &amp; compare from one place</p><div class="mt-2 flex flex-wrap gap-2">${links}</div></div>`;
     $("pf-results").classList.remove("hidden");
@@ -284,7 +323,7 @@
       const r = await fetch(FN("product-finder"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: q, department: dept }) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) { st.className = "text-sm text-red-600"; st.textContent = d.error || "Search failed — try again."; return; }
-      st.textContent = ""; renderFinder(d);
+      st.textContent = ""; renderFinder(d, yourSpendFor(q));
     } catch (e) { st.className = "text-sm text-red-600"; st.textContent = "Network error — try again."; }
     finally { $("pf-run").disabled = false; }
   }
