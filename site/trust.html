@@ -27,7 +27,7 @@
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><h3 class="font-bold text-brand-900">No PHI collected</h3><p class="mt-1 text-sm text-slate-600">Our tools process business/procurement data — product, quantity, price, vendor, department. We never ask for, and you should never upload, patient or clinical data.</p></div>
         <div class="rounded-2xl border border-cyan-200 bg-cyan-50 p-5"><h3 class="font-bold text-brand-900">Your data stays yours</h3><p class="mt-1 text-sm text-slate-600">Private pilot workspaces analyze your upload <b>in-session</b> and don't store it in any shared index. Nothing is pooled or sold.</p></div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-5"><h3 class="font-bold text-brand-900">Encrypted in transit</h3><p class="mt-1 text-sm text-slate-600">All traffic uses TLS/HTTPS. Stored data (leads, orders, pricing) is held with access controls behind authenticated admin tools.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5"><h3 class="font-bold text-brand-900">Encrypted in transit &amp; at rest</h3><p class="mt-1 text-sm text-slate-600">All traffic uses TLS 1.2+ (HTTPS). Stored data (leads, orders, pricing) is encrypted at rest with AES-256 by our hosting provider (Netlify), behind authenticated admin tools.</p></div>
         <div class="rounded-2xl border border-slate-200 bg-white p-5"><h3 class="font-bold text-brand-900">No payment data on-site</h3><p class="mt-1 text-sm text-slate-600">Orders are requests, not charges — we don't process card or bank data on the website.</p></div>
       </div>
 
@@ -45,6 +45,9 @@
           <li><b>OpenAI</b> — AI features (advisor summaries, Product Finder, invoice reading, categorization). Only the text needed for the feature is sent; the advisor receives computed findings, not raw line items. Do not enter PHI.</li>
           <li><b>HubSpot</b> — CRM for leads and inquiries.</li>
         </ul>
+
+        <h2 class="text-xl font-bold text-brand-900">Encryption</h2>
+        <p>Data is encrypted <b>in transit</b> (TLS 1.2 or higher) and <b>at rest</b> (AES-256) via our hosting provider, Netlify. We store business/procurement data only — no PHI.</p>
 
         <h2 class="text-xl font-bold text-brand-900">Access &amp; administration</h2>
         <p>Administrative and pricing tools are protected behind authentication and are not publicly accessible. Access is limited to authorized DHI personnel.</p>
