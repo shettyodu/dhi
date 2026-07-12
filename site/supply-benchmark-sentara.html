@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Supply Price Benchmark — prepared for Sentara Health | DHI</title>
+  <title>Supply Price Benchmark | DHI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/tailwind.css" />
@@ -28,14 +28,14 @@
   <!-- ACCESS GATE -->
   <div id="gate" class="mx-auto mt-24 max-w-sm rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
     <p class="text-xs font-semibold uppercase tracking-wider text-cyan-700">DHI · Private pilot</p>
-    <h1 class="mt-1 font-display text-xl font-bold text-brand-900">Sentara Supply Price Benchmark</h1>
+    <h1 class="mt-1 font-display text-xl font-bold text-brand-900"><span class="tenant-name">Sentara Health</span> Supply Price Benchmark</h1>
     <p class="mt-1 text-sm text-slate-500">Enter the access code from your DHI contact to open your benchmarking workspace.</p>
     <form id="gate-form" class="mt-4 space-y-3">
       <input id="gate-code" type="password" class="in" placeholder="Access code" autocomplete="off" />
       <button class="w-full rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Open workspace</button>
       <p id="gate-msg" class="text-sm text-red-600"></p>
     </form>
-    <p class="mt-4 text-xs text-slate-400">Prepared for Sentara Health. This is a private pilot proposal — not a public tool. Your uploaded data is analyzed in-session and is <b>not</b> added to any shared index.</p>
+    <p class="mt-4 text-xs text-slate-400">Prepared for <span class="tenant-name">Sentara Health</span>. This is a private pilot proposal — not a public tool. Your uploaded data is analyzed in-session and is <b>not</b> added to any shared index.</p>
   </div>
 
   <!-- APP -->
@@ -45,7 +45,7 @@
       <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
       <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 12%, #06b6d4 0, transparent 42%), radial-gradient(circle at 8% 95%, #10b981 0, transparent 44%);"></div>
       <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
-        <p class="text-sm font-semibold uppercase tracking-wider text-cyan-300">Prepared for Sentara Health · Powered by DHI</p>
+        <p class="text-sm font-semibold uppercase tracking-wider text-cyan-300">Prepared for <span class="tenant-name">Sentara Health</span> · Powered by DHI</p>
         <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Supply Price Benchmark</h1>
         <p class="mt-3 max-w-2xl text-lg text-slate-300">Upload a supply-spend export and see, in seconds, where your pricing runs above market — and which items DHI can supply at a lower cost. Indicative, buy-side, and confidential to your team.</p>
       </div>
@@ -114,7 +114,7 @@
           <div>
             <img src="assets/img/dhi-logo.svg" alt="Digital Health International" onerror="this.style.display='none'" class="h-8 w-auto" />
             <p class="mt-2 font-display text-lg font-bold text-brand-900">Supply Price Benchmark — Opportunity Report</p>
-            <p class="text-sm text-slate-500">Prepared for <b>Sentara Health</b> · Powered by Digital Health International</p>
+            <p class="text-sm text-slate-500">Prepared for <b class="tenant-name">Sentara Health</b> · Powered by Digital Health International</p>
           </div>
           <div class="text-right text-xs text-slate-400">
             <p id="report-date"></p>
@@ -150,7 +150,7 @@
           <div>
             <img src="assets/img/dhi-logo.svg" alt="Digital Health International" onerror="this.style.display='none'" class="h-8 w-auto" />
             <p class="mt-2 font-display text-lg font-bold text-brand-900">Supply Proposal — full procurement analysis</p>
-            <p class="text-sm text-slate-500">Prepared for <b>Sentara Health</b> · Powered by Digital Health International</p>
+            <p class="text-sm text-slate-500">Prepared for <b class="tenant-name">Sentara Health</b> · Powered by Digital Health International</p>
           </div>
           <div class="text-right text-xs text-slate-400"><p id="proposal-date"></p><p>Indicative · confidential · buy-side</p></div>
         </div>
@@ -169,7 +169,7 @@
           <form id="book-fields" class="mt-4 grid gap-3 sm:grid-cols-3">
             <input id="b-name" class="in" placeholder="Your name" autocomplete="name" />
             <input id="b-email" type="email" class="in" placeholder="Work email" autocomplete="email" />
-            <input id="b-org" class="in" placeholder="Department / facility" autocomplete="organization" value="Sentara Health" />
+            <input id="b-org" class="in" placeholder="Department / facility" autocomplete="organization" />
             <div class="sm:col-span-3 flex items-center gap-3">
               <button id="b-send" type="submit" class="rounded-xl bg-brand-900 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-800">Send request</button>
               <span id="b-status" class="text-sm text-slate-500"></span>
@@ -182,6 +182,6 @@
 
   <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-lg bg-brand-900 px-4 py-2 text-sm font-medium text-white opacity-0 shadow-lg transition-opacity duration-300"></div>
 
-  <script src="assets/sentara-benchmark.js?v=6"></script>
+  <script src="assets/sentara-benchmark.js?v=7"></script>
 </body>
 </html>

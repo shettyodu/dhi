@@ -15,10 +15,28 @@
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   let toastT; const toast = (m) => { const t = $("toast"); if (!t) return; t.textContent = m; t.classList.remove("opacity-0"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.add("opacity-0"), 2600); };
 
-  // --- Access gate (lightweight pilot gate, not hardened auth) ---------------
-  const ACCESS = "SENTARA-2026";
+  // --- Multi-tenant workspaces --------------------------------------------------
+  // Each health system / network gets a private, branded link (?t=slug) with its
+  // own access code. Firewalled by design: nothing is stored server-side, so one
+  // tenant's session data can never reach another. Same build powers the wholesale
+  // white-label. (Access code is a lightweight pilot gate, not hardened auth.)
+  const TENANTS = {
+    sentara: { name: "Sentara Health", code: "SENTARA-2026" },
+    vanderbilt: { name: "Vanderbilt University Medical Center", code: "VANDY-2026" },
+    mayo: { name: "Mayo Clinic", code: "MAYO-2026" },
+    welllink: { name: "WellLink", code: "WELLLINK-2026" },
+    demo: { name: "Your Health System", code: "DEMO-2026" },
+  };
+  const TKEY = (qs.get("t") || "sentara").toLowerCase();
+  const T = TENANTS[TKEY] || TENANTS.sentara;
+  const OKKEY = "dhi_ws_ok_" + TKEY;
+  function applyTenant() {
+    document.querySelectorAll(".tenant-name").forEach((el) => { el.textContent = T.name; });
+    try { document.title = T.name + " — Supply Price Benchmark | DHI"; } catch (e) { /* ignore */ }
+    const org = $("b-org"); if (org && !org.value) org.value = T.name;
+  }
   function unlock() { $("gate").classList.add("hidden"); $("app").classList.remove("hidden"); }
-  function tryUnlock(code) { if (String(code || "").trim().toUpperCase() === ACCESS) { localStorage.setItem("dhi_sentara_ok", "1"); unlock(); return true; } return false; }
+  function tryUnlock(code) { if (String(code || "").trim().toUpperCase() === T.code) { localStorage.setItem(OKKEY, "1"); unlock(); return true; } return false; }
 
   // --- CSV / paste parsing (department-aware) ---------------------------------
   function splitRow(line) {
@@ -230,6 +248,31 @@
       `<span class="${REF_STYLE[x.source] || "text-slate-500"}">${esc(x.label)}: <b>${usd(x.price)}</b></span>`).join("")}</div>`;
   }
 
+  // Factual spec extraction — attributes stated on the item, NOT a clinical judgment.
+  function extractSpecs(text) {
+    const t = " " + String(text || "").toLowerCase() + " ";
+    const s = {};
+    let m = t.match(/aami\s*(?:level\s*)?([1-4])/) || t.match(/level\s*([1-4])/); if (m) s.aami = m[1];
+    m = t.match(/\b(nitrile|latex|vinyl|sms|polypropylene|polyethylene)\b/); if (m) s.material = m[1];
+    if (/non[- ]?sterile/.test(t)) s.sterile = "non-sterile"; else if (/\bsterile\b/.test(t)) s.sterile = "sterile";
+    if (/reinforced/.test(t)) s.reinforced = true;
+    return s;
+  }
+  // Factual spec-equivalence chips — ✓ where the buyer's own wording corroborates the
+  // DHI item's spec. States facts (AAMI level, material); never asserts clinical safety.
+  function specChips(userDesc, bench) {
+    if (!bench) return "";
+    const u = extractSpecs(userDesc), d = extractSpecs((bench.name || "") + " " + (bench.specs || ""));
+    const chips = [];
+    if (d.aami) { if (u.aami && u.aami === d.aami) chips.push(["AAMI L" + d.aami, "match"]); else if (u.aami && d.aami > u.aami) chips.push(["AAMI L" + d.aami + " (≥ your L" + u.aami + ")", "higher"]); else chips.push(["AAMI L" + d.aami, "spec"]); }
+    if (d.material) chips.push([d.material, (u.material && u.material === d.material) ? "match" : "spec"]);
+    if (d.sterile) chips.push([d.sterile, (u.sterile && u.sterile === d.sterile) ? "match" : "spec"]);
+    if (d.reinforced) chips.push(["reinforced", u.reinforced ? "match" : "spec"]);
+    if (!chips.length) return "";
+    const cls = { match: "bg-emerald-100 text-emerald-700", higher: "bg-cyan-100 text-cyan-700", spec: "bg-slate-100 text-slate-600" };
+    return `<div class="mt-1 flex flex-wrap gap-1">${chips.map(([label, kind]) => `<span class="rounded px-1.5 py-0.5 text-[10px] font-semibold ${cls[kind]}">${kind === "match" ? "✓ " : ""}${esc(label)}</span>`).join("")}</div>`;
+  }
+
   // Value Analysis substitution panel — lower-cost equivalents for committee review.
   // Honest: DHI supplies COST data only; clinical equivalence is the facility's call.
   function substitutionHtml(matched) {
@@ -238,7 +281,7 @@
     const total = subs.reduce((s, r) => s + Number(r.line_savings || 0), 0);
     const rows = subs.slice(0, 12).map((r) => `<tr class="border-b border-violet-100">
       <td class="py-2 pr-3 text-sm text-slate-700">${esc(r.desc)}</td>
-      <td class="px-2 py-2 text-sm text-slate-600">${esc(r.benchmark_name)}</td>
+      <td class="px-2 py-2 text-sm text-slate-600">${esc(r.benchmark_name)}${specChips(r.desc, { name: r.benchmark_name, specs: r.benchmark_specs })}</td>
       <td class="px-2 py-2 text-right text-sm">${usd(r.unit_price)} → <span class="font-semibold text-brand-900">${usd(r.benchmark_price)}</span></td>
       <td class="px-2 py-2 pr-2 text-right text-sm font-bold text-emerald-700">${usd(r.line_savings)}</td>
     </tr>`).join("");
@@ -521,8 +564,8 @@
     if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { st.className = "text-sm text-red-600"; st.textContent = "Name and a valid email, please."; return; }
     st.className = "text-sm text-slate-500"; st.textContent = "Sending…"; $("b-send").disabled = true;
     const payload = {
-      type: "sourcing", vertical: "supplies", source: "sentara-pilot",
-      name, email, company: org || "Sentara Health",
+      type: "sourcing", vertical: "supplies", source: TKEY + "-pilot",
+      name, email, company: org || T.name,
       analyzed_spend: last ? last.summary.total_spend : null,
       potential_savings: last ? last.summary.total_savings : null,
       items_matched: last ? last.summary.matched : null,
@@ -539,7 +582,8 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    if (localStorage.getItem("dhi_sentara_ok") === "1" || tryUnlock(qs.get("key"))) unlock();
+    applyTenant();
+    if (localStorage.getItem(OKKEY) === "1" || tryUnlock(qs.get("key"))) unlock();
     $("gate-form").addEventListener("submit", (e) => { e.preventDefault(); if (!tryUnlock($("gate-code").value)) $("gate-msg").textContent = "That code isn't right — check with your DHI contact."; });
 
     const drop = $("drop");

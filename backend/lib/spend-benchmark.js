@@ -80,7 +80,7 @@ function analyze(lines) {
     if (!(bench > 0)) return { desc, qty, vendor, unit_price: price, matched: false };
     // No current price given → quote mode: show what DHI would charge, no "savings".
     if (price == null || price <= 0) {
-      return { desc, qty, vendor, unit_price: null, matched: true, quote_only: true, matched_id: m.item.id, benchmark_name: m.item.name, benchmark_price: bench, unit: m.item.unit, over_pct: null, line_spend: 0, line_savings: 0 };
+      return { desc, qty, vendor, unit_price: null, matched: true, quote_only: true, matched_id: m.item.id, benchmark_name: m.item.name, benchmark_specs: m.item.specs || null, benchmark_price: bench, unit: m.item.unit, over_pct: null, line_spend: 0, line_savings: 0 };
     }
     // Guard against unit mismatches (per-each vs per-box): >12x either way isn't
     // comparable — skip rather than report a bogus saving.
@@ -91,7 +91,7 @@ function analyze(lines) {
     const line_savings = over > 0 ? Math.round(over * qty * 100) / 100 : 0;
     return {
       desc, qty, vendor, unit_price: price, matched: true, matched_id: m.item.id,
-      benchmark_name: m.item.name, benchmark_price: bench, unit: m.item.unit,
+      benchmark_name: m.item.name, benchmark_specs: m.item.specs || null, benchmark_price: bench, unit: m.item.unit,
       over_pct: bench > 0 ? Math.round((over / bench) * 100) : null,
       line_spend: Math.round(price * qty * 100) / 100,
       line_savings,
