@@ -1,0 +1,5 @@
+Contact: mailto:steve@digitalhealthinternational.com
+Expires: 2027-07-12T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://digitalhealthinternational.com/.well-known/security.txt
+Policy: https://digitalhealthinternational.com/trust.html
