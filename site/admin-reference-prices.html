@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Reference prices (internal) — DHI</title>
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>body{font-family:Inter,system-ui,sans-serif}.in{border-radius:.4rem;border:1px solid #cbd5e1;padding:.35rem .5rem;font-size:.85rem}.cell{width:6rem}</style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+  <div class="mx-auto max-w-6xl px-4 py-8">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <a href="admin.html" class="text-xs font-semibold text-cyan-700 hover:underline">&larr; Leads admin</a>
+        <h1 class="mt-1 font-display text-2xl font-extrabold text-brand-900">Reference prices — GSA / public</h1>
+        <p class="text-sm text-slate-500">Internal. Load <b>real public prices</b> (GSA Advantage, published catalogs) per item — these show as a labeled external reference in the benchmark. Peer median comes from the opt-in index (shown only at <span id="minpeers">3</span>+ participants). Not a live feed — curated real data.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <input id="secret" type="password" class="in" placeholder="Admin key" />
+        <button id="load" class="rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">Load</button>
+      </div>
+    </div>
+    <div class="mt-3 flex flex-wrap items-center gap-3">
+      <input id="q" class="in" placeholder="Filter items…" />
+      <button id="save" class="rounded-lg bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700">Save changes</button>
+      <span id="status" class="text-sm text-slate-500"></span>
+    </div>
+
+    <details class="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+      <summary class="cursor-pointer text-sm font-semibold text-brand-900">Bulk import references (paste from a spreadsheet)</summary>
+      <div class="mt-3 space-y-2">
+        <p class="text-xs leading-relaxed text-slate-500">
+          <b>1.</b> <button id="tmpl" type="button" class="font-semibold text-cyan-700 hover:underline">Download the template CSV</button> (item id + name).
+          <b>2.</b> Fill the <b>ref_price</b> and <b>source</b> columns from GSA Advantage / published catalogs.
+          <b>3.</b> Paste below and Apply, then <b>Save changes</b>.
+          <br />Columns: <span class="font-mono">id, name, ref_price, source</span> (tabs or commas). Load items first.
+        </p>
+        <textarea id="bulk" rows="6" class="in w-full font-mono" placeholder="id,name,ref_price,source&#10;DHI-CVL-001,Coverall AAMI 3,5.40,GSA Advantage"></textarea>
+        <div class="flex items-center gap-3">
+          <button id="apply-bulk" type="button" class="rounded-lg border border-cyan-300 px-3 py-1.5 text-sm font-semibold text-cyan-700 hover:bg-cyan-50">Apply pasted rows</button>
+          <span id="bulk-status" class="text-xs text-slate-500"></span>
+        </div>
+      </div>
+    </details>
+
+    <div id="table" class="mt-5 overflow-x-auto"></div>
+  </div>
+  <script src="assets/admin-reference-prices.js?v=1"></script>
+</body>
+</html>

@@ -4,6 +4,7 @@
 const { analyze } = require("../../lib/spend-benchmark");
 const { assess, narrate } = require("../../lib/supply-advisor");
 const market = require("../../lib/market-index");
+const { enrich } = require("../../lib/reference-prices");
 const { connectLambda } = require("@netlify/blobs");
 
 const cors = {
@@ -26,6 +27,9 @@ exports.handler = async (event) => {
     const result = analyze(lines);
     const assessment = assess(result); // agentic buy-side advisor, grounded in the result
     try { assessment.narrative = await narrate(assessment); } catch (e) { assessment.narrative = null; } // optional LLM layer
+    // Phase 2: attach labeled external references (DHI / peer / GSA-public). Opt-in
+    // per request so the public free tool stays lean; the pilot passes references:true.
+    if (body.references) { try { await enrich(result.rows); } catch (e) { /* best-effort */ } }
     // Build the proprietary price index — anonymized, opt-in. Never blocks the result.
     if (body.consent) { try { await market.capture(result.rows); } catch (e) { /* best-effort */ } }
     return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, ...result, assessment }) };

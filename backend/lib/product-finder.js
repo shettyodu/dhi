@@ -9,6 +9,7 @@
    Honesty: DHI price is real; everything external is a labeled estimate or a link.
    No scraping, no invented contract prices. */
 const { analyze } = require("./spend-benchmark");
+const { enrich } = require("./reference-prices");
 
 const API_KEY = process.env.OPENAI_API_KEY || "";
 const MODEL = process.env.OPENAI_MODEL_NAME || "gpt-4o-mini";
@@ -91,12 +92,15 @@ async function find(body) {
   const department = String((body && body.department) || "").trim();
   if (query.length < 2) return { status: 400, json: { error: "Enter a product to search." } };
 
-  // Source of truth: does DHI carry it?
+  // Source of truth: does DHI carry it? Enrich with labeled references (peer / GSA).
   let dhi = null;
   try {
     const r = analyze([{ desc: query, qty: 1 }]);
     const row = r && r.rows && r.rows[0];
-    if (row && row.matched) dhi = { name: row.benchmark_name, price: row.benchmark_price, id: row.matched_id || null };
+    if (row && row.matched) {
+      try { await enrich([row]); } catch (e) { /* best-effort */ }
+      dhi = { name: row.benchmark_name, price: row.benchmark_price, id: row.matched_id || null, references: row.references || null };
+    }
   } catch (e) { /* catalog optional */ }
 
   const ai = await askAI(query, department);

@@ -128,7 +128,7 @@
     lastLines = lines;
     status.className = "text-sm text-slate-500"; status.textContent = `Analyzing ${lines.length} line(s)…`; $("run").disabled = true;
     try {
-      const r = await fetch(FN("supply-spend-check"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lines, consent: false }) });
+      const r = await fetch(FN("supply-spend-check"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lines, consent: false, references: true }) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) { status.className = "text-sm text-red-600"; status.textContent = d.error || "Couldn't analyze — try again."; return; }
       status.textContent = ""; last = d; renderReport(d);
@@ -182,12 +182,21 @@
     </div>`;
   }
 
+  // Labeled external references (peer / GSA-public); DHI is already its own column.
+  const REF_STYLE = { peer: "text-cyan-700", public: "text-violet-700" };
+  function refsBadges(references) {
+    const ext = (references || []).filter((x) => x.source !== "dhi");
+    if (!ext.length) return "";
+    return `<div class="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px]">${ext.map((x) =>
+      `<span class="${REF_STYLE[x.source] || "text-slate-500"}">${esc(x.label)}: <b>${usd(x.price)}</b></span>`).join("")}</div>`;
+  }
+
   function renderReport(d) {
     const s = d.summary;
     const matched = d.rows.filter((r) => r.matched);
     const rowsHtml = matched.map((r) => `
       <tr class="border-b border-slate-100">
-        <td class="py-2.5 pr-3 text-sm text-slate-700">${esc(r.desc)}<div class="text-xs text-emerald-600">DHI can supply · ${esc(r.benchmark_name)}</div></td>
+        <td class="py-2.5 pr-3 text-sm text-slate-700">${esc(r.desc)}<div class="text-xs text-emerald-600">DHI can supply · ${esc(r.benchmark_name)}</div>${refsBadges(r.references)}</td>
         <td class="px-2 py-2.5 text-right text-sm">${r.quote_only ? '<span class="text-slate-300">—</span>' : usd(r.unit_price)}</td>
         <td class="px-2 py-2.5 text-right text-sm font-medium text-slate-600">${usd(r.benchmark_price)}</td>
         <td class="px-2 py-2.5 text-right text-sm font-semibold ${r.over_pct > 0 ? "text-rose-600" : "text-slate-400"}">${r.over_pct > 0 ? "+" + r.over_pct + "%" : "—"}</td>
@@ -242,6 +251,7 @@
         <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">DHI can supply this</p>
         <p class="mt-1 font-semibold text-brand-900">${esc(d.dhi.name)}</p>
         <p class="mt-0.5 font-display text-xl font-extrabold text-emerald-700">${usd(d.dhi.price)}<span class="text-xs font-normal text-emerald-700/70"> · DHI price</span></p>
+        ${refsBadges(d.dhi.references)}
         <button id="pf-add" class="mt-2 rounded-lg bg-brand-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-800">Request a quote &rarr;</button>
       </div>`);
     }
