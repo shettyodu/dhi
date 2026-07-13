@@ -2,6 +2,7 @@
    Captures an AutoCommand customer/dealer/supplier lead into Netlify Blobs. */
 const { submitLead } = require("../../lib/leads");
 const { connectLambda } = require("@netlify/blobs");
+const { limited, tooMany } = require("../../lib/rate-limit");
 
 const cors = {
   "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
@@ -23,6 +24,8 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, id: "received" }) };
   }
 
+  const rl = await limited(event, "submit-lead", 10, 60);
+  if (rl.over) return tooMany(cors, rl.retryAfter);
 
   try {
     const r = await submitLead(body);
