@@ -610,11 +610,35 @@ function initSEO() {
   }
 }
 
+// Favicon + skip-to-content link, injected once on every page (DRY, so all 53
+// pages get them without per-file edits). Skip link satisfies WCAG 2.4.1.
+function initSiteChrome() {
+  if (!document.querySelector('link[rel="icon"]')) {
+    const fav = document.createElement("link");
+    fav.rel = "icon"; fav.type = "image/svg+xml"; fav.href = "assets/img/favicon.svg";
+    document.head.appendChild(fav);
+  }
+  let main = document.querySelector("main") || document.querySelector("body > section");
+  if (main && !main.id) main.id = "main";
+  const target = (main && main.id) ? main.id : "main";
+  if (!document.querySelector("a.dhi-skip")) {
+    const skip = document.createElement("a");
+    skip.href = "#" + target;
+    skip.className = "dhi-skip";
+    skip.textContent = "Skip to main content";
+    skip.setAttribute("style", "position:absolute;left:-9999px;top:0;z-index:100;background:#0a2540;color:#fff;padding:.6rem 1rem;border-radius:0 0 .4rem 0;font-size:.85rem;font-weight:600");
+    skip.addEventListener("focus", () => { skip.style.left = "0"; });
+    skip.addEventListener("blur", () => { skip.style.left = "-9999px"; });
+    document.body.prepend(skip);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initCampaign();
   initSEO();
   buildHeader();
   buildFooter();
+  initSiteChrome();
   initHeroCarousel();
   initMotion();
   initChatWidget();
