@@ -53,7 +53,7 @@
       <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div class="relative flex-1">
           <svg class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-          <input id="cat-q" type="search" placeholder="Search 1,497 items — catalog #, type, wattage, CCT, base…"
+          <input id="cat-q" type="search" placeholder="Search ${PRODUCTS.length.toLocaleString()} items — catalog #, brand, type, wattage, CCT…"
             class="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-3 text-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none" />
         </div>
         <select id="cat-family" class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-cyan-500 focus:outline-none lg:w-56"></select>
@@ -158,9 +158,26 @@
   function filtered() {
     const list = basePool().filter((p) => matchFacets(p, null));
     if (state.sort === "rel") {
-      // Default view leads with real-photo products; accessories/no-image items
-      // (mounting hardware) fall to the end. Stable sort preserves data order within.
-      list.sort((a, b) => (realPhoto(b) ? 1 : 0) - (realPhoto(a) ? 1 : 0));
+      const q = state.q.trim().toLowerCase();
+      const terms = q ? q.split(/\s+/).filter(Boolean) : [];
+      if (terms.length) {
+        // With a query, rank by keyword relevance — a fixture-family (group) match
+        // wins, then id/specs hits — so "high bay" surfaces high-bay FIXTURES of
+        // every brand ahead of accessories. Real photo is only a tiebreaker.
+        const score = (p) => {
+          const g = (p.group || "").toLowerCase(), id = (p.id || "").toLowerCase(), sp = (p.specs || "").toLowerCase();
+          let s = 0;
+          if (terms.every((t) => g.includes(t))) s += 100;
+          for (const t of terms) { if (g.includes(t)) s += 8; if (id.includes(t)) s += 5; if (sp.includes(t)) s += 1; }
+          if (realPhoto(p)) s += 2;
+          return s;
+        };
+        list.sort((a, b) => score(b) - score(a));
+      } else {
+        // No query: lead with real-photo products; accessories/no-image items
+        // (mounting hardware) fall to the end. Stable sort preserves data order.
+        list.sort((a, b) => (realPhoto(b) ? 1 : 0) - (realPhoto(a) ? 1 : 0));
+      }
     } else if (state.sort === "az") {
       list.sort((a, b) => a.id.localeCompare(b.id));
     } else if (state.sort === "plh" || state.sort === "phl") {

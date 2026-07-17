@@ -12,9 +12,14 @@ const MODEL = process.env.OPENAI_MODEL_NAME || "gpt-4o-mini";
 const BASE = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
 const STEP_TIMEOUT_MS = Number(process.env.CHAT_TIMEOUT_MS || 8000);
 
-let LIGHTING = [], SUPPLIES = [];
+let LIGHTING = [], SUPPLIES = [], LIGHTING_SUP = [];
 try { LIGHTING = require("../data/lighting-index.json"); } catch (e) { /* optional */ }
+try { LIGHTING_SUP = require("../data/lighting-suppliers.json"); } catch (e) { /* optional */ }
 try { SUPPLIES = require("../data/supplies-index.json"); } catch (e) { /* optional */ }
+// The lighting search spans the Keystone catalog + additional major-brand
+// suppliers (Acuity, Signify, Cree, Eaton, Orion, Alcon) — kept in separate
+// files so no supplier's data is co-mingled at rest.
+LIGHTING = LIGHTING.concat(LIGHTING_SUP);
 let searchBids = null;
 try { ({ searchBids } = require("./govbids")); } catch (e) { /* optional */ }
 
@@ -59,7 +64,7 @@ function searchIndex(arr, q, n) {
 async function runTool(name, args) {
   const q = (args && args.query) || "";
   if (name === "search_lighting") {
-    return { results: searchIndex(LIGHTING, q, 8).map((p) => ({ catalog: p.id, type: p.group || p.cat, specs: p.specs, price: p.p != null ? "$" + p.p : "request quote" })) };
+    return { results: searchIndex(LIGHTING, q, 8).map((p) => ({ catalog: p.id, brand: p.supplier || "Keystone Technologies", type: p.group || p.cat, specs: p.specs, price: p.p != null ? "$" + p.p : "request quote" })) };
   }
   if (name === "search_supplies") {
     return { results: searchIndex(SUPPLIES, q, 8).map((p) => ({ sku: p.id, name: p.name, specs: p.specs, price: p.p != null ? "$" + p.p + "/" + (p.unit || "ea") : "request quote" })) };
