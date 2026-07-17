@@ -258,6 +258,7 @@
             ? '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg> Added to quote'
             : '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add to quote'}
         </button>
+        ${(p.cat === "Fixtures" || p.cat === "Lamps") ? `<button data-sub="${p.id}" class="sub-btn mt-1.5 inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-cyan-700 hover:text-cyan-800"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h13l-3-3M20 17H7l3 3"/></svg> Out of stock? Find alternatives</button>` : ""}
       </div>`;
   }
 
@@ -587,6 +588,10 @@
   // affiliate attribution: capture an influencer referral code and keep it for checkout
   const ref = params.get("ref");
   if (ref) { try { localStorage.setItem("dhi_lighting_ref", ref.slice(0, 64)); } catch (e) {} }
+
+  // Re-sync when another module (e.g. the substitution modal or AI advisor)
+  // changes the shared quote cart in localStorage.
+  window.addEventListener("dhi-cart-changed", () => { cart = loadCart(); renderDock(); render(); });
 
   // ---- init ----
   refreshPills();
