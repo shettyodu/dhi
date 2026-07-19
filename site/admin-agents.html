@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Insurance agents (internal) — DHI</title>
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}
+    .in{border-radius:.4rem;border:1px solid #cbd5e1;padding:.45rem .55rem;font-size:.85rem}
+    .in:focus{outline:none;border-color:#0891b2;box-shadow:0 0 0 3px rgba(8,145,178,.15)}
+    td,th{padding:.5rem .55rem;border-bottom:1px solid #e2e8f0;text-align:left;font-size:.82rem;vertical-align:middle}
+    th{background:#f8fafc;color:#0a2540;font-weight:600}
+    .btn{border-radius:.5rem;padding:.5rem .9rem;font-size:.85rem;font-weight:600}
+    .msg{font-size:.8rem}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+  <div class="mx-auto max-w-5xl px-4 py-8">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <a href="admin.html" class="text-xs font-semibold text-cyan-700 hover:underline">&larr; Leads admin</a>
+        <h1 class="mt-1 font-display text-2xl font-extrabold text-brand-900">Insurance agents</h1>
+        <p class="text-sm text-slate-500">Provision agent sign-ins for the <b>Agent Console</b>. Each agent gets a code + password and a branded <b>mirror page</b>. Requires <span class="font-mono">AGENT_AUTH_SECRET</span> to be set for sign-in to work.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <input id="secret" type="password" class="in" placeholder="Admin key" autocomplete="off" />
+        <button id="load" class="btn bg-brand-900 text-white hover:bg-brand-800">Load agents</button>
+      </div>
+    </div>
+
+    <!-- Provision / update -->
+    <div class="mt-5 rounded-xl border border-slate-200 bg-white p-4">
+      <p class="text-sm font-semibold text-brand-900">Add or update an agent</p>
+      <p class="text-xs text-slate-500">Re-using an existing <b>code</b> updates that agent (e.g. to reset a password). Password is stored only as a salted hash.</p>
+      <div class="mt-3 grid gap-2 sm:grid-cols-12">
+        <input id="f-code"  class="in sm:col-span-2" placeholder="code (e.g. summit)" />
+        <input id="f-name"  class="in sm:col-span-4" placeholder="Agency name" />
+        <input id="f-email" class="in sm:col-span-3" placeholder="Email (optional)" />
+        <div class="sm:col-span-3 flex items-center gap-2">
+          <input id="f-brand" type="color" value="#1c6cb0" class="in" style="padding:2px;width:44px;height:38px" title="Brand color" />
+          <input id="f-pass" type="text" class="in flex-1" placeholder="Password (8+ chars)" autocomplete="off" />
+        </div>
+        <input id="f-tag" class="in sm:col-span-9" placeholder="Tagline (optional)" />
+        <button id="provision" class="btn sm:col-span-3 bg-cyan-600 text-white hover:bg-cyan-700">Save agent</button>
+      </div>
+      <p id="p-msg" class="msg mt-2"></p>
+    </div>
+
+    <!-- Agents list -->
+    <div class="mt-5 rounded-xl border border-slate-200 bg-white p-4">
+      <div class="flex items-center justify-between">
+        <p class="text-sm font-semibold text-brand-900">Provisioned agents</p>
+        <span id="count" class="text-xs text-slate-400"></span>
+      </div>
+      <div id="list" class="mt-3 overflow-x-auto text-slate-500"><p class="text-sm text-slate-400">Enter the admin key and click <b>Load agents</b>.</p></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var API = (new URLSearchParams(location.search).get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
+      var FN = API + "/.netlify/functions/admin-agents";
+      var $ = function (id) { return document.getElementById(id); };
+      var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]; }); };
+      function secret() { return $("secret").value.trim(); }
+      function mirror(code) { return location.origin + "/insurance.html?agent=" + encodeURIComponent(code); }
+      function msg(el, ok, text) { el.className = "msg mt-2 " + (ok ? "text-emerald-600" : "text-red-500"); el.textContent = text; }
+
+      async function call(body) {
+        var r = await fetch(FN, { method: "POST", headers: { "Content-Type": "application/json", "x-dhi-admin": secret() }, body: JSON.stringify(body) });
+        var d = await r.json().catch(function () { return {}; });
+        return { ok: r.ok, status: r.status, d: d };
+      }
+
+      async function load() {
+        if (!secret()) { $("list").innerHTML = '<p class="text-sm text-red-500">Enter the admin key first.</p>'; return; }
+        $("list").innerHTML = '<p class="text-sm text-slate-400">Loading…</p>';
+        var res = await call({ action: "list" });
+        if (!res.ok) { $("list").innerHTML = '<p class="text-sm text-red-500">' + esc(res.d.error || ("Error " + res.status)) + "</p>"; return; }
+        var agents = res.d.agents || [];
+        $("count").textContent = agents.length + " agent" + (agents.length === 1 ? "" : "s");
+        if (!agents.length) { $("list").innerHTML = '<p class="text-sm text-slate-400">No agents yet — add one above.</p>'; return; }
+        $("list").innerHTML =
+          '<table class="w-full"><thead><tr><th>Code</th><th>Agency</th><th>Email</th><th>Brand</th><th>Mirror link</th><th></th></tr></thead><tbody>' +
+          agents.map(function (a) {
+            return "<tr>" +
+              '<td class="font-mono font-semibold">' + esc(a.code) + "</td>" +
+              "<td>" + esc(a.name) + "</td>" +
+              '<td class="text-slate-500">' + esc(a.email || "—") + "</td>" +
+              '<td><span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:' + esc(a.brand || "#1c6cb0") + ';vertical-align:middle"></span></td>' +
+              '<td><a href="' + esc(mirror(a.code)) + '" target="_blank" class="text-cyan-700 hover:underline">/insurance.html?agent=' + esc(a.code) + "</a></td>" +
+              '<td class="whitespace-nowrap"><button data-copy="' + esc(mirror(a.code)) + '" class="text-xs font-semibold text-cyan-700 hover:underline">Copy link</button> · <button data-reset="' + esc(a.code) + '" data-name="' + esc(a.name) + '" data-email="' + esc(a.email || "") + '" data-brand="' + esc(a.brand || "#1c6cb0") + '" class="text-xs font-semibold text-slate-500 hover:underline">Edit / reset</button></td>' +
+              "</tr>";
+          }).join("") + "</tbody></table>";
+        [].forEach.call(document.querySelectorAll("[data-copy]"), function (b) { b.onclick = function () { navigator.clipboard.writeText(b.getAttribute("data-copy")); var t = b.textContent; b.textContent = "Copied ✓"; setTimeout(function () { b.textContent = t; }, 1200); }; });
+        [].forEach.call(document.querySelectorAll("[data-reset]"), function (b) { b.onclick = function () { $("f-code").value = b.getAttribute("data-reset"); $("f-name").value = b.getAttribute("data-name"); $("f-email").value = b.getAttribute("data-email"); $("f-brand").value = b.getAttribute("data-brand"); $("f-pass").value = ""; $("f-pass").focus(); msg($("p-msg"), true, "Editing " + b.getAttribute("data-reset") + " — set a new password to reset it."); }; });
+      }
+
+      async function provision() {
+        var pm = $("p-msg");
+        if (!secret()) { msg(pm, false, "Enter the admin key (top right)."); return; }
+        var code = $("f-code").value.trim(), name = $("f-name").value.trim(), pass = $("f-pass").value;
+        if (!code) { msg(pm, false, "Code is required."); return; }
+        if (!pass || pass.length < 8) { msg(pm, false, "Password must be at least 8 characters."); return; }
+        var btn = $("provision"); btn.disabled = true; btn.textContent = "Saving…";
+        var res = await call({ action: "provision", code: code, name: name || code, email: $("f-email").value.trim(), brand: $("f-brand").value, tagline: $("f-tag").value.trim(), password: pass });
+        btn.disabled = false; btn.textContent = "Save agent";
+        if (res.ok && res.d.ok) {
+          msg(pm, true, "Saved “" + code + "”. Sign-in: " + code + " / (the password you set). Mirror: " + mirror(code));
+          $("f-pass").value = ""; $("f-code").value = ""; $("f-name").value = ""; $("f-email").value = ""; $("f-tag").value = "";
+          load();
+        } else {
+          msg(pm, false, res.d.error || ("Error " + res.status + (res.status === 503 ? " — admin not configured." : "")));
+        }
+      }
+
+      $("load").addEventListener("click", load);
+      $("provision").addEventListener("click", provision);
+      $("secret").addEventListener("keydown", function (e) { if (e.key === "Enter") load(); });
+    })();
+  </script>
+</body>
+</html>
