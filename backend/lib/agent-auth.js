@@ -111,7 +111,7 @@ async function leadsForAgent(code) {
       if (!r || typeof r !== "object") continue;
       if (normCode(r.referral_code) !== c) continue;         // only THIS agent's leads
       out.push({
-        id: r.id || b.key, name: r.name || "", email: r.email || "", phone: r.phone || "",
+        key: b.key, id: r.id || b.key, name: r.name || "", email: r.email || "", phone: r.phone || "",
         interest: r.interest || "", message: r.message || "", source: r.source || "",
         status: r.status || "new", submittedAt: r.submittedAt || r.createdAt || "",
       });
@@ -121,7 +121,27 @@ async function leadsForAgent(code) {
   return out;
 }
 
+// Allowed lead statuses (shared with the console).
+const LEAD_STATUSES = ["new", "contacted", "quoted", "bound", "lost"];
+
+// Update the status of ONE lead, but only if it belongs to the calling agent.
+async function updateLeadStatus(code, key, status) {
+  const c = normCode(code);
+  const st = String(status || "").toLowerCase();
+  if (LEAD_STATUSES.indexOf(st) < 0) return { status: 400, json: { error: "Invalid status" } };
+  if (!key) return { status: 400, json: { error: "Lead key required" } };
+  const s = store(LEADS_STORE);
+  let rec = null;
+  try { rec = await s.get(String(key), { type: "json" }); } catch (e) { rec = null; }
+  if (!rec || typeof rec !== "object") return { status: 404, json: { error: "Lead not found" } };
+  if (normCode(rec.referral_code) !== c) return { status: 403, json: { error: "Not your lead" } };  // ownership check
+  rec.status = st;
+  rec.statusUpdatedAt = new Date().toISOString();
+  await s.setJSON(String(key), rec);
+  return { status: 200, json: { ok: true, id: rec.id || key, status: st } };
+}
+
 module.exports = {
   isConfigured, hashPassword, verifyPassword, signToken, verifyToken,
-  provisionAgent, getAgent, listAgents, login, leadsForAgent, publicAgent,
+  provisionAgent, getAgent, listAgents, login, leadsForAgent, updateLeadStatus, publicAgent, LEAD_STATUSES,
 };

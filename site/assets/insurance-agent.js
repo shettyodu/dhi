@@ -81,12 +81,21 @@
           '<p class="mt-2 text-xs text-slate-400">Book &amp; commission connect to the carrier feed.</p></div>' +
       "</div>";
   }
+  function statusSelect(key, current) {
+    var opts = ["new", "contacted", "quoted", "bound", "lost"].map(function (s) { return '<option value="' + s + '"' + (s === current ? " selected" : "") + ">" + s.charAt(0).toUpperCase() + s.slice(1) + "</option>"; }).join("");
+    return '<select data-status-key="' + esc(key) + '" data-prev="' + esc(current) + '" class="inp" style="padding:4px 8px;font-size:12px;width:auto">' + opts + "</select>";
+  }
   function vLeads() {
-    var ld = leadsData(), L = ld.leads;
-    var rows = L.length ? L.map(function (l) { return "<tr><td>" + esc(l.name) + "</td><td>" + esc(l.product) + "</td><td>" + esc(l.zip || "—") + "</td><td>" + pill(l.status) + "</td><td class='text-slate-400'>" + esc(l.date || "") + "</td></tr>"; }).join("") : '<tr><td colspan="5" style="padding:18px;color:#94a3b8">No leads yet. Share your mirror link, or add one &rarr;</td></tr>';
-    return sectionHead("Leads", "Every lead from your mirror page lands here. Submit one yourself below.") +
+    var live = LIVE() && Array.isArray(realLeads);
+    var src = live ? realLeads : SAMPLE_LEADS;
+    var rows = src.length ? src.map(function (l) {
+      var n = normLead(l);
+      var statusCell = live ? statusSelect(l.key, String(l.status || "new").toLowerCase()) : pill(n.status);
+      return "<tr><td>" + esc(n.name) + "</td><td>" + esc(n.product) + "</td><td>" + esc(n.zip || "—") + "</td><td>" + statusCell + "</td><td class='text-slate-400'>" + esc(n.date || "") + "</td></tr>";
+    }).join("") : '<tr><td colspan="5" style="padding:18px;color:#94a3b8">No leads yet. Share your mirror link, or add one &rarr;</td></tr>';
+    return sectionHead("Leads", "Every lead from your mirror page lands here — update status as you work it, or add one below.") +
       '<div class="grid gap-4 lg:grid-cols-3">' +
-        '<div class="card p-4 lg:col-span-2"><div class="flex items-center justify-between"><h3 class="text-sm font-bold" style="color:var(--ink)">Lead tracking</h3>' + liveTag(ld.sample, ld.sample ? null : L.length) + "</div>" +
+        '<div class="card p-4 lg:col-span-2"><div class="flex items-center justify-between"><h3 class="text-sm font-bold" style="color:var(--ink)">Lead tracking</h3>' + liveTag(!live, live ? src.length : null) + "</div>" +
           '<div class="mt-2 overflow-x-auto"><table><thead><tr><th>Client</th><th>Interest</th><th>ZIP</th><th>Status</th><th>Added</th></tr></thead><tbody>' +
           rows +
           "</tbody></table></div></div>" +
@@ -164,6 +173,21 @@
     var cd = $("census-dl"); if (cd) cd.addEventListener("click", downloadCensus);
     var kg = $("k-gen"); if (kg) kg.addEventListener("click", genContract);
     var mc = $("m-copy"); if (mc) mc.addEventListener("click", function () { copy($("m-url").value, mc); });
+    [].forEach.call(document.querySelectorAll("[data-status-key]"), function (sel) {
+      sel.addEventListener("change", function () { updateStatus(sel.getAttribute("data-status-key"), sel.value, sel); });
+    });
+  }
+  async function updateStatus(key, status, sel) {
+    var prev = sel.getAttribute("data-prev"); sel.disabled = true;
+    try {
+      var r = await fetch(API_BASE + "/.netlify/functions/agent-lead-status", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.token }, body: JSON.stringify({ key: key, status: status }) });
+      if (r.ok) {
+        var rec = realLeads && realLeads.filter(function (x) { return x.key === key; })[0]; if (rec) rec.status = status;
+        sel.setAttribute("data-prev", status);
+        sel.style.borderColor = "#10b981"; setTimeout(function () { sel.style.borderColor = ""; }, 900);
+      } else { sel.value = prev; if (r.status === 401) { clearSession(); render(); } }
+    } catch (e) { sel.value = prev; }
+    sel.disabled = false;
   }
   async function submitLead(e) {
     e.preventDefault();
