@@ -130,6 +130,8 @@
   </div>
 
   <script src="assets/components.js"></script>
+  <script src="assets/insurance-agents.js"></script>
+  <script src="assets/insurance-mirror.js"></script>
   <script>
     (function () {
       const CATS = {
@@ -204,6 +206,8 @@
         if(document.getElementById("l-hp").value){ ov.classList.remove("on"); return; } // honeypot
         const sel=Object.values(CATS).filter((c)=>state[c.key]).map((c)=>c.name);
         const attribution = (window.DHIAttribution && window.DHIAttribution()) || {};
+        const agent = window.DHI_AGENT || null;                       // set by insurance-mirror.js on ?agent=
+        const agentCode = (agent && agent.code) || attribution.ref || "";
         const API_BASE=(new URLSearchParams(location.search).get("api")||localStorage.getItem("dhi_api_base")||"").replace(/\/+$/,"");
         const payload={
           name:document.getElementById("l-name").value.trim(),
@@ -211,7 +215,8 @@
           phone:document.getElementById("l-phone").value.trim(),
           interest:"Insurance — Bundle quote",
           message:`Bundle request: ${sel.join(", ")} · ZIP ${document.getElementById("qq-zip").value||"—"} · Age ${document.getElementById("qq-age").value||"—"}`,
-          source:"DHI Insurance — Bundle request",
+          source:agent?`DHI Insurance — Bundle request (agent: ${agent.name})`:"DHI Insurance — Bundle request",
+          referral_code:agentCode,                                    // credits the agent (book/analytics)
           ref:attribution.ref||"", utm:attribution.utm||{},
           hp:document.getElementById("l-hp").value,
         };
