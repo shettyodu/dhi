@@ -43,6 +43,22 @@
     .diff{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:14px}
     @media(max-width:720px){.diff{grid-template-columns:1fr}}
     .note{margin-top:22px;border-left:3px solid var(--cyan);background:#f0f9ff;padding:12px 16px;font-size:13px;color:#334155;border-radius:0 8px 8px 0}
+    .sub{color:#64748b;font-size:14.5px;margin-top:8px;max-width:780px}
+    .svcs{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:20px}
+    @media(max-width:960px){.svcs{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.svcs{grid-template-columns:1fr}}
+    .svc{border:1px solid #e2e8f0;border-radius:14px;padding:15px;border-top:4px solid var(--c);background:#fff;transition:.18s}
+    .svc:hover{box-shadow:0 12px 28px -16px rgba(21,34,56,.3);transform:translateY(-3px)}
+    .svc .no{font-size:11px;font-weight:800;color:var(--c);letter-spacing:.05em}
+    .svc h4{font-size:15px;font-weight:800;color:var(--navy);margin-top:3px;line-height:1.15}
+    .svc .st{font-size:10px;font-weight:700;color:var(--c);text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+    .svc p{font-size:12px;color:#475569;margin-top:8px;line-height:1.45}
+    .svc ul{margin-top:8px}
+    .svc ul li{font-size:11px;color:#334155;margin:4px 0;padding-left:13px}
+    .svc ul li:before{content:"▹";color:var(--c)}
+    .t2strip{margin-top:22px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;padding:16px 18px}
+    .t2strip h3{font-size:12px;color:var(--cyan);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+    .t2strip ul{columns:2;margin-top:8px} @media(max-width:560px){.t2strip ul{columns:1}}
     .codes{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:14px;font-size:13.5px;color:#334155}
     @media(max-width:720px){.codes{grid-template-columns:1fr}}
     .codes b{color:var(--navy)}
@@ -75,30 +91,47 @@
     <a class="btn" href="#schedule">Schedule a call</a>
   </div></header>
 
-  <!-- COMPETENCIES -->
+  <!-- WHAT YOU GET — 5 AICORE service divisions -->
   <section><div class="wrap">
-    <h2>Core competencies</h2>
-    <div class="cols">
-      <div>
-        <h3>T2 Contracting — self-perform (lead)</h3>
-        <ul>
-          <li>Site development — grading, excavation, erosion control, stabilization</li>
-          <li>Underground utilities — water, sewer, storm drainage</li>
-          <li>Concrete — structural, reinforced foundations &amp; flatwork</li>
-          <li>Civil utility construction · pipeline &amp; hot tapping</li>
-          <li>General contracting &amp; joint-venture delivery</li>
-        </ul>
+    <h2>One platform · five integrated service divisions</h2>
+    <p class="sub">Take one division or combine them for the complete data center lifecycle — with <b>T2 Contracting self-performing the civil, site &amp; structural build</b>, and DHI's AICORE platform layered on top.</p>
+    <div class="svcs">
+      <div class="svc" style="--c:#1d4ed8">
+        <div class="no">01</div><h4>AICORE Build</h4><div class="st">Construction &amp; Infrastructure</div>
+        <p>Site development, power, cooling, cabling, grounding, facility construction &amp; commissioning. <b>T2 leads.</b></p>
+        <ul><li>Site selection, permitting &amp; utility coordination</li><li>Power distribution &amp; redundancy design</li><li>Cooling, airflow, cabling &amp; grounding</li><li>Construction, commissioning &amp; handover</li></ul>
       </div>
-      <div>
-        <h3>DHI AICORE — technology partner</h3>
-        <ul>
-          <li>End-to-end data center planning &amp; delivery support</li>
-          <li>Power, cooling, compute &amp; rack integration</li>
-          <li>Agentic AI, monitoring &amp; managed operations</li>
-          <li>Commissioning support &amp; lifecycle management</li>
-          <li>Cybersecurity &amp; data protection (Titan / PipIQ)</li>
-        </ul>
+      <div class="svc" style="--c:#d97706">
+        <div class="no">02</div><h4>AICORE Compute</h4><div class="st">Racks &amp; Equipment</div>
+        <p>Supply, install &amp; integrate racks, servers, storage, networking and all critical systems.</p>
+        <ul><li>Rack &amp; cabinet integration, power whips</li><li>Server, storage &amp; network install</li><li>High-density, liquid-cooling-ready builds</li><li>Labeling, testing &amp; burn-in</li></ul>
       </div>
+      <div class="svc" style="--c:#15803d">
+        <div class="no">03</div><h4>AICORE Intelligence</h4><div class="st">Operations Systems &amp; AI</div>
+        <p>Agentic AI, monitoring, automation, cybersecurity &amp; intelligent control systems.</p>
+        <ul><li>Agentic monitoring &amp; automation</li><li>DCIM integration &amp; predictive alerting</li><li>Cybersecurity &amp; access management</li><li>Intelligent control &amp; optimization</li></ul>
+      </div>
+      <div class="svc" style="--c:#b91c1c">
+        <div class="no">04</div><h4>AICORE Managed</h4><div class="st">Subscriptions &amp; Agreements</div>
+        <p>Flexible SLAs, managed services, platform access, billing &amp; long-term partnerships.</p>
+        <ul><li>Flexible SLAs &amp; 24/7 NOC coverage</li><li>Capacity &amp; performance management</li><li>Platform access &amp; consolidated billing</li><li>Long-term account management</li></ul>
+      </div>
+      <div class="svc" style="--c:#7e22ce">
+        <div class="no">05</div><h4>AICORE Sustain</h4><div class="st">Maintenance &amp; Support</div>
+        <p>24/7 monitoring, preventive maintenance, upgrades &amp; full lifecycle support.</p>
+        <ul><li>Preventive maintenance schedules</li><li>Firmware &amp; hardware upgrades</li><li>Spares &amp; lifecycle management</li><li>Energy &amp; PUE optimization</li></ul>
+      </div>
+    </div>
+
+    <div class="t2strip">
+      <h3>T2 Contracting — self-perform scopes (lead of record)</h3>
+      <ul>
+        <li>Site development — grading, excavation, erosion control, stabilization</li>
+        <li>Underground utilities — water, sewer, storm drainage</li>
+        <li>Concrete — structural, reinforced foundations &amp; flatwork</li>
+        <li>Civil utility construction · pipeline &amp; hot tapping</li>
+        <li>General contracting &amp; joint-venture delivery</li>
+      </ul>
     </div>
   </div></section>
 
