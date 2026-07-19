@@ -61,6 +61,8 @@
     .pc-t{font-weight:800;font-size:15px}
     .pc-d{font-size:13px;color:#475569;line-height:1.45;flex:1}
     .pc-go{font-size:13px;font-weight:700;color:var(--ink)}
+    .gbadge{font-size:10px;font-weight:700;background:rgba(255,255,255,.24);color:#fff;padding:2px 9px;border-radius:999px;margin-top:3px}
+    .census-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--med);margin-top:8px}
     /* modal */
     .ov{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.5)}
     .ov.on{display:flex}
@@ -134,6 +136,14 @@
         <input class="qf" id="l-name" placeholder="Full name" required />
         <input class="qf" id="l-email" type="email" placeholder="Email" required />
         <input class="qf" id="l-phone" placeholder="Phone (optional)" />
+        <div id="ov-group" style="display:none">
+          <input class="qf" id="l-company" placeholder="Company name" />
+          <input class="qf mt-3" id="l-emp" inputmode="numeric" placeholder="# of employees (2+)" />
+          <div class="mt-3 rounded-lg" style="background:var(--med-l);padding:10px 12px;font-size:12px;color:#334155;line-height:1.5">
+            <b>Medical is group coverage</b> — for employers with 2+ employees (no individual medical). Download the employee census, have the employer complete it, and we'll return a group quote.
+            <button type="button" id="ov-census" class="census-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg> Download employee census (CSV)</button>
+          </div>
+        </div>
         <input type="text" id="l-hp" name="company_website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
         <div class="flex gap-2 pt-1">
           <button type="button" id="ov-cancel" class="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">Back</button>
@@ -150,8 +160,8 @@
   <script>
     (function () {
       const CATS = {
-        med:  { key:"med",  name:"Medical Insurance",  color:"var(--med)",  bg:"bgM", cls:"cM",
-                desc:"Comprehensive health, dental, and vision built to safeguard your family.",
+        med:  { key:"med",  name:"Medical Insurance",  color:"var(--med)",  bg:"bgM", cls:"cM", group:true,
+                desc:"Group medical for employers — no individual policies. Download an employee census, we return a group quote.",
                 products:["SmartCare group medical","Hospital Indemnity","Accident","Dental·Vision·Hearing","Critical Illness & Cancer","GAP"],
                 icon:'<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M12 8v6M9 11h6"/>' },
         life: { key:"life", name:"Life Insurance",     color:"var(--life)", bg:"bgL", cls:"cL",
@@ -173,7 +183,7 @@
       // render cards
       document.getElementById("cards").innerHTML = Object.values(CATS).map((c) => `
         <div class="cat" data-cat="${c.key}">
-          <div class="head ${c.bg}"><div class="ic">${svg(c.icon,26)}</div><h3>${c.name}</h3></div>
+          <div class="head ${c.bg}"><div class="ic">${svg(c.icon,26)}</div><h3>${c.name}</h3>${c.group?'<span class="gbadge">Employers · 2+ employees</span>':''}</div>
           <div class="photo ${c.bg}">${svg(c.icon,54)}<span class="ph-tag">licensed stock photo</span></div>
           <div class="body">
             <p>${c.desc}</p>
@@ -209,8 +219,16 @@
           return;
         }
         document.getElementById("ov-sel").textContent=sel.join(" · ");
+        document.getElementById("ov-group").style.display = state.med ? "block" : "none";
         ov.classList.add("on");
       }
+      function downloadCensus(){
+        const cols=["Employee Last Name","First Name","Date of Birth (MM/DD/YYYY)","Gender","Home ZIP","Coverage Tier (EE/ES/EC/FAM)","# Dependents","Current Plan","Annual Salary (optional)"];
+        const csv=cols.join(",")+"\n"+["Doe","Jane","01/15/1985","F","23320","FAM","2","",""].join(",")+"\n";
+        const blob=new Blob([csv],{type:"text/csv"}), u=URL.createObjectURL(blob), a=document.createElement("a");
+        a.href=u; a.download="DHI-Group-Census-Template.csv"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),1000);
+      }
+      document.getElementById("ov-census").addEventListener("click",downloadCensus);
       document.getElementById("qq-go").addEventListener("click",openOv);
       document.getElementById("ov-cancel").addEventListener("click",()=>ov.classList.remove("on"));
       ov.addEventListener("click",(e)=>{ if(e.target===ov) ov.classList.remove("on"); });
@@ -230,7 +248,7 @@
           email:document.getElementById("l-email").value.trim(),
           phone:document.getElementById("l-phone").value.trim(),
           interest:"Insurance — Bundle quote",
-          message:`Bundle request: ${sel.join(", ")} · ZIP ${document.getElementById("qq-zip").value||"—"} · Age ${document.getElementById("qq-age").value||"—"}`,
+          message:`Bundle request: ${sel.join(", ")}${state.med?` · GROUP MEDICAL — company: ${document.getElementById("l-company").value||"—"}, employees: ${document.getElementById("l-emp").value||"—"}`:""} · ZIP ${document.getElementById("qq-zip").value||"—"} · Age ${document.getElementById("qq-age").value||"—"}`,
           source:agent?`DHI Insurance — Bundle request (agent: ${agent.name})`:"DHI Insurance — Bundle request",
           referral_code:agentCode,                                    // credits the agent (book/analytics)
           ref:attribution.ref||"", utm:attribution.utm||{},
