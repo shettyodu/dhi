@@ -18,7 +18,20 @@
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]; }); };
   var money = function (n) { return "$" + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }); };
-  function agent() { return AGENTS[state.code] || { code: state.code, name: state.code, brand: "#1c6cb0" }; }
+  function agent() { if (session && session.agent) return session.agent; return AGENTS[state.code] || { code: state.code, name: state.code, brand: "#1c6cb0" }; }
+
+  // ---- session / live agent sign-in ----
+  var SKEY = "dhi_agent_session";
+  var session = loadSession();
+  var realLeads = null;
+  function loadSession() { try { var s = JSON.parse(localStorage.getItem(SKEY) || "null"); if (s && s.token && s.exp && Date.now() < s.exp) return s; } catch (e) {} return null; }
+  function saveSession(s) { session = s; try { localStorage.setItem(SKEY, JSON.stringify(s)); } catch (e) {} }
+  function clearSession() { session = null; realLeads = null; try { localStorage.removeItem(SKEY); } catch (e) {} }
+  function LIVE() { return !!(session && session.token); }
+  function tokenExp(tok) { try { return JSON.parse(atob(tok.split(".")[0].replace(/-/g, "+").replace(/_/g, "/"))).e || 0; } catch (e) { return 0; } }
+  function relTime(iso) { try { var days = Math.floor((Date.now() - new Date(iso)) / 86400000); return days <= 0 ? "today" : days === 1 ? "1d ago" : days + "d ago"; } catch (e) { return ""; } }
+  function normLead(l) { var st = String(l.status || "new"); st = st.charAt(0).toUpperCase() + st.slice(1); return { name: l.name || "—", product: l.interest || l.product || "—", zip: l.zip || "", status: st, date: l.date || (l.submittedAt ? relTime(l.submittedAt) : "") }; }
+  function leadsData() { if (LIVE() && Array.isArray(realLeads)) return { leads: realLeads.map(normLead), sample: false }; return { leads: SAMPLE_LEADS.map(normLead), sample: true }; }
 
   var NAV = [
     { id: "overview", label: "Overview", ic: "M4 13h6V4H4v9zm0 7h6v-5H4v5zm10 0h6V11h-6v9zm0-16v5h6V4h-6z" },
@@ -48,30 +61,34 @@
   var pill = function (s) { var c = (STATUS[s] || "#f1f5f9,#475569").split(","); return '<span class="pill" style="background:' + c[0] + ";color:" + c[1] + '">' + esc(s) + "</span>"; };
 
   /* ---------------- views ---------------- */
+  function liveTag(sample, n) { return sample ? '<span class="sample">sample data</span>' : '<span class="pill" style="background:#d1fae5;color:#065f46">live' + (n != null ? " · " + n : "") + "</span>"; }
   function vOverview() {
-    var mtd = SAMPLE_LEADS.length, contacted = SAMPLE_LEADS.filter(function (l) { return l.status !== "New"; }).length;
-    var bound = SAMPLE_LEADS.filter(function (l) { return l.status === "Bound"; }).length;
+    var ld = leadsData(), L = ld.leads;
+    var neu = L.filter(function (l) { return l.status === "New"; }).length;
+    var contacted = L.filter(function (l) { return l.status !== "New" && l.status !== "Lost"; }).length;
+    var bound = L.filter(function (l) { return l.status === "Bound"; }).length;
     var active = SAMPLE_BOOK.filter(function (b) { return b.status === "Active"; });
-    var monthlyComm = active.reduce(function (s, b) { return s + b.comm; }, 0);
-    var bookPrem = active.reduce(function (s, b) { return s + b.premium; }, 0);
+    var monthlyComm = active.reduce(function (s, b) { return s + b.comm; }, 0), bookPrem = active.reduce(function (s, b) { return s + b.premium; }, 0);
     return sectionHead("Overview", "A snapshot of your pipeline and book.") +
       '<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">' +
-        kpi(mtd, "Leads this month") + kpi(contacted, "Contacted") + kpi(bound, "Bound / sold") + kpi(money(monthlyComm) + "/mo", "Residual commission") +
+        kpi(L.length, "Leads") + kpi(neu, "New / uncontacted") + kpi(contacted, "Contacted") + kpi(bound, "Bound / sold") +
       '</div>' +
       '<div class="mt-4 grid gap-4 lg:grid-cols-2">' +
-        '<div class="card p-4"><div class="flex items-center justify-between"><h3 class="text-sm font-bold" style="color:var(--ink)">Recent leads</h3><span class="sample">sample</span></div>' +
-          '<div class="mt-2 space-y-2">' + SAMPLE_LEADS.slice(0, 4).map(function (l) { return '<div class="flex items-center justify-between text-sm"><span class="truncate text-slate-600">' + esc(l.name) + '</span>' + pill(l.status) + "</div>"; }).join("") + "</div></div>" +
-        '<div class="card p-4"><div class="flex items-center justify-between"><h3 class="text-sm font-bold" style="color:var(--ink)">Book value</h3><span class="sample">sample</span></div>' +
-          '<p class="mt-2 text-sm text-slate-500">Active monthly premium <b class="text-slate-800">' + money(bookPrem) + "</b> across " + active.length + ' policies. Residual commission <b class="text-slate-800">' + money(monthlyComm) + "/mo</b> accrues while policies stay active.</p>" +
-          '<p class="mt-2 text-xs text-slate-400">Live figures connect to the carrier feed.</p></div>' +
+        '<div class="card p-4"><div class="flex items-center justify-between"><h3 class="text-sm font-bold" style="color:var(--ink)">Recent leads</h3>' + liveTag(ld.sample) + "</div>" +
+          '<div class="mt-2 space-y-2">' + (L.length ? L.slice(0, 5).map(function (l) { return '<div class="flex items-center justify-between text-sm"><span class="truncate text-slate-600">' + esc(l.name) + '</span>' + pill(l.status) + "</div>"; }).join("") : '<p class="py-3 text-sm text-slate-400">No leads yet — share your mirror link to start.</p>') + "</div></div>" +
+        '<div class="card p-4"><div class="flex items-center justify-between"><h3 class="text-sm font-bold" style="color:var(--ink)">Book value</h3><span class="sample">sample · carrier feed</span></div>' +
+          '<p class="mt-2 text-sm text-slate-500">Active monthly premium <b class="text-slate-800">' + money(bookPrem) + "</b> across " + active.length + ' policies. Residual commission <b class="text-slate-800">' + money(monthlyComm) + "/mo</b> accrues while active.</p>" +
+          '<p class="mt-2 text-xs text-slate-400">Book &amp; commission connect to the carrier feed.</p></div>' +
       "</div>";
   }
   function vLeads() {
+    var ld = leadsData(), L = ld.leads;
+    var rows = L.length ? L.map(function (l) { return "<tr><td>" + esc(l.name) + "</td><td>" + esc(l.product) + "</td><td>" + esc(l.zip || "—") + "</td><td>" + pill(l.status) + "</td><td class='text-slate-400'>" + esc(l.date || "") + "</td></tr>"; }).join("") : '<tr><td colspan="5" style="padding:18px;color:#94a3b8">No leads yet. Share your mirror link, or add one &rarr;</td></tr>';
     return sectionHead("Leads", "Every lead from your mirror page lands here. Submit one yourself below.") +
       '<div class="grid gap-4 lg:grid-cols-3">' +
-        '<div class="card p-4 lg:col-span-2"><div class="flex items-center justify-between"><h3 class="text-sm font-bold" style="color:var(--ink)">Lead tracking</h3><span class="sample">sample data</span></div>' +
+        '<div class="card p-4 lg:col-span-2"><div class="flex items-center justify-between"><h3 class="text-sm font-bold" style="color:var(--ink)">Lead tracking</h3>' + liveTag(ld.sample, ld.sample ? null : L.length) + "</div>" +
           '<div class="mt-2 overflow-x-auto"><table><thead><tr><th>Client</th><th>Interest</th><th>ZIP</th><th>Status</th><th>Added</th></tr></thead><tbody>' +
-          SAMPLE_LEADS.map(function (l) { return "<tr><td>" + esc(l.name) + "</td><td>" + esc(l.product) + "</td><td>" + esc(l.zip) + "</td><td>" + pill(l.status) + "</td><td class='text-slate-400'>" + esc(l.date) + "</td></tr>"; }).join("") +
+          rows +
           "</tbody></table></div></div>" +
         '<div class="card p-4"><h3 class="text-sm font-bold" style="color:var(--ink)">Add a lead</h3><p class="mt-1 text-xs text-slate-500">Submits to DHI, credited to you.</p>' +
           '<form id="lead-form" class="mt-3 space-y-2">' +
@@ -153,6 +170,7 @@
     var note = $("la-note");
     if ($("la-hp").value) { e.target.reset(); return; }
     var payload = {
+      type: "inquiry", vertical: "insurance",
       name: $("la-name").value.trim(), email: $("la-email").value.trim(), phone: $("la-phone").value.trim(),
       interest: "Insurance — " + $("la-int").value, message: "Submitted by agent " + agent().name + " via console",
       source: "Agent console — " + agent().name, referral_code: agent().code, hp: $("la-hp").value,
@@ -205,6 +223,44 @@
     try { navigator.clipboard.writeText(text); var t = btn.textContent; btn.textContent = "Copied ✓"; setTimeout(function () { btn.textContent = t; }, 1400); } catch (e) {}
   }
 
+  /* ---------------- auth flow ---------------- */
+  function renderAuth() {
+    var pill = $("mode-pill"), sw = $("agent-switch"), btn = $("auth-btn");
+    if (LIVE()) {
+      pill.textContent = "LIVE · " + agent().name; pill.style.background = "#d1fae5"; pill.style.color = "#065f46"; pill.style.border = "1px solid #a7f3d0";
+      sw.style.display = "none";
+      btn.textContent = "Sign out"; btn.onclick = function () { clearSession(); state.code = codes[0] || "demo"; render(); };
+    } else {
+      pill.textContent = "PREVIEW · sample data"; pill.style.background = "#fffbeb"; pill.style.color = "#92400e"; pill.style.border = "1px solid #fde68a";
+      sw.style.display = "";
+      btn.textContent = "Sign in"; btn.onclick = openSignin;
+    }
+  }
+  function openSignin() { $("si-note").textContent = ""; $("signin-ov").style.display = "flex"; setTimeout(function () { $("si-code").focus(); }, 0); }
+  function closeSignin() { $("signin-ov").style.display = "none"; }
+  async function doLogin(e) {
+    e.preventDefault();
+    var note = $("si-note"); note.className = "text-xs text-slate-500"; note.textContent = "Signing in…";
+    var go = $("si-go"); go.disabled = true;
+    try {
+      var r = await fetch(API_BASE + "/.netlify/functions/agent-auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: $("si-code").value.trim(), password: $("si-pass").value }) });
+      var d = await r.json().catch(function () { return {}; });
+      if (r.ok && d.token) { saveSession({ token: d.token, agent: d.agent, exp: tokenExp(d.token) }); state.code = d.agent.code; $("si-pass").value = ""; closeSignin(); await loadRealLeads(); render(); }
+      else if (r.status === 503) { note.className = "text-xs text-amber-600"; note.textContent = "Sign-in isn't configured yet (admin: set AGENT_AUTH_SECRET + provision agents)."; }
+      else { note.className = "text-xs text-red-500"; note.textContent = d.error || "Sign-in failed."; }
+    } catch (err) { note.className = "text-xs text-red-500"; note.textContent = "Network error — try again."; }
+    go.disabled = false;
+  }
+  async function loadRealLeads() {
+    if (!LIVE()) return;
+    try {
+      var r = await fetch(API_BASE + "/.netlify/functions/agent-leads", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.token }, body: "{}" });
+      if (r.status === 401) { clearSession(); return; }
+      var d = await r.json().catch(function () { return {}; });
+      realLeads = (d && d.ok && Array.isArray(d.leads)) ? d.leads : [];
+    } catch (e) { realLeads = []; }
+  }
+
   /* ---------------- shell render ---------------- */
   function applyAccent() { document.documentElement.style.setProperty("--accent", agent().brand); }
   function renderNav() {
@@ -219,7 +275,7 @@
   }
   function render() {
     applyAccent();
-    renderNav(); renderMini();
+    renderAuth(); renderNav(); renderMini();
     $("view").innerHTML = (VIEWS[state.view] || vOverview)();
     wire();
     window.scrollTo(0, 0);
@@ -231,9 +287,14 @@
   sw.value = state.code;
   sw.addEventListener("change", function () { state.code = sw.value; render(); });
 
-  // deep link ?agent= preselects
+  // deep link ?agent= preselects (preview only)
   var qp = new URLSearchParams(location.search).get("agent");
   if (qp && AGENTS[qp.toLowerCase()]) { state.code = qp.toLowerCase(); sw.value = state.code; }
 
-  render();
+  // auth wiring
+  $("signin-form").addEventListener("submit", doLogin);
+  $("si-cancel").addEventListener("click", closeSignin);
+  $("signin-ov").addEventListener("click", function (e) { if (e.target === $("signin-ov")) closeSignin(); });
+
+  if (LIVE()) { state.code = session.agent.code; loadRealLeads().then(render); } else { render(); }
 })();

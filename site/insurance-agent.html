@@ -43,8 +43,9 @@
         <div><p class="text-sm font-bold" style="color:var(--ink)">Insurance · Agent Console</p><p class="text-[11px] text-slate-400">Book · leads · census · contracts</p></div>
       </div>
       <div class="flex items-center gap-2">
-        <span class="sample" title="This is a preview console">PREVIEW · sample data</span>
+        <span id="mode-pill" class="sample" title="Preview mode">PREVIEW · sample data</span>
         <select id="agent-switch" class="inp" style="width:auto;padding:7px 10px"></select>
+        <button id="auth-btn" class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">Sign in</button>
         <a href="insurance.html" class="hidden rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 sm:inline">&larr; DHI site</a>
       </div>
     </div>
@@ -68,7 +69,26 @@
     <div id="nav-m" class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-2 py-1.5"></div>
   </div>
 
+  <!-- sign-in modal -->
+  <div id="signin-ov" style="display:none;position:fixed;inset:0;z-index:80;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.5)">
+    <div class="card" style="max-width:380px;width:100%">
+      <div class="p-5" style="background:var(--ink);color:#fff;border-radius:14px 14px 0 0">
+        <p class="text-sm font-bold">Agent sign-in</p>
+        <p class="text-xs" style="color:#9fc4e8">See your live leads &amp; book.</p>
+      </div>
+      <form id="signin-form" class="p-5 space-y-3">
+        <input class="inp" id="si-code" placeholder="Agent code" autocomplete="username" required />
+        <input class="inp" id="si-pass" type="password" placeholder="Password" autocomplete="current-password" required />
+        <div class="flex gap-2 pt-1">
+          <button type="button" id="si-cancel" class="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="btn btn-a flex-1" id="si-go">Sign in</button>
+        </div>
+        <p class="text-xs" id="si-note"></p>
+      </form>
+    </div>
+  </div>
+
   <script src="assets/insurance-agents.js"></script>
-  <script src="assets/insurance-agent.js?v=1"></script>
+  <script src="assets/insurance-agent.js?v=2"></script>
 </body>
 </html>

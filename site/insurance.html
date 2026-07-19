@@ -210,6 +210,7 @@
         const agentCode = (agent && agent.code) || attribution.ref || "";
         const API_BASE=(new URLSearchParams(location.search).get("api")||localStorage.getItem("dhi_api_base")||"").replace(/\/+$/,"");
         const payload={
+          type:"inquiry", vertical:"insurance",
           name:document.getElementById("l-name").value.trim(),
           email:document.getElementById("l-email").value.trim(),
           phone:document.getElementById("l-phone").value.trim(),
