@@ -56,6 +56,11 @@
     .cat .chips{margin-bottom:14px}
     .addbtn[data-on="1"]{filter:brightness(.92)}
     .trust{font-size:12px;color:#64748b}
+    .pc{display:flex;flex-direction:column;gap:6px;border:1px solid #e2e8f0;border-radius:14px;padding:18px;background:#fff;transition:.18s;box-shadow:0 1px 2px rgba(15,39,64,.04)}
+    .pc:hover{transform:translateY(-3px);box-shadow:0 14px 30px -16px rgba(15,39,64,.28)}
+    .pc-t{font-weight:800;font-size:15px}
+    .pc-d{font-size:13px;color:#475569;line-height:1.45;flex:1}
+    .pc-go{font-size:13px;font-weight:700;color:var(--ink)}
     /* modal */
     .ov{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.5)}
     .ov.on{display:flex}
@@ -104,6 +109,16 @@
   <!-- CATEGORY CARDS -->
   <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
     <div class="cards" id="cards"></div>
+
+    <div class="mt-12">
+      <p class="text-center text-xs font-bold uppercase tracking-widest" style="color:var(--med)">Explore products &amp; carriers</p>
+      <div class="mt-5 grid gap-4 sm:grid-cols-3">
+        <a class="pc" href="smartcare.html"><span class="pc-t" style="color:var(--med)">SmartCare — Group Medical</span><span class="pc-d">Group medical for small business, 2+ employees.</span><span class="pc-go">Learn more &rarr;</span></a>
+        <a class="pc" href="manhattanlife.html"><span class="pc-t" style="color:var(--ann)">ManhattanLife — Employer Benefits</span><span class="pc-d">Supplemental group benefits — Accident, Critical Illness &amp; Cancer, Disability, Hospital Indemnity, GAP &amp; Life.</span><span class="pc-go">Learn more &rarr;</span></a>
+        <a class="pc" href="squaremouth.html"><span class="pc-t" style="color:var(--trv)">SquareMouth — Travel</span><span class="pc-d">Compare &amp; buy travel insurance through our SquareMouth agency.</span><span class="pc-go">Get travel quotes &rarr;</span></a>
+      </div>
+    </div>
+
     <p class="trust mt-8 text-center">Coverage placed through licensed carriers &amp; partners — <b>ManhattanLife</b>, <b>SquareMouth</b>, and <b>Acrisure</b>. Products vary by state and eligibility.</p>
   </section>
 
