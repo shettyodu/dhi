@@ -138,6 +138,8 @@
   <section id="schedule"><div class="wrap">
     <h2>Schedule a call with the T2 + DHI team</h2>
     <p style="margin-top:8px;color:#475569;font-size:15px">Tell us about your project and a couple of times that work — we'll confirm a slot with both teams.</p>
+    <!-- Live Calendly booking renders here when CALENDLY_URL is set (see script); otherwise the request form below is shown. -->
+    <div id="cal-embed"></div>
     <form class="form" id="t2-form">
       <div class="grid">
         <input class="inp" id="f-name" placeholder="Your name" required />
@@ -160,6 +162,26 @@
 
   <script>
     (function () {
+      // ▼▼▼ PASTE THE CALENDLY EVENT LINK HERE TO GO LIVE ▼▼▼
+      // Use a Calendly "Collective" event with BOTH hosts (Sachin + Floyd) so it finds a
+      // time that works for both. Empty string = show the request form instead.
+      var CALENDLY_URL = "";
+      // ▲▲▲ e.g. "https://calendly.com/your-org/t2-dhi-intro" ▲▲▲
+
+      var form = document.getElementById("t2-form"), embed = document.getElementById("cal-embed");
+      if (CALENDLY_URL) {
+        form.style.display = "none";
+        var w = document.createElement("div");
+        w.className = "calendly-inline-widget";
+        w.setAttribute("data-url", CALENDLY_URL + (CALENDLY_URL.indexOf("?") < 0 ? "?" : "&") + "hide_gdpr_banner=1");
+        w.style.minWidth = "320px"; w.style.height = "680px";
+        embed.appendChild(w);
+        var s = document.createElement("script");
+        s.src = "https://assets.calendly.com/assets/external/widget.js"; s.async = true;
+        document.body.appendChild(s);
+        return; // Calendly handles booking; skip the form handler
+      }
+
       var f = document.getElementById("t2-form"), note = document.getElementById("f-note");
       var API = (new URLSearchParams(location.search).get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
       f.addEventListener("submit", async function (e) {
