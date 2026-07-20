@@ -63,6 +63,18 @@
     .pc-go{font-size:13px;font-weight:700;color:var(--ink)}
     .gbadge{font-size:10px;font-weight:700;background:rgba(255,255,255,.24);color:#fff;padding:2px 9px;border-radius:999px;margin-top:3px}
     .census-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--med);margin-top:8px}
+    .feat{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:center;background:linear-gradient(120deg,#0f2f52,#1c6cb0);color:#fff;border-radius:20px;padding:28px 30px;box-shadow:0 18px 40px -22px rgba(28,108,176,.6)}
+    @media(max-width:760px){.feat{grid-template-columns:1fr;padding:22px}}
+    .feat-tag{display:inline-block;background:rgba(255,255,255,.16);color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 11px;border-radius:999px}
+    .feat h2{font-size:clamp(22px,3vw,30px);font-weight:800;margin-top:12px;line-height:1.1;color:#fff}
+    .feat p{color:#dbe9f7;margin-top:10px;font-size:15px;line-height:1.55;max-width:520px}
+    .feat-cta{margin-top:18px;display:flex;flex-wrap:wrap;gap:12px}
+    .feat-cta a.primary{background:#fff;color:#0f2f52;font-weight:700;font-size:14px;padding:11px 20px;border-radius:10px;text-decoration:none}
+    .feat-cta a.ghost{border:1px solid rgba(255,255,255,.4);color:#fff;font-weight:600;font-size:14px;padding:11px 18px;border-radius:10px;text-decoration:none;cursor:pointer}
+    .feat-hi{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .feat-hi div{background:rgba(255,255,255,.1);border-radius:12px;padding:12px 14px}
+    .feat-hi .n{font-size:15px;font-weight:800;color:#fff}
+    .feat-hi .l{font-size:11px;color:#c7ddf2;margin-top:2px}
     /* modal */
     .ov{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.5)}
     .ov.on{display:flex}
@@ -104,6 +116,27 @@
           </div>
         </div>
         <p class="mt-2 text-xs text-slate-400">Licensed advisors · no obligation · your quote is prepared by a person, not an instant estimate.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED: Group Medical (SmartCare) -->
+  <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" style="margin-top:8px">
+    <div class="feat">
+      <div>
+        <span class="feat-tag">Featured · Group Medical</span>
+        <h2>SmartCare group medical for employers</h2>
+        <p>Health coverage without the debt — no deductible, no coinsurance, and a 2-year rate lock. Built for small business, 2+ employees, all 50 states.</p>
+        <div class="feat-cta">
+          <a class="primary" href="smartcare.html">Get a group quote &rarr;</a>
+          <a class="ghost" id="feat-census">Download employee census</a>
+        </div>
+      </div>
+      <div class="feat-hi">
+        <div><div class="n">No deductible</div><div class="l">&amp; no coinsurance</div></div>
+        <div><div class="n">2-yr</div><div class="l">rate lock</div></div>
+        <div><div class="n">2+</div><div class="l">employees</div></div>
+        <div><div class="n">50 states</div><div class="l">nationwide</div></div>
       </div>
     </div>
   </section>
@@ -229,6 +262,7 @@
         a.href=u; a.download="DHI-Group-Census-Template.csv"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),1000);
       }
       document.getElementById("ov-census").addEventListener("click",downloadCensus);
+      var featCensus=document.getElementById("feat-census"); if(featCensus) featCensus.addEventListener("click",downloadCensus);
       document.getElementById("qq-go").addEventListener("click",openOv);
       document.getElementById("ov-cancel").addEventListener("click",()=>ov.classList.remove("on"));
       ov.addEventListener("click",(e)=>{ if(e.target===ov) ov.classList.remove("on"); });
