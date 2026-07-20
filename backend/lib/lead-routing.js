@@ -16,6 +16,8 @@ const ADMIN_URL = process.env.LEADS_ADMIN_URL || ""; // optional link to the adm
 
 // vertical/type keyword → owner. Matched against the lead's vertical + source + type.
 const ROUTES = [
+  // SmartCare / group medical (ITH — InsurTechHub) leads go to Todd Hall.
+  { re: /smartcare|insurtechhub|myinsurtechhub|\bith\b/i, name: "Todd Hall", email: process.env.LEAD_OWNER_SMARTCARE || "Todd@myinsurtechhub.com" },
   { re: /auto|vehicle|fleet/i, name: "Bill", email: process.env.LEAD_OWNER_AUTO || "bill@digitalhealthinternational.com" },
   { re: /light|energy|keystone/i, name: "Steve", email: process.env.LEAD_OWNER_LIGHTING || "steve@digitalhealthinternational.com" },
   { re: /suppl|textile|linen|ppe|glove|gown|drape|mask|coverall|sourcing/i, name: "Karthik", email: process.env.LEAD_OWNER_SUPPLIES || "karthik@digitalhealthinternational.com" },

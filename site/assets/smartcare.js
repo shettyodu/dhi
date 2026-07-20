@@ -24,8 +24,8 @@
           company: $("sc-company").value.trim(), location: $("sc-state").value.trim(),
           employees: $("sc-employees").value.trim(), currentCoverage: $("sc-coverage").value,
           message: $("sc-notes").value.trim(),
-          vertical: "Insurance & Risk Solutions", product: "SmartCare group medical",
-          source: "DHI · SmartCare group quote",
+          vertical: "Insurance & Risk Solutions", product: "ITH SmartCare group medical",
+          source: "DHI · ITH SmartCare group quote",
           referral_code: attr.ref || "",
         }, attr.utm && attr.utm.source ? { utm_source: attr.utm.source, utm_medium: attr.utm.medium || "", utm_campaign: attr.utm.campaign || "" } : {})),
       });
