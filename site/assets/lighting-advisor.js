@@ -135,6 +135,13 @@
     scroll();
   }
   function badge(text, cls) { return `<span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold ${cls}">${esc(text)}</span>`; }
+  // Product thumbnail: real manufacturer photo if we have one, else the
+  // generated illustration (shared with the catalog via SKURealPhoto/SKUPhoto).
+  function thumbHtml(p) {
+    const rp = window.SKURealPhoto ? window.SKURealPhoto(p) : "";
+    if (rp) return `<img src="${rp}" alt="${esc(p.id)}" loading="lazy" class="h-full w-full object-contain p-1" />`;
+    return window.SKUPhoto ? SKUPhoto.svg(p, { variant: "thumb" }) : "";
+  }
   function recCard(it) {
     const p = byId[it.id]; if (!p) return "";
     const pl = priceLabel(p);
@@ -146,8 +153,9 @@
     const inCart = qtyOf(p.id) > 0;
     return `
       <div class="rounded-xl border border-slate-200 bg-white p-3">
-        <div class="flex items-start justify-between gap-2">
-          <div class="min-w-0">
+        <div class="flex items-start gap-2.5">
+          <div class="h-14 w-14 flex-none overflow-hidden rounded-lg bg-white ring-1 ring-slate-100">${thumbHtml(p)}</div>
+          <div class="min-w-0 flex-1">
             <span class="inline-block rounded bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-cyan-700">${esc(p.cat)}</span>
             <h4 class="mt-1 font-mono text-sm font-bold text-brand-900 break-all">${esc(p.id)}</h4>
             <p class="text-[11px] text-slate-500">${esc(sup(p))}${p.group ? " · " + esc(p.group) : ""}</p>

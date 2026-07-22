@@ -198,88 +198,11 @@
     return `<span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ${cls}">${text}</span>`;
   }
 
-  // Real Keystone product photos by family (sourced from keystonetech.com).
-  // Maps a family's illustration basename -> a real photo; falls back to the
-  // generated illustration for families without a photo yet.
-  const KS_PHOTO = {
-    "light-par": "par", "light-tube": "tube", "light-ashape": "ashape", "light-br": "br",
-    "light-highbay": "highbay", "light-strip": "strip", "light-wrap": "strip", "light-vapor": "vapor",
-    "light-troffer": "troffer", "light-panel": "troffer", "light-area": "area", "light-wallpack": "wallpack",
-    "light-flood": "flood", "light-bollard": "bollard", "light-driver": "driver", "light-control": "control",
-    "light-exit": "exit", "light-emergency": "emergency", "light-corncob": "corncob", "light-cylinder": "cylinder",
-    "light-canopy": "canopy", "light-surface": "surface", "light-downlight-rd": "downlight", "light-downlight-ps": "downlight",
-    "light-candelabra": "candelabra", "light-edison": "edison", "light-globe": "globe",
-  };
-  // Real manufacturer product photos for the other suppliers, one per archetype
-  // per brand (sourced from each maker's site; validated raster images only —
-  // an archetype absent here falls back to the generated illustration).
-  const SUP_PHOTO = {
-    "Acuity Brands": { dir: "acuity", arch: { "panel": "panel.png", "downlight": "downlight.png", "area": "area.png", "wallpack": "wallpack.png", "flood": "flood.jpg", "canopy": "canopy.jpg", "strip": "strip.jpg", "vaportight": "vaportight.png", "wraparound": "wraparound.png", "exit": "exit.jpg", "emergency": "emergency.png", "occupancy-sensor": "occupancy-sensor.png", "photocell": "photocell.png", "power-pack": "power-pack.jpg", "room-controller": "room-controller.png", "fixture-sensor": "fixture-sensor.png", "outdoor-sensor": "outdoor-sensor.png" } },
-    "Cree Lighting": { dir: "cree", arch: { "high-bay": "high-bay.png", "troffer": "troffer.jpg", "panel": "panel.jpg", "downlight": "downlight.jpg", "strip": "strip.jpg", "wallpack": "wallpack.jpg", "flood": "flood.jpg", "canopy": "canopy.png", "area": "area.jpg" } },
-    "Alcon Lighting": { dir: "alcon", arch: { "downlight": "downlight.jpg", "cylinder": "cylinder.jpg", "panel": "panel.png", "track": "track.png", "strip": "strip.jpg", "vaportight": "vaportight.jpg", "high-bay": "high-bay.jpg" } },
-    "Eaton": { dir: "eaton", arch: { "troffer": "troffer.webp", "panel": "panel.webp", "wraparound": "wraparound.webp", "downlight": "downlight.webp", "high-bay": "high-bay.webp", "area": "area.webp", "roadway": "roadway.webp", "flood": "flood.webp", "canopy": "canopy.webp", "vaportight": "vaportight.webp", "wallpack": "wallpack.webp" } },
-    "Orion Energy Systems": { dir: "orion", arch: { "high-bay": "high-bay.jpg", "vaportight": "vaportight.png", "area": "area.png", "flood": "flood.png", "troffer": "troffer.png", "panel": "panel.png", "linear": "linear.webp", "wallpack": "wallpack.png", "canopy": "canopy.jpg", "strip": "strip.png" } },
-    "Signify": { dir: "signify", arch: { "high-bay": "high-bay.webp", "troffer": "troffer.webp", "panel": "panel.webp", "downlight": "downlight.jpg", "area": "area.webp", "flood": "flood.webp", "vaportight": "vaportight.webp", "tube": "tube.webp", "lamp": "lamp.webp" } },
-  };
-  // The product's `group` is authoritative in our data, so map from it first;
-  // fall back to spec keywords only for odd/blank groups. (Group-first avoids
-  // e.g. a wall pack whose spec mentions a "photocell option" being mistaken
-  // for a photocell control.)
-  const GROUP_ARCH = {
-    "high bay": "high-bay", "troffer": "troffer", "flat panel": "panel", "panel": "panel",
-    "downlight": "downlight", "area light": "area", "area": "area", "wall pack": "wallpack",
-    "flood": "flood", "floodlight": "flood", "canopy": "canopy", "strip": "strip",
-    "vapor tight": "vaportight", "vaportight": "vaportight", "vaportite": "vaportight",
-    "wraparound": "wraparound", "roadway": "roadway", "roadway / streetlight": "roadway",
-    "exit": "exit", "emergency": "emergency", "cylinder": "cylinder", "track": "track",
-    "batten": "batten", "stairwell": "stairwell", "linear": "linear", "multipurpose linear": "linear",
-    "recessed linear": "linear", "pendant linear": "linear", "surface linear": "linear",
-    "wall sconce": "wall-sconce", "tube": "tube", "lamp": "lamp",
-    "occupancy sensor": "occupancy-sensor", "photocell": "photocell", "power pack": "power-pack",
-    "room controller": "room-controller", "wireless sensor": "fixture-sensor",
-    "fixture sensor": "fixture-sensor", "outdoor sensor": "outdoor-sensor",
-  };
-  // Cross-map an archetype a brand lacks to a visually-equivalent one it has.
-  const ARCH_ALIAS = { "linear": "strip" };
-  function photoArch(p) {
-    const g = (p.group || "").toLowerCase().trim();
-    if (GROUP_ARCH[g]) return GROUP_ARCH[g];
-    const s = (g + " " + (p.cat || "") + " " + (p.specs || "") + " " + (p.id || "")).toLowerCase();
-    const has = function () { for (var i = 0; i < arguments.length; i++) if (s.indexOf(arguments[i]) !== -1) return true; return false; };
-    if (has("high bay", "highbay")) return "high-bay";
-    if (has("troffer")) return "troffer";
-    if (has("flat panel", "panel", "backlight")) return "panel";
-    if (has("vapor")) return "vaportight";
-    if (has("wrap")) return "wraparound";
-    if (has("wall pack", "wallpack")) return "wallpack";
-    if (has("area")) return "area";
-    if (has("flood")) return "flood";
-    if (has("canopy", "soffit", "garage", "parking")) return "canopy";
-    if (has("strip")) return "strip";
-    if (has("roadway", "street")) return "roadway";
-    if (has("cylinder")) return "cylinder";
-    if (has("track")) return "track";
-    if (has("linear")) return "linear";
-    if (has("downlight", "wafer")) return "downlight";
-    if (has("tube")) return "tube";
-    if (has("lamp", "bulb", "spot", "mr16", "gu10", "par")) return "lamp";
-    return "";
-  }
+  // Real product photos are resolved by the shared helper (assets/sku-realphoto.js)
+  // so the catalog and the AI advisor use ONE photo map. Returns "" when a SKU
+  // has no real photo yet -> callers fall back to the generated SKUPhoto illo.
   function realPhoto(p) {
-    // Keystone: family map on the illustration basename.
-    if (p.img) {
-      const base = p.img.split("/").pop().replace(/\.(png|jpe?g|webp|svg)$/i, "");
-      const f = KS_PHOTO[base];
-      if (f) return "assets/img/products/keystone/" + f + ".jpg";
-    }
-    // Other suppliers: brand + archetype photo (illustration fallback if absent).
-    const sp = SUP_PHOTO[p.supplier];
-    if (sp) {
-      const a = photoArch(p);
-      const f = sp.arch[a] || (ARCH_ALIAS[a] && sp.arch[ARCH_ALIAS[a]]);
-      if (f) return "assets/img/products/" + sp.dir + "/" + f;
-    }
-    return "";
+    return (window.SKURealPhoto ? window.SKURealPhoto(p) : "");
   }
   function photoHtml(p) {
     const rp = realPhoto(p);
