@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Bid Builder — Solicitation Line-Item Matching | DHI Lighting</title>
+  <meta name="description" content="Paste a solicitation's lighting line items and match each to catalog SKUs with quantities and pricing — a bid worksheet in seconds. DHI Lighting." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}
+    .bd-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+    .bd-h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#0b2a45}
+    .bd-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+    @media(max-width:760px){.bd-meta{grid-template-columns:1fr 1fr}}
+    .bd-f label{display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px}
+    .bd-inp{width:100%;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 11px;font-size:13.5px;color:#0f172a}
+    .bd-inp:focus{outline:none;border-color:#0891b2;box-shadow:0 0 0 3px rgba(8,145,178,.14)}
+    textarea.bd-inp{min-height:130px;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.5}
+    .bd-btn{border:0;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer}
+    .bd-btn.p{background:#0891b2;color:#fff}.bd-btn.p:hover{background:#0aa2c4}
+    .bd-btn.s{background:#fff;color:#0b2a45;border:1.5px solid #e2e8f0}.bd-btn.s:hover{border-color:#0891b2}
+    .bd-btn:disabled{opacity:.5;cursor:default}
+    .bd-cov{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:4px}
+    @media(max-width:760px){.bd-cov{grid-template-columns:1fr 1fr}}
+    .bd-m{background:#f8fafc;border:1px solid #eef2f7;border-radius:10px;padding:10px 12px}
+    .bd-m .n{font-size:22px;font-weight:800;color:#0b2a45;font-family:Montserrat,Inter,sans-serif;line-height:1}
+    .bd-m .l{font-size:11px;color:#64748b;margin-top:3px}
+    .bd-tablewrap{overflow-x:auto;margin-top:14px}
+    table.bd-t{width:100%;border-collapse:collapse;font-size:12.5px;min-width:760px}
+    .bd-t th{text-align:left;padding:8px 10px;border-bottom:2px solid #e2e8f0;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:#64748b;background:#f8fafc}
+    .bd-t td{padding:8px 10px;border-bottom:1px solid #eef2f7;vertical-align:top}
+    .bd-raw{color:#334155}
+    .bd-chip{display:inline-block;font-size:10px;font-weight:700;border-radius:5px;padding:2px 6px;margin:1px 3px 1px 0}
+    .bd-chip.ty{background:#e0f2f4;color:#0a5567}
+    .bd-qty{width:56px;border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 8px;font-size:13px;text-align:center}
+    .bd-sel{width:100%;max-width:280px;border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 8px;font-size:12.5px;background:#fff}
+    .bd-conf{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;border-radius:5px;padding:2px 7px;white-space:nowrap}
+    .bd-conf.hi{background:#ecfdf5;color:#065f46}.bd-conf.md{background:#fffbeb;color:#92400e}.bd-conf.lo{background:#f1f5f9;color:#64748b}
+    .bd-ext{font-weight:700;color:#0b2a45;white-space:nowrap}.bd-quote{color:#94a3b8;font-size:11.5px}
+    .bd-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .bd-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#0b2a45;color:#fff;font-size:13px;font-weight:600;padding:10px 18px;border-radius:999px;opacity:0;transition:.25s;z-index:80;pointer-events:none}
+    .bd-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .bd-honest{margin-top:14px;border-left:3px solid #0891b2;background:#f0f9ff;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:#334155;line-height:1.5}
+    #bid-print{display:none}
+    @media print{
+      body{background:#fff}
+      header,#dhi-header,#dhi-footer,#dhi-coribbon,.bd-subnav,.bd-app-ui,footer{display:none !important}
+      #bid-print{display:block !important}
+      .pr-h{display:flex;justify-content:space-between;border-bottom:2px solid #0b2a45;padding-bottom:8px}
+      .pr-title{font-size:19px;font-weight:800;color:#0b2a45;margin-top:12px}
+      .pr-meta{font-size:11px;color:#475569;margin-top:4px}
+      table.pr-t{width:100%;border-collapse:collapse;margin-top:12px;font-size:10.5px}
+      .pr-t th,.pr-t td{text-align:left;padding:5px 7px;border-bottom:1px solid #e2e8f0}
+      .pr-t th{background:#f1f5f9;text-transform:uppercase;font-size:9px;letter-spacing:.03em;color:#475569}
+      .pr-disc{font-size:9px;color:#94a3b8;margin-top:14px;line-height:1.5}
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-brand-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 10%, #f59e0b 0, transparent 38%), radial-gradient(circle at 10% 90%, #06b6d4 0, transparent 40%);"></div>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
+      <nav class="mb-5 flex items-center gap-2 text-sm text-slate-400">
+        <a href="index.html" class="hover:text-cyan-300">Home</a><span>/</span>
+        <a href="lighting.html" class="hover:text-cyan-300">Lighting</a><span>/</span>
+        <span class="text-slate-200">Bid Builder</span>
+      </nav>
+      <p class="kicker text-sm font-semibold uppercase tracking-wider text-amber-300">Government Bidding · Line-Item Automation</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Bid Builder</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">Paste a solicitation's lighting line items — get each one matched to a catalog SKU with quantity, pricing, and a confidence flag. A priced bid worksheet in seconds, not days. Review every line, then export or send to a quote.</p>
+    </div>
+  </section>
+
+  <!-- SUBNAV -->
+  <div class="bd-subnav sticky top-16 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 sm:px-6 lg:px-8">
+      <a href="lighting.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Overview</a>
+      <a href="lighting-advisor.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">AI Advisor</a>
+      <a href="lighting-designer.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Design Your Space</a>
+      <a href="lighting-layout.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Layout Calculator</a>
+      <a href="lighting-bid.html" class="whitespace-nowrap border-b-2 border-cyan-600 px-3 py-3 text-sm font-semibold text-cyan-700">Bid Builder</a>
+      <a href="lighting-catalog.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Product Catalog</a>
+      <a href="lighting-roi.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Savings Calculator</a>
+      <a href="lighting-audit.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Free Audit</a>
+      <a href="contact.html?interest=Lighting%20%26%20Energy%20Efficiency" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Request a Quote</a>
+    </div>
+  </div>
+
+  <main class="bd-app-ui mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div id="bid-app"></div>
+  </main>
+
+  <div id="bid-print"></div>
+  <div class="bd-toast" id="bd-toast"></div>
+
+  <script src="assets/components.js"></script>
+  <script src="assets/catalog-data.js"></script>
+  <script src="assets/catalog-suppliers-data.js"></script>
+  <script src="assets/lighting-bid.js?v=1"></script>
+  <script src="assets/partner-skin.js?v=1"></script>
+</body>
+</html>
