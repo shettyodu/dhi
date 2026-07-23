@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Layout &amp; Foot-Candle Calculator | DHI Lighting</title>
+  <meta name="description" content="Size a lighting layout by the lumen method — fixture count, spacing, uniformity, and watts/ft² — from room dimensions and target foot-candles. Printable bid tables and add-to-quote across seven brands." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}
+    /* self-contained calculator styles (no Tailwind dependency) */
+    .lc-wrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px}
+    @media(max-width:900px){.lc-wrap{grid-template-columns:1fr}}
+    .lc-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+    .lc-h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#0b2a45}
+    .lc-sub{font-size:12.5px;color:#64748b;margin-top:3px}
+    .lc-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+    .lc-row.one{grid-template-columns:1fr}
+    .lc-f label{display:block;font-size:11.5px;font-weight:700;color:#475569;margin-bottom:4px}
+    .lc-f .u{color:#94a3b8;font-weight:600}
+    .lc-inp,.lc-sel{width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:14px;color:#0f172a;background:#fff}
+    .lc-inp:focus,.lc-sel:focus{outline:none;border-color:#0891b2;box-shadow:0 0 0 3px rgba(8,145,178,.14)}
+    .lc-hint{font-size:11px;color:#94a3b8;margin-top:4px}
+    .lc-adv{margin-top:14px;border-top:1px dashed #e2e8f0;padding-top:12px}
+    .lc-res{position:sticky;top:88px}
+    .lc-big{text-align:center;padding:6px 0 10px}
+    .lc-big .n{font-size:52px;font-weight:800;color:#0b2a45;line-height:1;font-family:Montserrat,Inter,sans-serif}
+    .lc-big .l{font-size:12px;color:#64748b;margin-top:6px;font-weight:600}
+    .lc-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+    .lc-m{background:#f8fafc;border:1px solid #eef2f7;border-radius:10px;padding:10px 12px}
+    .lc-m .n{font-size:18px;font-weight:800;color:#0b2a45;font-family:Montserrat,Inter,sans-serif}
+    .lc-m .l{font-size:11px;color:#64748b;margin-top:2px}
+    .lc-flag{margin-top:12px;font-size:12px;border-radius:10px;padding:9px 12px;line-height:1.4}
+    .lc-flag.ok{background:#ecfdf5;border:1px solid #d1fae5;color:#065f46}
+    .lc-flag.warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+    .lc-viz{margin-top:14px;border:1px solid #eef2f7;border-radius:12px;background:#0b2a45;padding:12px}
+    .lc-viz .cap{font-size:10.5px;color:#7fd4e6;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+    .lc-btns{display:flex;gap:8px;margin-top:14px}
+    .lc-btn{flex:1;border:0;border-radius:10px;padding:11px;font-size:13.5px;font-weight:700;cursor:pointer;text-align:center}
+    .lc-btn.p{background:#0891b2;color:#fff}.lc-btn.p:hover{background:#0aa2c4}
+    .lc-btn.s{background:#fff;color:#0b2a45;border:1.5px solid #e2e8f0}.lc-btn.s:hover{border-color:#0891b2}
+    .lc-note{margin-top:8px;font-size:11.5px;color:#94a3b8;text-align:center}
+    .lc-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#0b2a45;color:#fff;font-size:13px;font-weight:600;padding:10px 18px;border-radius:999px;opacity:0;transition:.25s;z-index:80;pointer-events:none}
+    .lc-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* print proposal */
+    #lc-print{display:none}
+    @media print{
+      body{background:#fff}
+      header,.lc-subnav,#dhi-header,#dhi-footer,#dhi-coribbon,.lc-app-ui,footer{display:none !important}
+      #lc-print{display:block !important;padding:0}
+      .pr-h{display:flex;justify-content:space-between;border-bottom:2px solid #0b2a45;padding-bottom:8px}
+      .pr-h b{font-size:14px;color:#0b2a45}
+      .pr-title{font-size:20px;font-weight:800;color:#0b2a45;margin-top:14px}
+      table{width:100%;border-collapse:collapse;margin-top:14px;font-size:12px}
+      th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #e2e8f0}
+      th{background:#f1f5f9;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:#475569}
+      .pr-disc{font-size:9.5px;color:#94a3b8;margin-top:16px;line-height:1.5}
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-brand-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 10%, #f59e0b 0, transparent 38%), radial-gradient(circle at 10% 90%, #06b6d4 0, transparent 40%);"></div>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
+      <nav class="mb-5 flex items-center gap-2 text-sm text-slate-400">
+        <a href="index.html" class="hover:text-cyan-300">Home</a><span>/</span>
+        <a href="lighting.html" class="hover:text-cyan-300">Lighting</a><span>/</span>
+        <span class="text-slate-200">Layout Calculator</span>
+      </nav>
+      <p class="kicker text-sm font-semibold uppercase tracking-wider text-amber-300">Lighting Design · Foot-Candle Layout</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Layout &amp; foot-candle calculator</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">Enter the space and a target light level — get fixture count, spacing, uniformity, and watts/ft², with a printable table for bids and proposals. Works with any fixture in the catalog. <a href="lighting-advisor.html" class="font-semibold text-cyan-300 underline hover:text-cyan-200">Not sure which fixture? Ask the AI Advisor →</a></p>
+    </div>
+  </section>
+
+  <!-- SUBNAV -->
+  <div class="lc-subnav sticky top-16 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 sm:px-6 lg:px-8">
+      <a href="lighting.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Overview</a>
+      <a href="lighting-advisor.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">AI Advisor</a>
+      <a href="lighting-designer.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Design Your Space</a>
+      <a href="lighting-layout.html" class="whitespace-nowrap border-b-2 border-cyan-600 px-3 py-3 text-sm font-semibold text-cyan-700">Layout Calculator</a>
+      <a href="lighting-catalog.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Product Catalog</a>
+      <a href="lighting-roi.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Savings Calculator</a>
+      <a href="lighting-audit.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Free Audit</a>
+      <a href="lighting-process.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Process &amp; Pricing</a>
+      <a href="contact.html?interest=Lighting%20%26%20Energy%20Efficiency" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Request a Quote</a>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <main class="lc-app-ui mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div id="layout-app"></div>
+    <p class="mt-6 text-xs text-slate-400">Estimates by the <b>lumen (average-illuminance) method</b> — fixture count = (target fc × area) ÷ (fixture lumens × CU × LLF). Coefficient of Utilization and Light Loss Factor are planning assumptions; actual results depend on room reflectances, fixture photometrics, obstructions, and mounting. For a stamped design or a final government bid, verify against a point-by-point photometric report.</p>
+  </main>
+
+  <div id="lc-print"></div>
+  <div class="lc-toast" id="lc-toast"></div>
+
+  <script src="assets/components.js"></script>
+  <script src="assets/catalog-data.js"></script>
+  <script src="assets/catalog-suppliers-data.js"></script>
+  <script src="assets/lighting-layout.js?v=1"></script>
+  <script src="assets/partner-skin.js?v=1"></script>
+</body>
+</html>
