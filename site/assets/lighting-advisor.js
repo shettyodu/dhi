@@ -129,7 +129,9 @@
     const row = document.createElement("div");
     row.className = "flex justify-start";
     const cards = (items && items.length) ? `<div class="mt-3 space-y-2">${items.map(recCard).join("")}</div>` : "";
-    row.innerHTML = `<div class="max-w-[92%] rounded-2xl rounded-bl-sm bg-slate-100 px-3.5 py-2.5 text-sm leading-relaxed text-slate-700">${mdLite(reply)}${cards}</div>`;
+    const hasLayout = items && items.some((it) => it._layout);
+    const note = hasLayout ? '<p style="margin-top:8px;font-size:11px;color:#0e7490"><b>Quantities below are sized by the lumen method</b> for the space you described — an estimate. Open the <a href="lighting-layout.html" style="text-decoration:underline;font-weight:700">Layout Calculator</a> to fine-tune mounting height, spacing, and light-loss factors.</p>' : "";
+    row.innerHTML = `<div class="max-w-[92%] rounded-2xl rounded-bl-sm bg-slate-100 px-3.5 py-2.5 text-sm leading-relaxed text-slate-700">${mdLite(reply)}${note}${cards}</div>`;
     log.appendChild(row);
     wireCards(row);
     scroll();
@@ -141,6 +143,27 @@
     const rp = window.SKURealPhoto ? window.SKURealPhoto(p) : "";
     if (rp) return `<img src="${rp}" alt="${esc(p.id)}" loading="lazy" class="h-full w-full object-contain p-1" />`;
     return window.SKUPhoto ? SKUPhoto.svg(p, { variant: "thumb" }) : "";
+  }
+  // Size each recommendation by the lumen method from the space the user
+  // described, overriding the model's rough qty with a deterministic count.
+  function augmentLayout(items, userText) {
+    if (!items || !items.length || !window.LightingCalc) return items;
+    const sp = LightingCalc.parseSpace(userText || "");
+    if (!sp.area || !sp.fc) return items; // need a size and a target level to size it
+    return items.map((it) => {
+      const p = byId[it.id]; if (!p) return it;
+      const lm = LightingCalc.rep(p.lm); if (!lm) return it;
+      const r = LightingCalc.layout({ area: sp.area, fc: sp.fc, lumens: lm, L: sp.L, W: sp.W });
+      if (!r.count) return it;
+      return Object.assign({}, it, { qty: r.count, _layout: { count: r.count, area: sp.area, fc: sp.fc, rows: r.rows, cols: r.cols, appl: sp.appl } });
+    });
+  }
+  function layoutNote(it) {
+    if (!it._layout) return "";
+    const x = it._layout;
+    return '<div style="margin-top:6px;background:#ecfeff;border:1px solid #cff2f7;border-radius:8px;padding:6px 9px;font-size:11px;color:#0e7490;line-height:1.4">' +
+      '<b>📐 Layout estimate:</b> ' + x.count.toLocaleString() + ' fixtures for ' + x.area.toLocaleString() + ' ft² at ' + x.fc + ' fc' + (x.appl ? ' (' + esc(x.appl) + ')' : '') + ' · ' + x.rows + '×' + x.cols + ' grid. ' +
+      '<a href="lighting-layout.html" style="font-weight:700;text-decoration:underline">Refine →</a></div>';
   }
   function recCard(it) {
     const p = byId[it.id]; if (!p) return "";
@@ -164,6 +187,7 @@
         </div>
         ${badges ? `<div class="mt-2 flex flex-wrap gap-1">${badges}</div>` : ""}
         ${it.reason ? `<p class="mt-2 text-xs text-slate-500"><span class="font-semibold text-slate-600">Why:</span> ${esc(it.reason)}</p>` : ""}
+        ${layoutNote(it)}
         <div class="mt-2.5 flex items-center gap-2">
           <div class="inline-flex items-center rounded-md border border-slate-300 text-sm">
             <button type="button" data-rec-dec="${esc(p.id)}" class="px-2 py-1 text-slate-600 hover:bg-slate-100">−</button>
@@ -223,7 +247,7 @@
       const d = await r.json().catch(() => ({}));
       hideTyping();
       if (r.ok && d.reply) {
-        addAssistant(d.reply, d.items);
+        addAssistant(d.reply, augmentLayout(d.items, text));
         convo.push({ role: "assistant", content: d.reply });
       } else {
         addAssistant(d.error || "Sorry — I had trouble with that. You can browse the [full catalog](lighting-catalog.html) or request a quote and our team will help directly.", null);
