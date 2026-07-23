@@ -34,7 +34,11 @@
     { k: "custom", label: "Custom target", fc: 30 },
   ];
 
-  var st = { project: "", room: "", L: 100, W: 50, H: 24, fc: 20, preset: "warehouse", fixId: (FIX[0] && FIX[0].id) || "", lm: (FIX[0] && FIX[0].lm) || 0, w: (FIX[0] && FIX[0].w) || 0, cu: 0.8, llf: 0.8 };
+  // sensible default: the brightest high-bay (matches the warehouse preset),
+  // else the brightest fixture overall — so the initial view isn't 800 tiny lamps.
+  var DEF = FIX.filter(function (f) { return /high bay/i.test(f.group); }).sort(function (a, b) { return b.lm - a.lm; })[0]
+    || FIX.slice().sort(function (a, b) { return b.lm - a.lm; })[0] || null;
+  var st = { project: "", room: "", L: 100, W: 50, H: 24, fc: 20, preset: "warehouse", fixId: DEF ? DEF.id : "", lm: DEF ? DEF.lm : 0, w: DEF ? DEF.w : 0, cu: 0.8, llf: 0.8 };
 
   function fixOptions() {
     var last = "", out = "";
