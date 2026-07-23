@@ -110,6 +110,11 @@
           '<div class="z-btns"><button class="z-btn p" id="r-add">Add to quote</button><button class="z-btn s" id="r-print">Print design sheet</button></div>' +
         '</div>' +
       '</div>' +
+    '</div>' +
+    '<div class="z-card" style="margin-top:16px">' +
+      '<div class="z-h" style="display:flex;justify-content:space-between;align-items:center;gap:12px"><span>3D room preview <span class="sub">drag to orbit · scroll to zoom</span></span><button class="z-btn s" id="z-reset3d" style="flex:none;width:auto;padding:6px 12px;font-size:12px">Reset view</button></div>' +
+      '<canvas id="z-canvas"></canvas>' +
+      '<div class="z-legend"><span id="r-min2">—</span><div class="z-legbar"></div><span id="r-max2">—</span></div>' +
     '</div>';
 
   var $ = function (id) { return document.getElementById(id); };
@@ -162,6 +167,87 @@
     box.innerHTML = '<svg viewBox="0 0 ' + Wd + ' ' + Hd + '" width="100%" height="' + Hd + '" style="display:block;border-radius:10px;overflow:hidden">' + cells + dots + '</svg>';
   }
 
+  /* ---------- interactive 3D room view (self-contained canvas) ---------- */
+  var lastViz = null;
+  var view = { az: -0.7, el: 0.92, dist: 0 };
+  var drag = false, lx = 0, ly = 0;
+
+  function sizeCanvas(cv) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = cv.clientWidth || 600, h = cv.clientHeight || 460;
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    var ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+  function rot3(px, py, pz, C, az, el) {
+    var x = px - C[0], y = py - C[1], z = pz - C[2];
+    var ca = Math.cos(az), sa = Math.sin(az), x1 = x * ca - y * sa, y1 = x * sa + y * ca;
+    var ce = Math.cos(el), se = Math.sin(el);
+    return [x1, y1 * se + z * ce, y1 * ce - z * se]; // [screenX, screenY(up), depth]
+  }
+  function draw3D() {
+    var cv = document.getElementById("z-canvas"); if (!cv) return;
+    var S = sizeCanvas(cv), ctx = S.ctx, cw = S.w, ch = S.h;
+    ctx.clearRect(0, 0, cw, ch);
+    if (!lastViz) return;
+    var L = lastViz.L, W = lastViz.W, H = lastViz.H, wp = lastViz.wp, pg = lastViz.pg;
+    var C = [L / 2, W / 2, H / 2], maxD = Math.max(L, W, H);
+    var az = view.az, el = Math.max(0.12, Math.min(1.45, view.el));
+    var dist = maxD * 1.5 + view.dist, focal = maxD * 2.6, scale = Math.min(cw, ch) / maxD * 0.66;
+    function P(px, py, pz) { var r = rot3(px, py, pz, C, az, el); var pp = focal / (focal + r[2] + dist); return { x: cw / 2 + r[0] * pp * scale, y: ch / 2 - r[1] * pp * scale, d: r[2] }; }
+
+    // back walls (drawn faint, only the two facing away from camera) for depth cue
+    var wallDefs = [[[0,0],[L,0]], [[L,0],[L,W]], [[L,W],[0,W]], [[0,W],[0,0]]];
+    wallDefs.forEach(function (wl) {
+      var a = P(wl[0][0], wl[0][1], 0), b = P(wl[1][0], wl[1][1], 0), c = P(wl[1][0], wl[1][1], H), d = P(wl[0][0], wl[0][1], H);
+      if ((a.d + b.d) / 2 <= 0) return; // near wall -> skip so we can see in
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.closePath();
+      ctx.fillStyle = "rgba(120,150,180,0.07)"; ctx.fill();
+    });
+
+    // floor heatmap at the work plane
+    var npx = pg.npx, npy = pg.npy, cells = [];
+    for (var j = 0; j < npy; j++) for (var i = 0; i < npx; i++) {
+      var x0 = i / npx * L, x1 = (i + 1) / npx * L, y0 = j / npy * W, y1 = (j + 1) / npy * W;
+      var a = P(x0, y0, wp), b = P(x1, y0, wp), c = P(x1, y1, wp), d = P(x0, y1, wp);
+      var t = (pg.grid[j][i] - pg.min) / ((pg.max - pg.min) || 1);
+      cells.push({ p: [a, b, c, d], t: t, depth: (a.d + b.d + c.d + d.d) / 4 });
+    }
+    cells.sort(function (m, n) { return n.depth - m.depth; });
+    cells.forEach(function (cell) {
+      ctx.beginPath(); ctx.moveTo(cell.p[0].x, cell.p[0].y);
+      for (var k = 1; k < 4; k++) ctx.lineTo(cell.p[k].x, cell.p[k].y);
+      ctx.closePath(); ctx.fillStyle = colorFor(cell.t); ctx.fill();
+    });
+
+    // room wireframe
+    var cn = [[0,0,0],[L,0,0],[L,W,0],[0,W,0],[0,0,H],[L,0,H],[L,W,H],[0,W,H]].map(function (p) { return P(p[0], p[1], p[2]); });
+    var edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    ctx.strokeStyle = "rgba(190,208,225,0.4)"; ctx.lineWidth = 1;
+    edges.forEach(function (e) { ctx.beginPath(); ctx.moveTo(cn[e[0]].x, cn[e[0]].y); ctx.lineTo(cn[e[1]].x, cn[e[1]].y); ctx.stroke(); });
+
+    // fixtures on the ceiling with a drop line to the plane
+    var fz = H - (lastViz.susp || 0);
+    pg.fx.forEach(function (f) {
+      var top = P(f[0], f[1], fz), bot = P(f[0], f[1], wp);
+      ctx.strokeStyle = "rgba(245,197,66,0.28)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(bot.x, bot.y); ctx.stroke();
+      ctx.beginPath(); ctx.arc(top.x, top.y, 4.2, 0, 7); ctx.fillStyle = "#ffe07a"; ctx.fill(); ctx.strokeStyle = "#7c6318"; ctx.lineWidth = 1; ctx.stroke();
+    });
+
+    ctx.fillStyle = "rgba(203,216,231,0.72)"; ctx.font = "11px Inter,system-ui,sans-serif";
+    ctx.fillText(L + " × " + W + " ft room · " + pg.fx.length + " fixtures @ " + H + " ft · work plane " + wp + " ft", 12, ch - 12);
+  }
+  function initCanvas() {
+    var cv = document.getElementById("z-canvas"); if (!cv || cv._wired) return; cv._wired = true;
+    cv.addEventListener("pointerdown", function (e) { drag = true; lx = e.clientX; ly = e.clientY; try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
+    cv.addEventListener("pointermove", function (e) { if (!drag) return; view.az += (e.clientX - lx) * 0.01; view.el += (e.clientY - ly) * 0.01; lx = e.clientX; ly = e.clientY; draw3D(); });
+    cv.addEventListener("pointerup", function () { drag = false; });
+    cv.addEventListener("pointercancel", function () { drag = false; });
+    cv.addEventListener("wheel", function (e) { e.preventDefault(); var m = lastViz ? Math.max(lastViz.L, lastViz.W, lastViz.H) : 30; view.dist += e.deltaY * 0.012 * (m / 30); draw3D(); }, { passive: false });
+    window.addEventListener("resize", draw3D);
+    var rb = document.getElementById("z-reset3d"); if (rb) rb.addEventListener("click", function () { view.az = -0.7; view.el = 0.92; view.dist = 0; draw3D(); });
+  }
+
   function compute() {
     st.L = numv("z-L", 1); st.W = numv("z-W", 1); st.ceilH = numv("z-ceil", 1);
     st.wp = numv("z-wp", 0); st.susp = numv("z-susp", 0);
@@ -201,6 +287,9 @@
       else { flag.className = "z-flag warn"; flag.textContent = "Uneven — avg/min " + pg.uAvgMin.toFixed(2) + " (> 2.5). Add fixtures, lower the mount, or use a wider distribution."; }
     } else { $("r-grid").textContent = "—"; $("r-min").textContent = "—"; $("r-max").textContent = "—"; $("r-unif").textContent = ""; $("r-flag").className = "z-flag warn"; $("r-flag").textContent = "Enter room size, target, and fixture lumens to run the calculation."; }
     drawHeat(pg, st.L, st.W);
+    lastViz = pg ? { L: st.L, W: st.W, H: st.ceilH, wp: st.wp, susp: st.susp, pg: pg } : null;
+    if (pg) { $("r-min2").textContent = Math.round(pg.min) + " fc"; $("r-max2").textContent = Math.round(pg.max) + " fc"; }
+    draw3D();
     fillPrint(count, rcr, cu, llf, avgZonal, totalW, lpd, area, hRC, pg);
     return count;
   }
@@ -255,6 +344,7 @@
   $("r-add").addEventListener("click", addToCart);
   $("r-print").addEventListener("click", function () { compute(); window.print(); });
 
+  initCanvas();
   syncFixture(st.fixId);
   compute();
 })();
