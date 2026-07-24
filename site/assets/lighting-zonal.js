@@ -39,6 +39,9 @@
     { k: "30/30/20", c: 0.30, w: 0.30, f: 0.20, label: "30 / 30 / 20 — dark / exposed structure" },
     { k: "custom", c: 0, w: 0, f: 0, label: "Custom reflectances" },
   ];
+  // typical ASHRAE 90.1-2019 lighting power density allowance (W/ft²), space-by-space
+  var LPD_ALLOW = { warehouse: 0.66, rack: 0.66, highbay: 1.11, office: 0.71, gym: 0.72, sports: 0.72, retail: 1.05, parking: 0.18 };
+  function isRound(group) { return /high bay|down|canopy|area|road|flood|spot|bollard/i.test(group || ""); }
   // distribution exponent (I = I0·cosⁿθ): wide (lensed troffer) → narrow (aisle/spot)
   function autoDist(group) { return /high bay|area|flood|road|down|canopy|spot/i.test(group) ? 3 : 1.2; }
 
@@ -102,6 +105,7 @@
             '<div class="z-m"><div class="n" id="r-lpd">—</div><div class="l">W / ft²</div></div>' +
           '</div>' +
           '<div class="z-flag" id="r-flag"></div>' +
+          '<div class="z-flag" id="r-code" style="margin-top:8px;display:none"></div>' +
           '<div class="z-heat">' +
             '<div class="cap"><span>Point-by-point (fc)</span><span id="r-unif"></span></div>' +
             '<div id="r-heat"></div>' +
@@ -112,8 +116,8 @@
       '</div>' +
     '</div>' +
     '<div class="z-card" style="margin-top:16px">' +
-      '<div class="z-h" style="display:flex;justify-content:space-between;align-items:center;gap:12px"><span>3D room preview <span class="sub">drag to orbit · scroll to zoom</span></span><button class="z-btn s" id="z-reset3d" style="flex:none;width:auto;padding:6px 12px;font-size:12px">Reset view</button></div>' +
-      '<canvas id="z-canvas"></canvas>' +
+      '<div class="z-h" style="display:flex;justify-content:space-between;align-items:center;gap:12px"><span>3D room preview <span class="sub">drag to orbit · scroll to zoom · hover for fc · double-click to reset</span></span><span style="display:flex;gap:8px"><button class="z-btn s" id="z-spin" style="flex:none;width:auto;padding:6px 12px;font-size:12px">Spin</button><button class="z-btn s" id="z-reset3d" style="flex:none;width:auto;padding:6px 12px;font-size:12px">Reset view</button></span></div>' +
+      '<div style="position:relative"><canvas id="z-canvas"></canvas><div id="z-tip"></div></div>' +
       '<div class="z-legend"><span id="r-min2">—</span><div class="z-legbar"></div><span id="r-max2">—</span></div>' +
     '</div>';
 
@@ -185,6 +189,16 @@
     var ce = Math.cos(el), se = Math.sin(el);
     return [x1, y1 * se + z * ce, y1 * ce - z * se]; // [screenX, screenY(up), depth]
   }
+  var projFloor = []; // projected work-plane grid points for hover: {sx,sy,fc}
+  var spinning = false;
+  function sampleUV(pg, u, v) {
+    var gx = u * pg.npx - 0.5, gy = v * pg.npy - 0.5;
+    gx = Math.max(0, Math.min(pg.npx - 1, gx)); gy = Math.max(0, Math.min(pg.npy - 1, gy));
+    var x0 = Math.floor(gx), y0 = Math.floor(gy), x1 = Math.min(pg.npx - 1, x0 + 1), y1 = Math.min(pg.npy - 1, y0 + 1);
+    var fx = gx - x0, fy = gy - y0;
+    var a = pg.grid[y0][x0], b = pg.grid[y0][x1], c = pg.grid[y1][x0], d = pg.grid[y1][x1];
+    return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy;
+  }
   function draw3D() {
     var cv = document.getElementById("z-canvas"); if (!cv) return;
     var S = sizeCanvas(cv), ctx = S.ctx, cw = S.w, ch = S.h;
@@ -193,59 +207,98 @@
     var L = lastViz.L, W = lastViz.W, H = lastViz.H, wp = lastViz.wp, pg = lastViz.pg;
     var C = [L / 2, W / 2, H / 2], maxD = Math.max(L, W, H);
     var az = view.az, el = Math.max(0.12, Math.min(1.45, view.el));
-    var dist = maxD * 1.5 + view.dist, focal = maxD * 2.6, scale = Math.min(cw, ch) / maxD * 0.66;
-    function P(px, py, pz) { var r = rot3(px, py, pz, C, az, el); var pp = focal / (focal + r[2] + dist); return { x: cw / 2 + r[0] * pp * scale, y: ch / 2 - r[1] * pp * scale, d: r[2] }; }
+    var dist = maxD * 1.5 + view.dist, focal = maxD * 2.6, scale = Math.min(cw, ch) / maxD * 0.64;
+    function P(px, py, pz) { var r = rot3(px, py, pz, C, az, el); var pp = focal / (focal + r[2] + dist); return { x: cw / 2 + r[0] * pp * scale, y: ch / 2 - r[1] * pp * scale, d: r[2], pp: pp }; }
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
 
-    // back walls (drawn faint, only the two facing away from camera) for depth cue
-    var wallDefs = [[[0,0],[L,0]], [[L,0],[L,W]], [[L,W],[0,W]], [[0,W],[0,0]]];
-    wallDefs.forEach(function (wl) {
-      var a = P(wl[0][0], wl[0][1], 0), b = P(wl[1][0], wl[1][1], 0), c = P(wl[1][0], wl[1][1], H), d = P(wl[0][0], wl[0][1], H);
-      if ((a.d + b.d) / 2 <= 0) return; // near wall -> skip so we can see in
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.closePath();
-      ctx.fillStyle = "rgba(120,150,180,0.07)"; ctx.fill();
+    // faint back walls + ceiling for depth (near walls skipped so you see in)
+    var faces = [
+      { q: [[0,0,0],[L,0,0],[L,0,H],[0,0,H]] }, { q: [[L,0,0],[L,W,0],[L,W,H],[L,0,H]] },
+      { q: [[L,W,0],[0,W,0],[0,W,H],[L,W,H]] }, { q: [[0,W,0],[0,0,0],[0,0,H],[0,W,H]] },
+      { q: [[0,0,H],[L,0,H],[L,W,H],[0,W,H]], ceil: true },
+    ];
+    faces.forEach(function (fc) {
+      var pts = fc.q.map(function (p) { return P(p[0], p[1], p[2]); });
+      var dep = (pts[0].d + pts[1].d + pts[2].d + pts[3].d) / 4;
+      if (!fc.ceil && dep <= 0) return;
+      ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (var k = 1; k < 4; k++) ctx.lineTo(pts[k].x, pts[k].y); ctx.closePath();
+      ctx.fillStyle = fc.ceil ? "rgba(120,150,185,0.06)" : "rgba(120,150,185,0.11)"; ctx.fill();
     });
 
-    // floor heatmap at the work plane
-    var npx = pg.npx, npy = pg.npy, cells = [];
-    for (var j = 0; j < npy; j++) for (var i = 0; i < npx; i++) {
-      var x0 = i / npx * L, x1 = (i + 1) / npx * L, y0 = j / npy * W, y1 = (j + 1) / npy * W;
-      var a = P(x0, y0, wp), b = P(x1, y0, wp), c = P(x1, y1, wp), d = P(x0, y1, wp);
-      var t = (pg.grid[j][i] - pg.min) / ((pg.max - pg.min) || 1);
+    // smooth (bilinear-interpolated) floor heatmap on the work plane
+    var MX = Math.min(54, pg.npx * 3), MY = Math.min(54, pg.npy * 3), cells = [];
+    for (var j = 0; j < MY; j++) for (var i = 0; i < MX; i++) {
+      var u0 = i / MX, u1 = (i + 1) / MX, v0 = j / MY, v1 = (j + 1) / MY;
+      var a = P(u0 * L, v0 * W, wp), b = P(u1 * L, v0 * W, wp), c = P(u1 * L, v1 * W, wp), d = P(u0 * L, v1 * W, wp);
+      var t = (sampleUV(pg, (i + 0.5) / MX, (j + 0.5) / MY) - pg.min) / ((pg.max - pg.min) || 1);
       cells.push({ p: [a, b, c, d], t: t, depth: (a.d + b.d + c.d + d.d) / 4 });
     }
     cells.sort(function (m, n) { return n.depth - m.depth; });
     cells.forEach(function (cell) {
-      ctx.beginPath(); ctx.moveTo(cell.p[0].x, cell.p[0].y);
-      for (var k = 1; k < 4; k++) ctx.lineTo(cell.p[k].x, cell.p[k].y);
-      ctx.closePath(); ctx.fillStyle = colorFor(cell.t); ctx.fill();
+      var col = colorFor(cell.t);
+      ctx.beginPath(); ctx.moveTo(cell.p[0].x, cell.p[0].y); for (var k = 1; k < 4; k++) ctx.lineTo(cell.p[k].x, cell.p[k].y); ctx.closePath();
+      ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = 0.7; ctx.fill(); ctx.stroke();
     });
+
+    // projected grid points for hover readout
+    projFloor = [];
+    for (var jj = 0; jj < pg.npy; jj++) for (var ii = 0; ii < pg.npx; ii++) {
+      var pp = P((ii + 0.5) / pg.npx * L, (jj + 0.5) / pg.npy * W, wp);
+      projFloor.push({ sx: pp.x, sy: pp.y, fc: pg.grid[jj][ii] });
+    }
 
     // room wireframe
     var cn = [[0,0,0],[L,0,0],[L,W,0],[0,W,0],[0,0,H],[L,0,H],[L,W,H],[0,W,H]].map(function (p) { return P(p[0], p[1], p[2]); });
     var edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
-    ctx.strokeStyle = "rgba(190,208,225,0.4)"; ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(205,220,236,0.5)"; ctx.lineWidth = 1;
     edges.forEach(function (e) { ctx.beginPath(); ctx.moveTo(cn[e[0]].x, cn[e[0]].y); ctx.lineTo(cn[e[1]].x, cn[e[1]].y); ctx.stroke(); });
 
-    // fixtures on the ceiling with a drop line to the plane
-    var fz = H - (lastViz.susp || 0);
+    // dimension labels along two floor edges
+    ctx.fillStyle = "rgba(214,226,240,0.9)"; ctx.font = "600 10px Inter,system-ui,sans-serif"; ctx.textAlign = "center";
+    var mL = P(L / 2, 0, 0), mW = P(0, W / 2, 0);
+    ctx.fillText(L + " ft", mL.x, mL.y - 4); ctx.fillText(W + " ft", mW.x, mW.y - 4); ctx.textAlign = "start";
+
+    // fixtures — round disc or linear bar by fixture shape, with a drop line
+    var fz = H - (lastViz.susp || 0), round = lastViz.round;
     pg.fx.forEach(function (f) {
       var top = P(f[0], f[1], fz), bot = P(f[0], f[1], wp);
-      ctx.strokeStyle = "rgba(245,197,66,0.28)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(bot.x, bot.y); ctx.stroke();
-      ctx.beginPath(); ctx.arc(top.x, top.y, 4.2, 0, 7); ctx.fillStyle = "#ffe07a"; ctx.fill(); ctx.strokeStyle = "#7c6318"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.strokeStyle = "rgba(245,205,80,0.30)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(bot.x, bot.y); ctx.stroke();
+      if (round) {
+        var rad = Math.max(2.6, 1.0 * top.pp * scale);
+        ctx.beginPath(); ctx.arc(top.x, top.y, rad, 0, 7); ctx.fillStyle = "#ffe27a"; ctx.fill(); ctx.strokeStyle = "#7c6318"; ctx.lineWidth = 1; ctx.stroke();
+      } else {
+        var hx = Math.min(3.5, L / Math.max(pg.cols, 1) * 0.34);
+        var q = [P(f[0] - hx, f[1] - 0.6, fz), P(f[0] + hx, f[1] - 0.6, fz), P(f[0] + hx, f[1] + 0.6, fz), P(f[0] - hx, f[1] + 0.6, fz)];
+        ctx.beginPath(); ctx.moveTo(q[0].x, q[0].y); for (var k2 = 1; k2 < 4; k2++) ctx.lineTo(q[k2].x, q[k2].y); ctx.closePath(); ctx.fillStyle = "#ffe27a"; ctx.fill(); ctx.strokeStyle = "#7c6318"; ctx.lineWidth = 1; ctx.stroke();
+      }
     });
 
     ctx.fillStyle = "rgba(203,216,231,0.72)"; ctx.font = "11px Inter,system-ui,sans-serif";
-    ctx.fillText(L + " × " + W + " ft room · " + pg.fx.length + " fixtures @ " + H + " ft · work plane " + wp + " ft", 12, ch - 12);
+    ctx.fillText(pg.fx.length + " fixtures @ " + H + " ft · work plane " + wp + " ft", 12, ch - 12);
   }
+  function resetView() { view.az = -0.7; view.el = 0.92; view.dist = 0; draw3D(); }
+  function spinLoop() { if (!spinning) return; view.az += 0.0045; draw3D(); requestAnimationFrame(spinLoop); }
   function initCanvas() {
     var cv = document.getElementById("z-canvas"); if (!cv || cv._wired) return; cv._wired = true;
-    cv.addEventListener("pointerdown", function (e) { drag = true; lx = e.clientX; ly = e.clientY; try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
-    cv.addEventListener("pointermove", function (e) { if (!drag) return; view.az += (e.clientX - lx) * 0.01; view.el += (e.clientY - ly) * 0.01; lx = e.clientX; ly = e.clientY; draw3D(); });
+    var tip = document.getElementById("z-tip");
+    function stopSpin() { if (spinning) { spinning = false; var sb = document.getElementById("z-spin"); if (sb) { sb.textContent = "Spin"; sb.classList.remove("on"); } } }
+    cv.addEventListener("pointerdown", function (e) { stopSpin(); drag = true; lx = e.clientX; ly = e.clientY; try { cv.setPointerCapture(e.pointerId); } catch (x) {} if (tip) tip.style.display = "none"; });
+    cv.addEventListener("pointermove", function (e) {
+      if (drag) { view.az += (e.clientX - lx) * 0.01; view.el += (e.clientY - ly) * 0.01; lx = e.clientX; ly = e.clientY; draw3D(); return; }
+      if (!tip || !projFloor.length) return;
+      var rc = cv.getBoundingClientRect(), mx = e.clientX - rc.left, my = e.clientY - rc.top, best = null, bd = 1e9;
+      for (var i = 0; i < projFloor.length; i++) { var dx = projFloor[i].sx - mx, dy = projFloor[i].sy - my, dd = dx * dx + dy * dy; if (dd < bd) { bd = dd; best = projFloor[i]; } }
+      if (best && bd < 24 * 24) { tip.style.display = "block"; tip.style.left = best.sx + "px"; tip.style.top = best.sy + "px"; tip.textContent = Math.round(best.fc) + " fc"; }
+      else tip.style.display = "none";
+    });
     cv.addEventListener("pointerup", function () { drag = false; });
     cv.addEventListener("pointercancel", function () { drag = false; });
+    cv.addEventListener("pointerleave", function () { if (tip) tip.style.display = "none"; });
     cv.addEventListener("wheel", function (e) { e.preventDefault(); var m = lastViz ? Math.max(lastViz.L, lastViz.W, lastViz.H) : 30; view.dist += e.deltaY * 0.012 * (m / 30); draw3D(); }, { passive: false });
+    cv.addEventListener("dblclick", resetView);
     window.addEventListener("resize", draw3D);
-    var rb = document.getElementById("z-reset3d"); if (rb) rb.addEventListener("click", function () { view.az = -0.7; view.el = 0.92; view.dist = 0; draw3D(); });
+    var rb = document.getElementById("z-reset3d"); if (rb) rb.addEventListener("click", resetView);
+    var sb = document.getElementById("z-spin"); if (sb) sb.addEventListener("click", function () { spinning = !spinning; sb.textContent = spinning ? "Stop" : "Spin"; sb.classList.toggle("on", spinning); if (spinning) spinLoop(); });
   }
 
   function compute() {
@@ -287,8 +340,15 @@
       else { flag.className = "z-flag warn"; flag.textContent = "Uneven — avg/min " + pg.uAvgMin.toFixed(2) + " (> 2.5). Add fixtures, lower the mount, or use a wider distribution."; }
     } else { $("r-grid").textContent = "—"; $("r-min").textContent = "—"; $("r-max").textContent = "—"; $("r-unif").textContent = ""; $("r-flag").className = "z-flag warn"; $("r-flag").textContent = "Enter room size, target, and fixture lumens to run the calculation."; }
     drawHeat(pg, st.L, st.W);
-    lastViz = pg ? { L: st.L, W: st.W, H: st.ceilH, wp: st.wp, susp: st.susp, pg: pg } : null;
+    var selG = (FIX.filter(function (x) { return x.id === st.fixId; })[0] || {}).group || "";
+    lastViz = pg ? { L: st.L, W: st.W, H: st.ceilH, wp: st.wp, susp: st.susp, pg: pg, round: isRound(selG) } : null;
     if (pg) { $("r-min2").textContent = Math.round(pg.min) + " fc"; $("r-max2").textContent = Math.round(pg.max) + " fc"; }
+    var codeEl = $("r-code"), allow = LPD_ALLOW[st.preset];
+    if (count && st.w && allow) {
+      codeEl.style.display = "block";
+      if (lpd <= allow + 1e-9) { codeEl.className = "z-flag ok"; codeEl.textContent = "Energy code: " + lpd.toFixed(2) + " W/ft² — within the typical ASHRAE 90.1 allowance (~" + allow.toFixed(2) + " W/ft²) for this space. Verify your code edition."; }
+      else { codeEl.className = "z-flag warn"; codeEl.textContent = "Energy code: " + lpd.toFixed(2) + " W/ft² — about " + Math.round((lpd / allow - 1) * 100) + "% over the typical allowance (~" + allow.toFixed(2) + " W/ft²). Reduce wattage/output or verify your code edition."; }
+    } else { codeEl.style.display = "none"; }
     draw3D();
     fillPrint(count, rcr, cu, llf, avgZonal, totalW, lpd, area, hRC, pg);
     return count;
