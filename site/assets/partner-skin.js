@@ -1,8 +1,9 @@
-/* partner-skin.js — co-branded demo overlay for the lighting vertical.
-   Activate with ?partner=<code> (e.g. lighting-catalog.html?partner=wesco).
-   Adds a co-brand ribbon (partner colors + "Powered by DHI"), recolors the
-   accent to the partner's brand color, and carries the ?partner param across
-   the lighting sub-nav so the whole demo stays skinned as you click around.
+/* partner-skin.js — co-branded demo overlay for a vertical.
+   Activate with ?partner=<code> (e.g. lighting-catalog.html?partner=wesco,
+   drive.html?partner=firstteam). Adds a co-brand ribbon (partner colors +
+   "Powered by DHI"), recolors the accent to the partner's brand color, and
+   carries the ?partner param across the vertical's internal links so the whole
+   demo stays skinned as you click around.
 
    No-op when the param is absent, so it ships safely on every page. Uses the
    partner's real BRAND COLORS + a wordmark lockup (not their trademarked icon).
@@ -15,8 +16,13 @@
   var PARTNERS = {
     wesco: {
       name: "Wesco", wordmark: "wesco", mark: "W",
-      green: "#00AA13", greenDark: "#008a10", charcoal: "#1D252D",
+      accent: "#00AA13", accentDark: "#008a10", charcoal: "#1D252D",
       tagline: "Lighting Platform",
+    },
+    firstteam: {
+      name: "First Team", wordmark: "First Team", mark: "FT",
+      accent: "#E31837", accentDark: "#C1122E", charcoal: "#1B2431",
+      tagline: "AutoCommand Marketplace",
     },
   };
   var b = PARTNERS[code];
@@ -28,14 +34,14 @@
     // --- accent recolor + ribbon styles ---
     var style = document.createElement("style");
     style.textContent =
-      ".bg-cyan-600{background-color:" + b.green + "!important}" +
-      ".hover\\:bg-cyan-700:hover{background-color:" + b.greenDark + "!important}" +
-      ".text-cyan-700,.text-cyan-800{color:" + b.greenDark + "!important}" +
-      ".border-cyan-600{border-color:" + b.green + "!important}" +
-      ".ring-cyan-200{--tw-ring-color:" + b.green + "40!important}" +
-      "#dhi-coribbon{background:" + b.charcoal + ";border-bottom:3px solid " + b.green + ";font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}" +
+      ".bg-cyan-600{background-color:" + b.accent + "!important}" +
+      ".hover\\:bg-cyan-700:hover{background-color:" + b.accentDark + "!important}" +
+      ".text-cyan-700,.text-cyan-800{color:" + b.accentDark + "!important}" +
+      ".border-cyan-600{border-color:" + b.accent + "!important}" +
+      ".ring-cyan-200{--tw-ring-color:" + b.accent + "40!important}" +
+      "#dhi-coribbon{background:" + b.charcoal + ";border-bottom:3px solid " + b.accent + ";font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}" +
       "#dhi-coribbon .cr-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:8px 20px}" +
-      "#dhi-coribbon .cr-mark{width:26px;height:26px;border-radius:6px;background:" + b.green + ";display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;line-height:1;flex:none}" +
+      "#dhi-coribbon .cr-mark{width:28px;height:28px;border-radius:6px;background:" + b.accent + ";display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;line-height:1;flex:none}" +
       "#dhi-coribbon .cr-wm{color:#fff;font-weight:800;font-size:19px;letter-spacing:-.01em}" +
       "#dhi-coribbon .cr-div{width:1px;height:20px;background:rgba(255,255,255,.22)}" +
       "#dhi-coribbon .cr-tag{color:#cfd6db;font-size:13px;font-weight:600}" +
@@ -64,14 +70,14 @@
     setTimeout(linkify, 1000);
   }
 
-  // Carry ?partner across internal lighting links so the skin persists on click.
+  // Carry ?partner across internal vertical links so the skin persists on click.
   function linkify() {
     var links = document.querySelectorAll("a[href]");
     for (var i = 0; i < links.length; i++) {
       var a = links[i], h = a.getAttribute("href") || "";
       if (/^https?:|^mailto:|^tel:|^#/i.test(h)) continue;
       if (h.indexOf("partner=") !== -1) continue;
-      if (!/(^|\/)lighting(\/|-|\.|$)/.test(h)) continue;
+      if (!/(^|\/)(lighting|automotive|drive)([\/\-\.]|$)/.test(h)) continue;
       var hash = "", base = h, hi = h.indexOf("#");
       if (hi !== -1) { hash = h.slice(hi); base = h.slice(0, hi); }
       a.setAttribute("href", base + (base.indexOf("?") !== -1 ? "&" : "?") + "partner=" + code + hash);
