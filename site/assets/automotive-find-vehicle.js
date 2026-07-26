@@ -463,7 +463,7 @@
           <h2 class="font-display text-2xl font-bold text-brand-900">${total.toLocaleString("en-US")} matching ${total === 1 ? "vehicle" : "vehicles"}</h2>
           <p class="text-sm text-slate-500">Ranked into the picks that matter — each shows <strong>why</strong> it made the list.</p>
           ${colorRelaxed && pr.color ? `<p class="mt-1 text-xs font-medium text-amber-600">No exact ${esc(pr.color)} matches in stock — showing the closest ${esc(pr.make || "vehicles")}.</p>` : ""}
-          ${relaxedList.length ? `<p class="mt-1 text-xs font-medium text-amber-600">No exact ${esc(relaxedList.join(" + "))} in this batch — showing the closest matches. Refine price, year, or location to narrow.</p>` : ""}
+          ${relaxedList.length ? `<p class="mt-1 text-xs font-medium text-amber-600">Best ${esc(relaxedList.join(" + "))} matches shown first, plus close alternatives to fill out your options. Refine price, year, or location to narrow.</p>` : ""}
         </div>
       </div>
       ${interpreted(d.profile)}
@@ -743,22 +743,32 @@
   // Color is soft: prefer exact-color matches, but rather than dead-end when the
   // provider set has none (e.g. "red nissan" with no red in stock), keep the make
   // matches and flag colorRelaxed so the UI can say so.
+  // Keep at least this many cars on the page before a soft category preference is
+  // allowed to trim it — so the grid never collapses to one or two during a demo.
+  const MIN_FULL = 6;
   function intentFilter(vehicles) {
     const pr = lastProfile || {};
     let out = vehicles.slice();
     const relaxed = [];
     const soft = (pred) => { const f = out.filter(pred); if (f.length) out = f; };
-    // Category intent (luxury/reliable/3rd-row) prefers exact matches, but rather
-    // than dead-end to "No matches" when the live provider's page happens to carry
-    // none (e.g. no reliable-brand SUVs in that batch), it keeps the near matches
-    // and flags what was relaxed so the UI can say so.
-    const prefer = (pred, label) => { const f = out.filter(pred); if (f.length) out = f; else relaxed.push(label); };
+    // Strict category intent (luxury): never show off-category makes — narrow to
+    // exact matches when any exist, else keep the set and flag it relaxed.
+    const strict = (pred, label) => { const f = out.filter(pred); if (f.length) out = f; else relaxed.push(label); };
+    // Soft category intent (reliable / 3rd-row, often inferred from loose phrasing
+    // like "family"): rank exact matches first, but keep close alternatives so the
+    // page stays full. Only trim to exact matches when there are already plenty.
+    const rankPrefer = (pred, label) => {
+      const yes = out.filter(pred), no = out.filter((v) => !pred(v));
+      if (yes.length >= MIN_FULL || !no.length) { out = yes.length ? yes : out; return; }
+      out = yes.concat(no);            // exact first, then fillers
+      relaxed.push(label);             // page was widened to stay full
+    };
     if (pr.body_style) soft((v) => bodyMatch(v, pr.body_style));
     if (pr.fuel_type) soft((v) => fuelMatch(v, pr.fuel_type));
     if (pr.drivetrain) soft((v) => driveMatch(v, pr.drivetrain));
-    if (pr.lux) prefer((v) => LUXURY_MAKES.has(makeKey(v)), "luxury brands");
-    if (pr.reliable) prefer((v) => RELIABLE_MAKES.has(makeKey(v)), "top-reliability brands");
-    if (pr.seats_third_row) prefer(isThirdRow, "3rd-row seating");
+    if (pr.lux) strict((v) => LUXURY_MAKES.has(makeKey(v)), "luxury brands");
+    if (pr.reliable) rankPrefer((v) => RELIABLE_MAKES.has(makeKey(v)), "top-reliability brands");
+    if (pr.seats_third_row) rankPrefer(isThirdRow, "3rd-row seating");
     let colorRelaxed = false;
     if (pr.color) { const f = out.filter((v) => colorMatch(v, pr.color)); if (f.length) out = f; else colorRelaxed = true; }
     return { vehicles: out, colorRelaxed: colorRelaxed, relaxed: relaxed };
