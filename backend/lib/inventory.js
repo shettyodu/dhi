@@ -158,25 +158,42 @@ async function searchInventory(profile) {
       raw = (r.data && r.data.listings) || [];
       norm = normMarketcheck;
     } else if (PROVIDER === "autodev") {
-      const q = new URLSearchParams();
-      if (p.make) q.set("make", p.make);
-      if (p.model) q.set("model", p.model);
-      if (p.body_style) q.set("body_style", p.body_style); // honored if supported; client also post-filters
-      if (p.budget_max) q.set("price_max", String(Math.round(p.budget_max)));
-      if (p.year_min) q.set("year_min", String(p.year_min));
-      if (p.year_max) q.set("year_max", String(p.year_max));
-      if (p.mileage_max) q.set("mileage_max", String(Math.round(p.mileage_max)));
-      // Location: a ZIP filters by zip+radius directly. A city/place is geocoded
-      // to lat/lon so the radius is honored (Auto.dev ignores free-text location).
-      if (p.location_zip) { q.set("zip", p.location_zip); q.set("radius", String(p.radius || RADIUS)); }
+      // Location is resolved once and applied to every query variant below.
+      const locParams = {};
+      if (p.location_zip) { locParams.zip = p.location_zip; locParams.radius = String(p.radius || RADIUS); }
       else if (p.location_text || p.location_state) {
         const geo = await geocode(p.location_text, p.location_state);
-        if (geo) { q.set("latitude", String(geo.lat)); q.set("longitude", String(geo.lon)); q.set("radius", String(p.radius || RADIUS)); }
-        else if (p.location_state) { q.set("state", p.location_state); }
+        if (geo) { locParams.latitude = String(geo.lat); locParams.longitude = String(geo.lon); locParams.radius = String(p.radius || RADIUS); }
+        else if (p.location_state) { locParams.state = p.location_state; }
       }
-      const r = await fetchJSON("https://auto.dev/api/listings?" + q.toString(), { headers: { Authorization: `Bearer ${KEY}` } });
-      if (!r.ok) return { status: 502, json: { ok: false, error: "Inventory provider unavailable (Auto.dev)." } };
-      raw = (r.data && (r.data.records || r.data.listings)) || [];
+      const buildQ = (includeModel) => {
+        const q = new URLSearchParams();
+        if (p.make) q.set("make", p.make);
+        if (includeModel && p.model) q.set("model", p.model);
+        if (p.body_style) q.set("body_style", p.body_style); // honored if supported; client also post-filters
+        if (p.budget_max) q.set("price_max", String(Math.round(p.budget_max)));
+        if (p.year_min) q.set("year_min", String(p.year_min));
+        if (p.year_max) q.set("year_max", String(p.year_max));
+        if (p.mileage_max) q.set("mileage_max", String(Math.round(p.mileage_max)));
+        for (const k in locParams) q.set(k, locParams[k]);
+        return q;
+      };
+      const hitAutodev = async (q) => {
+        const r = await fetchJSON("https://auto.dev/api/listings?" + q.toString(), { headers: { Authorization: `Bearer ${KEY}` } });
+        if (!r.ok) return null;
+        return (r.data && (r.data.records || r.data.listings)) || [];
+      };
+      let rows = await hitAutodev(buildQ(true));
+      if (rows === null) return { status: 502, json: { ok: false, error: "Inventory provider unavailable (Auto.dev)." } };
+      // Auto.dev's model filter is exact: "Silverado" misses "Silverado 1500",
+      // "Sierra" misses "Sierra 1500", etc. When an exact-model query returns
+      // nothing, retry by make only and let the substring model post-filter
+      // (further below) narrow it — so common short model names still match.
+      if (!rows.length && p.make && p.model) {
+        const retry = await hitAutodev(buildQ(false));
+        if (retry && retry.length) rows = retry;
+      }
+      raw = rows;
       norm = normAutodev;
     } else {
       return { status: 400, json: { ok: false, error: `Unknown INVENTORY_PROVIDER "${PROVIDER}" (use marketcheck | autodev).` } };
