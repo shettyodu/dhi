@@ -34,10 +34,11 @@
     // --- accent recolor + ribbon styles ---
     var style = document.createElement("style");
     style.textContent =
-      ".bg-cyan-600{background-color:" + b.accent + "!important}" +
-      ".hover\\:bg-cyan-700:hover{background-color:" + b.accentDark + "!important}" +
+      ".bg-cyan-600,.bg-cyan-500,.bg-cyan-400{background-color:" + b.accent + "!important}" +
+      ".hover\\:bg-cyan-700:hover,.hover\\:bg-cyan-600:hover,.hover\\:bg-cyan-500:hover{background-color:" + b.accentDark + "!important}" +
       ".text-cyan-700,.text-cyan-800{color:" + b.accentDark + "!important}" +
-      ".border-cyan-600{border-color:" + b.accent + "!important}" +
+      ".text-cyan-300,.text-cyan-400{color:" + b.accent + "!important}" +
+      ".border-cyan-600,.border-cyan-500{border-color:" + b.accent + "!important}" +
       ".ring-cyan-200{--tw-ring-color:" + b.accent + "40!important}" +
       "#dhi-coribbon{background:" + b.charcoal + ";border-bottom:3px solid " + b.accent + ";font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}" +
       "#dhi-coribbon .cr-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:8px 20px}" +
