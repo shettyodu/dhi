@@ -440,10 +440,12 @@
     // the bucket tabs, and the grid all agree (previously the color/luxury filters
     // ran later in showBucket, producing "N matches" with an empty grid).
     let colorRelaxed = false;
+    const relaxedSet = {};
     lastBuckets = (Array.isArray(r.buckets) ? r.buckets : [])
       .filter((b) => b.vehicles && b.vehicles.length)
-      .map((b) => { const fr = intentFilter(b.vehicles); if (fr.colorRelaxed) colorRelaxed = true; return Object.assign({}, b, { vehicles: fr.vehicles }); })
+      .map((b) => { const fr = intentFilter(b.vehicles); if (fr.colorRelaxed) colorRelaxed = true; (fr.relaxed || []).forEach((x) => { relaxedSet[x] = true; }); return Object.assign({}, b, { vehicles: fr.vehicles }); })
       .filter((b) => b.vehicles.length);
+    const relaxedList = Object.keys(relaxedSet);
     // Count reflects what's actually shown after intent narrowing.
     const total = lastBuckets.reduce((n, b) => n + b.vehicles.length, 0);
     if (!lastBuckets.length) {
@@ -461,6 +463,7 @@
           <h2 class="font-display text-2xl font-bold text-brand-900">${total.toLocaleString("en-US")} matching ${total === 1 ? "vehicle" : "vehicles"}</h2>
           <p class="text-sm text-slate-500">Ranked into the picks that matter — each shows <strong>why</strong> it made the list.</p>
           ${colorRelaxed && pr.color ? `<p class="mt-1 text-xs font-medium text-amber-600">No exact ${esc(pr.color)} matches in stock — showing the closest ${esc(pr.make || "vehicles")}.</p>` : ""}
+          ${relaxedList.length ? `<p class="mt-1 text-xs font-medium text-amber-600">No exact ${esc(relaxedList.join(" + "))} in this batch — showing the closest matches. Refine price, year, or location to narrow.</p>` : ""}
         </div>
       </div>
       ${interpreted(d.profile)}
@@ -743,16 +746,22 @@
   function intentFilter(vehicles) {
     const pr = lastProfile || {};
     let out = vehicles.slice();
+    const relaxed = [];
     const soft = (pred) => { const f = out.filter(pred); if (f.length) out = f; };
+    // Category intent (luxury/reliable/3rd-row) prefers exact matches, but rather
+    // than dead-end to "No matches" when the live provider's page happens to carry
+    // none (e.g. no reliable-brand SUVs in that batch), it keeps the near matches
+    // and flags what was relaxed so the UI can say so.
+    const prefer = (pred, label) => { const f = out.filter(pred); if (f.length) out = f; else relaxed.push(label); };
     if (pr.body_style) soft((v) => bodyMatch(v, pr.body_style));
     if (pr.fuel_type) soft((v) => fuelMatch(v, pr.fuel_type));
     if (pr.drivetrain) soft((v) => driveMatch(v, pr.drivetrain));
-    if (pr.lux) out = out.filter((v) => LUXURY_MAKES.has(makeKey(v)));
-    if (pr.reliable) out = out.filter((v) => RELIABLE_MAKES.has(makeKey(v)));
-    if (pr.seats_third_row) out = out.filter(isThirdRow);
+    if (pr.lux) prefer((v) => LUXURY_MAKES.has(makeKey(v)), "luxury brands");
+    if (pr.reliable) prefer((v) => RELIABLE_MAKES.has(makeKey(v)), "top-reliability brands");
+    if (pr.seats_third_row) prefer(isThirdRow, "3rd-row seating");
     let colorRelaxed = false;
     if (pr.color) { const f = out.filter((v) => colorMatch(v, pr.color)); if (f.length) out = f; else colorRelaxed = true; }
-    return { vehicles: out, colorRelaxed: colorRelaxed };
+    return { vehicles: out, colorRelaxed: colorRelaxed, relaxed: relaxed };
   }
 
   function applyRefine(list) {
