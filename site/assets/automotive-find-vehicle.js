@@ -932,6 +932,15 @@
   const nlInput = $("nl-q");
   if (nlInput) nlInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); nlGo.click(); } });
 
+  // One-tap example chips: fill the box with a vetted query and run it.
+  document.querySelectorAll(".nl-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      if (!nlInput || !nlGo) return;
+      nlInput.value = chip.getAttribute("data-q") || chip.textContent.trim();
+      nlGo.click();
+    });
+  });
+
   // Deep link: ?q=<query> prefills the search box and runs it once — lets SEO
   // landing pages (and any shared link) funnel a real user straight into results.
   // Runs only on a real visit, never on a crawl of those static pages.
