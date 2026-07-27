@@ -35,7 +35,6 @@
           Compare quotes on SquareMouth
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H9M17 7v8"/></svg>
         </a>
-        <a href="#quote" class="rounded-md border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10">Prefer help? Talk to a DHI advisor</a>
       </div>
       <p class="mt-4 text-xs text-slate-400">You'll compare and purchase on SquareMouth's site. DHI may earn a commission when you buy through our link — at no extra cost to you.</p>
     </div>
@@ -52,58 +51,25 @@
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">Medical evacuation</h3><p class="mt-2 text-sm text-slate-600">Emergency transport to adequate care or back home — often the single most important benefit abroad.</p></div>
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">Baggage &amp; delay</h3><p class="mt-2 text-sm text-slate-600">Lost, stolen, or delayed baggage, plus reimbursement for covered travel delays.</p></div>
       </div>
-      <p class="mt-8 text-sm text-slate-500">Coverage, availability, and terms vary by provider and state. A licensed DHI advisor confirms the right plan before purchase.</p>
+      <p class="mt-8 text-sm text-slate-500">Coverage, availability, and terms vary by provider and state. Compare plans side-by-side and buy securely on SquareMouth.</p>
     </div>
   </section>
 
-  <!-- QUOTE REQUEST -->
-  <section id="quote" class="bg-slate-50 py-16 sm:py-20">
-    <div class="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
-      <h2 class="text-2xl font-bold tracking-tight text-brand-900">Want a hand choosing?</h2>
-      <p class="mt-2 text-slate-600">Ready to shop now? <a href="https://www.squaremouth.com/?aid=23739" target="_blank" rel="noopener" class="font-semibold text-cyan-700 underline hover:text-cyan-800">Compare plans on SquareMouth &rarr;</a> Or tell us about your trip and a licensed DHI advisor will follow up with recommendations. No obligation.</p>
-      <form id="sm-form" class="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="grid gap-3 sm:grid-cols-2">
-          <input id="sm-name" class="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30" placeholder="Full name" required />
-          <input id="sm-email" type="email" class="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30" placeholder="Email" required />
-          <input id="sm-dest" class="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30" placeholder="Destination(s)" />
-          <input id="sm-travelers" class="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30" placeholder="# travelers / ages" />
-          <input id="sm-depart" class="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30" placeholder="Depart (MM/DD/YYYY)" />
-          <input id="sm-return" class="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30" placeholder="Return (MM/DD/YYYY)" />
-        </div>
-        <input type="text" id="sm-hp" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
-        <button type="submit" class="mt-5 w-full rounded-lg bg-cyan-600 px-5 py-3 text-sm font-semibold text-white hover:bg-cyan-700">Request travel quotes</button>
-        <p id="sm-note" class="mt-4 hidden rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700"></p>
-      </form>
+  <!-- CLOSING CTA -->
+  <section class="bg-slate-50 py-16 sm:py-20">
+    <div class="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+      <h2 class="text-2xl font-bold tracking-tight text-brand-900">Ready to compare plans?</h2>
+      <p class="mt-2 text-slate-600">Get instant quotes from top-rated travel insurers and buy securely — start to finish on SquareMouth.</p>
+      <div class="mt-6">
+        <a href="https://www.squaremouth.com/?aid=23739" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md bg-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700">
+          Compare quotes on SquareMouth
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H9M17 7v8"/></svg>
+        </a>
+      </div>
+      <p class="mt-4 text-xs text-slate-400">You'll compare and purchase on SquareMouth's site. DHI may earn a commission when you buy through our link — at no extra cost to you.</p>
     </div>
   </section>
 
   <script src="assets/components.js"></script>
-  <script>
-    (function () {
-      var f = document.getElementById("sm-form"), note = document.getElementById("sm-note");
-      var API = (new URLSearchParams(location.search).get("api") || localStorage.getItem("dhi_api_base") || "").replace(/\/+$/, "");
-      f.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        if (document.getElementById("sm-hp").value) { f.reset(); return; }
-        if (!f.checkValidity()) { f.reportValidity(); return; }
-        var attribution = (window.DHIAttribution && window.DHIAttribution()) || {};
-        var payload = {
-          type: "inquiry", vertical: "insurance",
-          name: document.getElementById("sm-name").value.trim(),
-          email: document.getElementById("sm-email").value.trim(),
-          interest: "Travel insurance (SquareMouth)",
-          message: "Trip: " + document.getElementById("sm-dest").value + " · Travelers: " + document.getElementById("sm-travelers").value + " · " + document.getElementById("sm-depart").value + "–" + document.getElementById("sm-return").value,
-          source: "DHI Insurance — SquareMouth travel", referral_code: attribution.ref || "", hp: "",
-        };
-        var btn = f.querySelector('button[type="submit"]'); btn.disabled = true; btn.textContent = "Sending…";
-        try {
-          var r = await fetch(API + "/.netlify/functions/submit-lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-          if (r.ok) { note.textContent = "Thank you! Your travel-quote request is in — a licensed DHI advisor will follow up with matched options."; note.classList.remove("hidden"); f.reset(); note.scrollIntoView({ behavior: "smooth", block: "center" }); }
-          else { note.textContent = "Something went wrong — please email steve@digitalhealthinternational.com."; note.className = "mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600"; note.classList.remove("hidden"); }
-        } catch (err) { note.textContent = "Network error — please try again."; note.className = "mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600"; note.classList.remove("hidden"); }
-        btn.disabled = false; btn.textContent = "Request travel quotes";
-      });
-    })();
-  </script>
 </body>
 </html>
