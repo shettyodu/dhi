@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DHI Pitch Deck — Nine Verticals, One Global Platform</title>
+  <meta name="description" content="Digital Health International — Empowering Global Wellbeing Through Innovation. Browse the DHI pitch deck: nine verticals, one global platform." />
+  <!-- Open Graph so the link previews nicely on LinkedIn / email -->
+  <meta property="og:title" content="Digital Health International — Pitch Deck" />
+  <meta property="og:description" content="Nine verticals, one global platform. Empowering global wellbeing through innovation." />
+  <meta property="og:image" content="https://digitalhealthinternational.com/assets/deck/slide-01.jpg" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}
+    :root{--navy:#0a2540;--navy2:#0b2a45;--ink:#0f172a;--accent:#0891b2;--accentd:#0e7490;}
+    /* ---- deck bar ---- */
+    .dk-bar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #e6eaee}
+    .dk-in{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:12px 18px}
+    .dk-title{min-width:0}
+    .dk-title .k{font-size:10.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--accent)}
+    .dk-title .t{font-family:Montserrat,Inter,sans-serif;font-weight:800;color:var(--navy);font-size:16px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dk-actions{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none}
+    .dk-btn{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #dbe2e8;background:#fff;color:var(--navy);
+      border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.12s}
+    .dk-btn:hover{border-color:var(--accent);color:var(--accentd)}
+    .dk-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+    .dk-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .dk-btn.primary:hover{background:var(--accentd);border-color:var(--accentd);color:#fff}
+    @media(max-width:640px){.dk-btn .lbl{display:none}.dk-btn{padding:8px 10px}.dk-title .t{font-size:14px}}
+
+    /* ---- stage ---- */
+    .dk-stage{background:linear-gradient(180deg,#0a2540,#0b1f38);position:relative;overflow:hidden}
+    .dk-frame{max-width:1200px;margin:0 auto;padding:22px 18px 8px;position:relative}
+    .dk-slidewrap{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.45);background:#0a2540}
+    .dk-slide{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;opacity:0;transition:opacity .18s}
+    .dk-slide.on{opacity:1}
+    /* click zones */
+    .dk-zone{position:absolute;top:0;bottom:0;width:32%;cursor:pointer;z-index:3}
+    .dk-zone.prev{left:0}.dk-zone.next{right:0}
+    /* arrows */
+    .dk-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:44px;height:44px;border-radius:50%;
+      background:rgba(255,255,255,.92);border:0;display:flex;align-items:center;justify-content:center;cursor:pointer;
+      box-shadow:0 4px 14px rgba(0,0,0,.28);transition:.12s}
+    .dk-arrow:hover{background:#fff;transform:translateY(-50%) scale(1.06)}
+    .dk-arrow.l{left:14px}.dk-arrow.r{right:14px}
+    .dk-arrow svg{width:22px;height:22px;stroke:var(--navy);fill:none;stroke-width:2.4}
+    .dk-arrow[disabled]{opacity:.35;pointer-events:none}
+    @media(max-width:640px){.dk-arrow{width:36px;height:36px}.dk-arrow.l{left:8px}.dk-arrow.r{right:8px}}
+
+    /* counter + controls under stage */
+    .dk-under{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:12px 18px 20px;color:#cbd5e1}
+    .dk-count{font-variant-numeric:tabular-nums;font-weight:700;font-size:13.5px;color:#e2e8f0}
+    .dk-count b{color:#fff}
+    .dk-progress{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden}
+    .dk-progbar{height:100%;background:var(--accent);width:0;transition:width .2s}
+    .dk-mini{display:inline-flex;align-items:center;gap:6px;color:#93a4b5;font-size:12px}
+    .dk-full{background:transparent;border:1.5px solid rgba(255,255,255,.28);color:#e2e8f0;border-radius:8px;padding:6px 10px;
+      font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+    .dk-full:hover{border-color:#fff;color:#fff}
+    .dk-full svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+
+    /* thumbnails */
+    .dk-thumbs{max-width:1200px;margin:0 auto;padding:4px 18px 26px;display:flex;gap:8px;overflow-x:auto}
+    .dk-thumbs::-webkit-scrollbar{height:7px}.dk-thumbs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:4px}
+    .dk-thumb{flex:none;width:118px;aspect-ratio:16/9;border-radius:7px;overflow:hidden;border:2px solid transparent;cursor:pointer;opacity:.62;transition:.12s;background:#0a2540}
+    .dk-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .dk-thumb:hover{opacity:.9}
+    .dk-thumb.on{opacity:1;border-color:var(--accent)}
+
+    /* toast */
+    .dk-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#0b2a45;color:#fff;
+      font-size:13px;font-weight:600;padding:10px 18px;border-radius:999px;opacity:0;transition:.25s;z-index:80;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+    .dk-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* fullscreen tweaks */
+    .dk-stage:fullscreen{display:flex;flex-direction:column;justify-content:center}
+    .dk-stage:fullscreen .dk-frame{width:100%;max-width:min(1600px,92vw)}
+    .dk-stage:fullscreen .dk-thumbs{display:none}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <!-- share / title bar -->
+  <div class="dk-bar">
+    <div class="dk-in">
+      <div class="dk-title">
+        <div class="k">Digital Health International</div>
+        <div class="t">Pitch Deck · Nine Verticals, One Global Platform</div>
+      </div>
+      <div class="dk-actions">
+        <button id="dk-copy" class="dk-btn" title="Copy a shareable link">
+          <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+          <span class="lbl">Copy link</span>
+        </button>
+        <a id="dk-email" class="dk-btn" title="Email this deck" href="#">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 6l8 6 8-6"/></svg>
+          <span class="lbl">Email</span>
+        </a>
+        <a id="dk-pdf" class="dk-btn primary" href="assets/deck/dhi-pitch-deck.pdf" download title="Download the PDF">
+          <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
+          <span class="lbl">Download PDF</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- deck stage -->
+  <div class="dk-stage" id="dk-stage">
+    <div class="dk-frame">
+      <div class="dk-slidewrap" id="dk-wrap">
+        <img class="dk-slide on" id="dk-img" alt="Slide" />
+        <div class="dk-zone prev" id="dk-zprev" aria-label="Previous slide"></div>
+        <div class="dk-zone next" id="dk-znext" aria-label="Next slide"></div>
+        <button class="dk-arrow l" id="dk-prev" aria-label="Previous slide"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <button class="dk-arrow r" id="dk-next" aria-label="Next slide"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+    <div class="dk-under">
+      <span class="dk-count"><b id="dk-cur">1</b> / <span id="dk-total">27</span></span>
+      <div class="dk-progress"><div class="dk-progbar" id="dk-prog"></div></div>
+      <button class="dk-full" id="dk-fs"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Fullscreen</span></button>
+    </div>
+    <div class="dk-thumbs" id="dk-thumbs"></div>
+  </div>
+
+  <div class="dk-toast" id="dk-toast"></div>
+
+  <script src="assets/components.js"></script>
+  <script>
+  (function(){
+    var TOTAL = 27;
+    var img = document.getElementById("dk-img");
+    var cur = 1;
+    var pad = function(n){ return (n<10?"0":"") + n; };
+    var srcFor = function(n){ return "assets/deck/slide-" + pad(n) + ".jpg"; };
+
+    // build thumbnails
+    var tw = document.getElementById("dk-thumbs");
+    for (var i=1;i<=TOTAL;i++){
+      var d = document.createElement("div");
+      d.className = "dk-thumb"; d.setAttribute("data-n", i);
+      var im = document.createElement("img");
+      im.loading = "lazy"; im.src = srcFor(i); im.alt = "Slide " + i;
+      d.appendChild(im);
+      d.addEventListener("click", (function(n){ return function(){ go(n); }; })(i));
+      tw.appendChild(d);
+    }
+    var thumbs = tw.children;
+
+    function preload(n){ if(n>=1&&n<=TOTAL){ var p=new Image(); p.src=srcFor(n); } }
+
+    function go(n){
+      n = Math.max(1, Math.min(TOTAL, n));
+      cur = n;
+      img.classList.remove("on");
+      // swap after a tick for the fade
+      var next = new Image();
+      next.onload = function(){ img.src = next.src; img.classList.add("on"); };
+      next.src = srcFor(n);
+      if (next.complete) { img.src = next.src; img.classList.add("on"); }
+      document.getElementById("dk-cur").textContent = n;
+      document.getElementById("dk-prog").style.width = (n/TOTAL*100) + "%";
+      document.getElementById("dk-prev").disabled = (n===1);
+      document.getElementById("dk-next").disabled = (n===TOTAL);
+      for (var i=0;i<thumbs.length;i++){ thumbs[i].classList.toggle("on", (i+1)===n); }
+      var on = thumbs[n-1]; if (on && on.scrollIntoView) on.scrollIntoView({block:"nearest", inline:"center", behavior:"smooth"});
+      if (history.replaceState) history.replaceState(null,"","#" + n);
+      updateShare();
+      preload(n+1); preload(n-1);
+    }
+
+    // share targets reflect the current slide
+    function shareUrl(){ return location.origin + location.pathname + "#" + cur; }
+    function updateShare(){
+      var subj = encodeURIComponent("Digital Health International — Pitch Deck");
+      var body = encodeURIComponent("Thought you'd want to see the Digital Health International pitch deck — nine verticals, one global platform:\n\n" + shareUrl() + "\n");
+      document.getElementById("dk-email").setAttribute("href", "mailto:?subject=" + subj + "&body=" + body);
+    }
+
+    function toast(msg){
+      var t = document.getElementById("dk-toast");
+      t.textContent = msg; t.classList.add("show");
+      clearTimeout(t._t); t._t = setTimeout(function(){ t.classList.remove("show"); }, 2200);
+    }
+
+    // controls
+    document.getElementById("dk-next").addEventListener("click", function(){ go(cur+1); });
+    document.getElementById("dk-prev").addEventListener("click", function(){ go(cur-1); });
+    document.getElementById("dk-znext").addEventListener("click", function(){ go(cur+1); });
+    document.getElementById("dk-zprev").addEventListener("click", function(){ go(cur-1); });
+
+    document.addEventListener("keydown", function(e){
+      if (e.key==="ArrowRight"||e.key==="PageDown"||e.key===" ") { e.preventDefault(); go(cur+1); }
+      else if (e.key==="ArrowLeft"||e.key==="PageUp") { e.preventDefault(); go(cur-1); }
+      else if (e.key==="Home") { go(1); }
+      else if (e.key==="End") { go(TOTAL); }
+    });
+
+    // touch swipe
+    var x0=null;
+    var wrap = document.getElementById("dk-wrap");
+    wrap.addEventListener("touchstart", function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+    wrap.addEventListener("touchend", function(e){
+      if (x0===null) return;
+      var dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 40) go(cur + (dx<0?1:-1));
+      x0=null;
+    }, {passive:true});
+
+    // copy link
+    document.getElementById("dk-copy").addEventListener("click", function(){
+      var url = shareUrl();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function(){ toast("Link copied — paste it anywhere"); },
+          function(){ prompt("Copy this link:", url); });
+      } else { prompt("Copy this link:", url); }
+    });
+
+    // fullscreen
+    var stage = document.getElementById("dk-stage");
+    document.getElementById("dk-fs").addEventListener("click", function(){
+      if (!document.fullscreenElement) { (stage.requestFullscreen||stage.webkitRequestFullscreen).call(stage); }
+      else { (document.exitFullscreen||document.webkitExitFullscreen).call(document); }
+    });
+
+    // deep-link ?#n
+    var start = parseInt((location.hash||"").replace("#",""),10);
+    go(isNaN(start)?1:start);
+  })();
+  </script>
+</body>
+</html>

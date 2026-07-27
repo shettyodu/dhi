@@ -222,7 +222,11 @@ function buildHeader() {
         ${link("government.html", "Government")}
         ${link("contact.html", "Contact")}
         ${link("portal.html", "Account")}
-        <a href="contact.html" class="ml-2 rounded-md bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 transition-colors">Partner with us</a>
+        <a href="deck.html" class="ml-2 inline-flex items-center gap-1.5 rounded-md border border-cyan-600 px-3.5 py-2 text-sm font-semibold text-cyan-700 hover:bg-cyan-50 transition-colors">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M8 20h8M12 17v3"/></svg>
+          Deck
+        </a>
+        <a href="contact.html" class="ml-1.5 rounded-md bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 transition-colors">Partner with us</a>
       </nav>
 
       <button id="mobile-btn" class="lg:hidden inline-flex items-center justify-center rounded-md p-2 text-slate-600 hover:bg-slate-100" aria-label="Open menu">
@@ -240,6 +244,7 @@ function buildHeader() {
       <a href="government.html" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Government</a>
       <a href="contact.html" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Contact</a>
       <a href="portal.html" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Account</a>
+      <a href="deck.html" class="mt-2 block rounded-md border border-cyan-600 px-3 py-2 text-center text-sm font-semibold text-cyan-700">View the pitch deck</a>
       <a href="contact.html" class="mt-2 block rounded-md bg-cyan-600 px-3 py-2 text-center text-sm font-semibold text-white">Partner with us</a>
     </div>
   </div>`;
