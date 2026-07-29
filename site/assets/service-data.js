@@ -458,6 +458,13 @@ const SERVICE_CONTENT = {
       },
       {
         type: "prose",
+        heading: "Ingredient supply: bulk collagen",
+        paragraphs: [
+          "Beyond medical disposables, DHI Supplies provides <b>high-purity bulk collagen</b> to nutraceutical, functional-food, and cosmetic manufacturers — spec-forward, certified, US &amp; export. Bulk / OEM only. <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"supplies-collagen.html\">See bulk collagen specs &amp; request a quote &rarr;</a>",
+        ],
+      },
+      {
+        type: "prose",
         heading: "Shop PPE with live pricing",
         paragraphs: [
           "Browse certified coveralls, isolation &amp; surgical gowns, scrubs, covers, and masks with list pricing — add items to a quote and check out with tax, freight, card, or purchase order. <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"supplies-catalog.html\">Open the supplies &amp; PPE catalog &rarr;</a>",
