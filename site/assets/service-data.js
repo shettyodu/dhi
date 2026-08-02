@@ -465,6 +465,13 @@ const SERVICE_CONTENT = {
       },
       {
         type: "prose",
+        heading: "Lab consumables &amp; diagnostic accessories",
+        paragraphs: [
+          "DHI Supplies is an authorized distributor of <b>Ajosha Bio Teknik</b> (WHO-GMP · ISO 13485 · CE · US-FDA) — transfer pipettes, rapid-test cassettes, blood-collection tubes, PCR &amp; cryo tubes, specimen containers, and histology cassettes for diagnostic manufacturers, hospitals &amp; labs. <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"supplies-labware.html\">Browse the lab-consumables range &rarr;</a>",
+        ],
+      },
+      {
+        type: "prose",
         heading: "Shop PPE with live pricing",
         paragraphs: [
           "Browse certified coveralls, isolation &amp; surgical gowns, scrubs, covers, and masks with list pricing — add items to a quote and check out with tax, freight, card, or purchase order. <a class=\"font-semibold text-cyan-700 hover:underline\" href=\"supplies-catalog.html\">Open the supplies &amp; PPE catalog &rarr;</a>",
