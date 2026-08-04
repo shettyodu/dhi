@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bid Estimator — Fast Fixture Counts &amp; Spec Report | DHI Lighting</title>
+  <meta name="description" content="Estimate fixture counts, average foot-candles, wattage, and a budgetary total in seconds — then generate a spec-grade bid report (luminaire schedule + calculation summary). Built for fast bidding." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}.font-display{font-family:Montserrat,Inter,sans-serif}
+    .in{width:100%;border-radius:.5rem;border:1px solid #cbd5e1;padding:.5rem .65rem;font-size:.9rem}
+    .in:focus{outline:none;border-color:#0891b2;box-shadow:0 0 0 2px rgba(8,145,178,.18)}
+    .lbl{font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#475569;margin-bottom:.2rem;display:block}
+    /* report tables */
+    .rep table{width:100%;border-collapse:collapse}
+    .rep th,.rep td{border:1px solid #cbd5e1;padding:5px 8px;font-size:11px;text-align:left}
+    .rep th{background:#eef4f8;color:#0b2a45;font-weight:700;text-transform:uppercase;font-size:9.5px;letter-spacing:.03em}
+    .rep td.n{text-align:right;font-variant-numeric:tabular-nums}
+    @media print{
+      header,#dhi-header,#dhi-footer,#dhi-coribbon,.no-print,.hero-lite,.subnav{display:none!important}
+      body{background:#fff}
+      #report{display:block!important;position:static}
+      .rep{page-break-inside:auto}
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <div id="hero-carousel" hidden></div>
+
+  <!-- HERO -->
+  <section class="hero-lite relative overflow-hidden bg-brand-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 10%, #f59e0b 0, transparent 38%), radial-gradient(circle at 10% 90%, #06b6d4 0, transparent 40%);"></div>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
+      <nav class="mb-5 flex items-center gap-2 text-sm text-slate-400">
+        <a href="index.html" class="hover:text-cyan-300">Home</a><span>/</span>
+        <a href="lighting.html" class="hover:text-cyan-300">Lighting</a><span>/</span>
+        <span class="text-slate-200">Bid Estimator</span>
+      </nav>
+      <p class="kicker text-sm font-semibold uppercase tracking-wider text-amber-300">Bid Estimator · fast fixture counts</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">From plan to priced bid in minutes</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">Add your spaces, pick a fixture, and get instant fixture counts, average foot-candles, wattage, and a budgetary total — then generate a spec-grade bid report. Full point-by-point photometrics run on award.</p>
+    </div>
+  </section>
+
+  <!-- SUBNAV -->
+  <div class="subnav sticky top-16 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 sm:px-6 lg:px-8">
+      <a href="lighting.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Overview</a>
+      <a href="lighting-advisor.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">AI Advisor</a>
+      <a href="lighting-estimator.html" class="whitespace-nowrap border-b-2 border-cyan-600 px-3 py-3 text-sm font-semibold text-cyan-700">Bid Estimator</a>
+      <a href="lighting-zonal.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Zonal Calculator</a>
+      <a href="lighting-catalog.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Product Catalog</a>
+      <a href="lighting-roi.html" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Savings Calculator</a>
+      <a href="contact.html?interest=Lighting%20%26%20Energy%20Efficiency" class="whitespace-nowrap px-3 py-3 text-sm font-medium text-slate-600 hover:text-cyan-700">Request a Quote</a>
+    </div>
+  </div>
+
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <!-- project bar -->
+    <div class="no-print mb-5 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-3">
+      <div><span class="lbl">Project name</span><input id="pj-name" class="in" placeholder="e.g., Camp Allen — 2nd Flr Area D" /></div>
+      <div><span class="lbl">Client / for</span><input id="pj-client" class="in" placeholder="e.g., Wesco Energy Solutions" /></div>
+      <div><span class="lbl">Prepared by</span><input id="pj-by" class="in" value="DHI Lighting" /></div>
+    </div>
+
+    <div class="no-print lg:flex lg:items-start lg:gap-6">
+      <!-- ADD SPACE FORM -->
+      <div class="lg:w-96 lg:flex-none">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="font-display text-lg font-bold text-brand-900">Add a space</h2>
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div class="col-span-2"><span class="lbl">Space name</span><input id="s-name" class="in" placeholder="Warehouse, Office 2A101…" /></div>
+            <div class="col-span-2"><span class="lbl">Application (sets target fc)</span>
+              <select id="s-app" class="in">
+                <option value="40">Office / classroom — 40 fc</option>
+                <option value="50">Retail / grocery — 50 fc</option>
+                <option value="20">Warehouse / storage — 20 fc</option>
+                <option value="30">Industrial / assembly — 30 fc</option>
+                <option value="30">Warehouse rack aisle — 30 fc</option>
+                <option value="50">Gymnasium — 50 fc</option>
+                <option value="5">Parking / garage — 5 fc</option>
+                <option value="custom">Custom…</option>
+              </select>
+            </div>
+            <div><span class="lbl">Length (ft)</span><input id="s-l" type="number" class="in" placeholder="100" /></div>
+            <div><span class="lbl">Width (ft)</span><input id="s-w" type="number" class="in" placeholder="80" /></div>
+            <div><span class="lbl">Mounting ht (ft)</span><input id="s-mh" type="number" class="in" placeholder="12" /></div>
+            <div><span class="lbl">Workplane ht (ft)</span><input id="s-wp" type="number" class="in" value="2.5" /></div>
+            <div><span class="lbl">Target (fc)</span><input id="s-fc" type="number" class="in" placeholder="40" /></div>
+            <div><span class="lbl">CU</span><input id="s-cu" type="number" step="0.05" class="in" value="0.80" /></div>
+          </div>
+
+          <div class="mt-3"><span class="lbl">Fixture — pick a Keystone SKU or enter lumens</span>
+            <input id="s-fix" class="in" list="fixlist" placeholder="Type SKU or name…" />
+            <datalist id="fixlist"></datalist>
+          </div>
+          <div class="mt-2 grid grid-cols-3 gap-2">
+            <div><span class="lbl">Lumens</span><input id="s-lm" type="number" class="in" placeholder="14000" /></div>
+            <div><span class="lbl">Watts</span><input id="s-wt" type="number" class="in" placeholder="100" /></div>
+            <div><span class="lbl">LLF</span><input id="s-llf" type="number" step="0.05" class="in" value="0.85" /></div>
+          </div>
+          <p id="s-price" class="mt-1 text-xs text-slate-400"></p>
+
+          <button id="s-add" class="mt-4 w-full rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700">Add space to project</button>
+          <p id="s-msg" class="mt-2 hidden text-xs font-medium text-red-600"></p>
+        </div>
+      </div>
+
+      <!-- SPACES + ROLLUP -->
+      <div class="mt-6 min-w-0 flex-1 lg:mt-0">
+        <div id="spaces" class="space-y-3"></div>
+        <div id="empty" class="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">No spaces yet — add one on the left to see instant counts.</div>
+
+        <div id="rollup" class="mt-5 hidden rounded-2xl border border-cyan-200 bg-cyan-50/60 p-5">
+          <h2 class="font-display text-lg font-bold text-brand-900">Project total</h2>
+          <div id="rollup-grid" class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4"></div>
+          <div class="mt-4 flex flex-wrap gap-3">
+            <button id="gen" class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Generate bid report ↓</button>
+            <button id="prn" class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-brand-800 hover:bg-white">Print / save PDF</button>
+            <a href="contact.html?interest=Lighting%20%26%20Energy%20Efficiency" class="rounded-lg border border-cyan-600 px-5 py-2.5 text-sm font-semibold text-cyan-700 hover:bg-white">Turn this into a quote →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT (spec-grade, print-ready) -->
+    <div id="report" class="rep mt-8 hidden">
+      <div class="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div class="flex items-start justify-between border-b-2 border-brand-900 pb-3">
+          <div>
+            <div class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded bg-brand-900 text-xs font-extrabold text-white">DHi</span>
+              <span class="font-display text-lg font-extrabold text-brand-900">DHI Lighting</span></div>
+            <p id="r-sub" class="mt-1 text-xs text-slate-500">Illuminance estimate &amp; luminaire schedule</p>
+          </div>
+          <div class="text-right text-xs text-slate-500">
+            <p id="r-pj" class="text-sm font-bold text-brand-900"></p>
+            <p id="r-meta"></p>
+          </div>
+        </div>
+
+        <h3 class="mt-5 font-display text-sm font-bold uppercase tracking-wide text-brand-900">Luminaire Schedule</h3>
+        <div class="mt-2 overflow-x-auto"><table id="r-sched"></table></div>
+
+        <h3 class="mt-6 font-display text-sm font-bold uppercase tracking-wide text-brand-900">Calculation Summary</h3>
+        <div class="mt-2 overflow-x-auto"><table id="r-calc"></table></div>
+
+        <p class="mt-5 text-[10px] leading-relaxed text-slate-400">
+          Budget-grade estimate produced by the average-illuminance (lumen) method with the coefficient of utilization (CU) and light-loss factor (LLF) shown.
+          Average foot-candles are calculated; <b>Max/Min and Avg/Min uniformity and a stamped point-by-point photometric are produced on award or on request</b> from the specified fixtures' IES files.
+          Pricing shown is budgetary list only and is not a quote. Prepared by DHI Lighting.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/components.js"></script>
+  <script src="assets/catalog-data.js"></script>
+  <script src="assets/lighting-calc.js?v=1"></script>
+  <script>
+  (function(){
+    "use strict";
+    var $=function(id){return document.getElementById(id);};
+    function num(v){ if(v==null) return 0; var m=String(v).replace(/,/g,"").match(/\d+(\.\d+)?/g); if(!m) return 0; return m.length>=2?(+m[0]+ +m[1])/2:+m[0]; }
+    function fmt(n){ return (Math.round(n)).toLocaleString("en-US"); }
+    function money(n){ return "$"+(Math.round(n)).toLocaleString("en-US"); }
+
+    // ---- fixture catalog (Keystone SKUs with lumens + watts) ----
+    var FIX = (typeof KEYSTONE_PRODUCTS!=="undefined"?KEYSTONE_PRODUCTS:[])
+      .filter(function(x){ return num(x.lm)>0 && num(x.w)>0; })
+      .map(function(x){ return {id:x.id, lm:num(x.lm), w:num(x.w), cat:x.cat||"", cct:x.cct||"", specs:x.specs||"", price:num(x.p)}; });
+    var byId={}; FIX.forEach(function(f){ byId[f.id]=f; });
+    var dl=$("fixlist");
+    FIX.slice(0,600).forEach(function(f){ var o=document.createElement("option"); o.value=f.id; o.label=f.lm+" lm · "+f.w+"W"; dl.appendChild(o); });
+    $("s-fix").addEventListener("change", function(){ var f=byId[this.value]; if(f){ $("s-lm").value=f.lm; $("s-wt").value=f.w; $("s-price").textContent = f.specs+(f.price?(" · list "+money(f.price)):""); } });
+    $("s-app").addEventListener("change", function(){ if(this.value!=="custom") $("s-fc").value=this.value; });
+
+    var spaces=[];
+
+    function calc(s){
+      var area = (s.L&&s.W)? s.L*s.W : 0;
+      var perFix = s.lm*s.cu*s.llf;
+      var count = (area&&s.fc&&perFix)? Math.ceil((s.fc*area)/perFix) : 0;
+      var avg = (count&&area)? (count*perFix)/area : 0;
+      var lay = window.LightingCalc? window.LightingCalc.layout({area:area,fc:s.fc,lumens:s.lm,cu:s.cu,llf:s.llf,L:s.L,W:s.W}) : {rows:0,cols:0};
+      var totW = count*s.wt, wsf = area? totW/area : 0;
+      var cost = count*(s.price||0);
+      var colSp = lay.cols? (s.L/lay.cols):0, rowSp = lay.rows? (s.W/lay.rows):0;
+      return {area:area,count:count,avg:avg,rows:lay.rows,cols:lay.cols,totW:totW,wsf:wsf,cost:cost,colSp:colSp,rowSp:rowSp};
+    }
+
+    function render(){
+      $("empty").style.display = spaces.length? "none":"block";
+      $("rollup").classList.toggle("hidden", !spaces.length);
+      var wrap=$("spaces"); wrap.innerHTML="";
+      var tFix=0,tW=0,tCost=0,tArea=0;
+      spaces.forEach(function(s,idx){
+        var r=calc(s); tFix+=r.count; tW+=r.totW; tCost+=r.cost; tArea+=r.area;
+        var el=document.createElement("div");
+        el.className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm";
+        el.innerHTML =
+          '<div class="flex items-start justify-between gap-3">'+
+            '<div><p class="font-semibold text-brand-900">'+esc(s.name||"Space "+(idx+1))+'</p>'+
+            '<p class="text-xs text-slate-500">'+fmt(r.area)+' sq ft · '+esc(s.fix||(s.lm+" lm"))+' · '+s.fc+' fc target</p></div>'+
+            '<button data-del="'+idx+'" class="text-xs font-semibold text-red-500 hover:underline">Remove</button>'+
+          '</div>'+
+          '<div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">'+
+            stat(r.count,"fixtures")+ stat(r.avg.toFixed(1),"avg fc (calc)")+
+            stat(r.cols+"×"+r.rows,"layout")+ stat(r.wsf.toFixed(2),"W / sq ft")+
+          '</div>'+
+          '<p class="mt-2 text-xs text-slate-400">≈ '+fmt(r.totW)+' W total · spacing ~'+r.colSp.toFixed(0)+"'×"+r.rowSp.toFixed(0)+"' "+(s.price?('· budgetary list '+money(r.cost)):'')+'</p>';
+        wrap.appendChild(el);
+      });
+      wrap.querySelectorAll("[data-del]").forEach(function(b){ b.addEventListener("click",function(){ spaces.splice(+this.getAttribute("data-del"),1); render(); }); });
+      var g=$("rollup-grid");
+      g.innerHTML = stat(fmt(tFix),"total fixtures")+stat(fmt(tArea),"total sq ft")+stat(fmt(tW/1000)+" kW","connected load")+stat(tCost?money(tCost):"—","budgetary list");
+    }
+    function stat(v,l){ return '<div><p class="font-display text-2xl font-extrabold text-brand-900">'+v+'</p><p class="text-xs text-slate-500">'+l+'</p></div>'; }
+    function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+
+    $("s-add").addEventListener("click", function(){
+      var s={ name:$("s-name").value.trim(), L:+$("s-l").value, W:+$("s-w").value,
+        mh:+$("s-mh").value, wp:+$("s-wp").value||2.5, fc:+$("s-fc").value||+$("s-app").value||40,
+        cu:+$("s-cu").value||0.8, llf:+$("s-llf").value||0.85,
+        fix:$("s-fix").value.trim(), lm:+$("s-lm").value, wt:+$("s-wt").value, price:(byId[$("s-fix").value.trim()]||{}).price||0 };
+      var msg=$("s-msg");
+      if(!s.L||!s.W){ msg.textContent="Enter length and width."; msg.classList.remove("hidden"); return; }
+      if(!s.lm){ msg.textContent="Pick a fixture or enter lumens."; msg.classList.remove("hidden"); return; }
+      msg.classList.add("hidden");
+      spaces.push(s);
+      ["s-name","s-l","s-w"].forEach(function(id){ $(id).value=""; });
+      render();
+    });
+
+    // ---- report ----
+    function buildReport(){
+      var d=new Date? null:null; // date not available in build env; use client Date at runtime
+      $("r-pj").textContent = $("pj-name").value.trim() || "Untitled project";
+      var meta=[]; if($("pj-client").value.trim()) meta.push("For: "+$("pj-client").value.trim());
+      meta.push("By: "+($("pj-by").value.trim()||"DHI Lighting"));
+      try{ meta.push(new Date().toLocaleDateString()); }catch(e){}
+      $("r-meta").textContent = meta.join("  ·  ");
+
+      // schedule: aggregate by SKU
+      var sched={}; var sym=0; var symMap={};
+      spaces.forEach(function(s){ var r=calc(s); var key=s.fix||("MANUAL-"+s.lm+"lm"); if(!sched[key]){ sched[key]={id:key,qty:0,lm:s.lm,w:s.wt,cat:(byId[key]||{}).cat||"", cct:(byId[key]||{}).cct||"", llf:s.llf}; } sched[key].qty+=r.count; });
+      var sc=$("r-sched");
+      sc.innerHTML="<thead><tr><th>Qty</th><th>Label / SKU</th><th>Arrangement</th><th>Total Lamp Lumens</th><th>LLF</th><th>Description</th></tr></thead>";
+      var tb=document.createElement("tbody");
+      Object.keys(sched).forEach(function(k){ var x=sched[k]; var tr=document.createElement("tr");
+        tr.innerHTML="<td class='n'>"+x.qty+"</td><td>"+esc(x.id)+"</td><td>Single</td><td class='n'>"+fmt(x.qty*x.lm)+"</td><td class='n'>"+x.llf.toFixed(2)+"</td><td>"+esc((x.w?x.w+"W":"")+(x.cat?" · "+x.cat:"")+(x.cct?" · "+x.cct:""))+"</td>";
+        tb.appendChild(tr); });
+      sc.appendChild(tb);
+
+      // calc summary
+      var cc=$("r-calc");
+      cc.innerHTML="<thead><tr><th>Label</th><th>Calc Type</th><th>Units</th><th>Avg</th><th>Target</th><th>Fixtures</th><th>Workplane Ht</th><th>Max/Min · Avg/Min</th></tr></thead>";
+      var tb2=document.createElement("tbody");
+      spaces.forEach(function(s,i){ var r=calc(s); var tr=document.createElement("tr");
+        tr.innerHTML="<td>"+esc(s.name||("Space "+(i+1)))+"</td><td>Illuminance</td><td>Fc</td><td class='n'>"+r.avg.toFixed(1)+"</td><td class='n'>"+s.fc+"</td><td class='n'>"+r.count+"</td><td class='n'>"+s.wp.toFixed(1)+"</td><td class='n' style='color:#94a3b8'>on award</td>";
+        tb2.appendChild(tr); });
+      cc.appendChild(tb2);
+
+      $("report").classList.remove("hidden");
+      $("report").scrollIntoView({behavior:"smooth",block:"start"});
+    }
+    $("gen").addEventListener("click", buildReport);
+    $("prn").addEventListener("click", function(){ buildReport(); setTimeout(function(){ window.print(); },250); });
+
+    render();
+  })();
+  </script>
+</body>
+</html>
