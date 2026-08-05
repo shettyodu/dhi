@@ -638,9 +638,25 @@ function initSiteChrome() {
   }
 }
 
+/* Shared "primary action" attention cue — opt-in via class="cta-pulse".
+   A subtle expanding-ring pulse that draws the eye to THE key button on a page
+   without the spammy look of a big flashing element. Respects reduced-motion. */
+function initCtaCue() {
+  if (document.getElementById("dhi-cta-style")) return;
+  var st = document.createElement("style");
+  st.id = "dhi-cta-style";
+  st.textContent =
+    "@keyframes dhiPulse{0%{box-shadow:0 0 0 0 rgba(8,145,178,.45)}70%{box-shadow:0 0 0 9px rgba(8,145,178,0)}100%{box-shadow:0 0 0 0 rgba(8,145,178,0)}}" +
+    ".cta-pulse{animation:dhiPulse 2.2s cubic-bezier(.4,0,.2,1) infinite}" +
+    ".cta-pulse:hover,.cta-pulse:focus{animation:none}" +
+    "@media(prefers-reduced-motion:reduce){.cta-pulse{animation:none}}";
+  document.head.appendChild(st);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initCampaign();
   initSEO();
+  initCtaCue();
   buildHeader();
   buildFooter();
   initSiteChrome();
