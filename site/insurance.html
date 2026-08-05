@@ -126,7 +126,7 @@
       <div>
         <span class="feat-tag">Featured · Group Medical</span>
         <h2>ITH SmartCare group medical for employers</h2>
-        <p>Health coverage without the debt — no deductible, no coinsurance, and a 2-year rate lock. Built for small business, 2+ employees, all 50 states.</p>
+        <p>Health coverage without the debt — no deductible, no coinsurance, and a 2-year rate lock. Built for small business, 5+ employees, all 50 states.</p>
         <div class="feat-cta">
           <a class="primary" href="smartcare.html">Get a group quote &rarr;</a>
           <a class="ghost" id="feat-census">Download employee census</a>
@@ -148,7 +148,7 @@
     <div class="mt-12">
       <p class="text-center text-xs font-bold uppercase tracking-widest" style="color:var(--med)">Explore products &amp; carriers</p>
       <div class="mt-5 grid gap-4 sm:grid-cols-3">
-        <a class="pc" href="smartcare.html"><span class="pc-t" style="color:var(--med)">SmartCare — Group Medical</span><span class="pc-d">Group medical for small business, 2+ employees.</span><span class="pc-go">Learn more &rarr;</span></a>
+        <a class="pc" href="smartcare.html"><span class="pc-t" style="color:var(--med)">SmartCare — Group Medical</span><span class="pc-d">Group medical for small business, 5+ employees.</span><span class="pc-go">Learn more &rarr;</span></a>
         <a class="pc" href="manhattanlife.html"><span class="pc-t" style="color:var(--ann)">ManhattanLife — Employer Benefits</span><span class="pc-d">Supplemental group benefits — Accident, Critical Illness &amp; Cancer, Disability, Hospital Indemnity, GAP &amp; Life.</span><span class="pc-go">Learn more &rarr;</span></a>
         <a class="pc" href="squaremouth.html"><span class="pc-t" style="color:var(--trv)">SquareMouth — Travel</span><span class="pc-d">Compare &amp; buy travel insurance through our SquareMouth agency.</span><span class="pc-go">Get travel quotes &rarr;</span></a>
       </div>
@@ -173,7 +173,7 @@
           <input class="qf" id="l-company" placeholder="Company name" />
           <input class="qf mt-3" id="l-emp" inputmode="numeric" placeholder="# of employees (2+)" />
           <div class="mt-3 rounded-lg" style="background:var(--med-l);padding:10px 12px;font-size:12px;color:#334155;line-height:1.5">
-            <b>Medical is group coverage</b> — for employers with 2+ employees (no individual medical). Download the employee census, have the employer complete it, and we'll return a group quote.
+            <b>Medical is group coverage</b> — for employers with 5+ employees (no individual medical). Download the employee census, have the employer complete it, and we'll return a group quote.
             <button type="button" id="ov-census" class="census-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg> Download employee census (CSV)</button>
           </div>
         </div>
@@ -216,7 +216,7 @@
       // render cards
       document.getElementById("cards").innerHTML = Object.values(CATS).map((c) => `
         <div class="cat" data-cat="${c.key}">
-          <div class="head ${c.bg}"><div class="ic">${svg(c.icon,26)}</div><h3>${c.name}</h3>${c.group?'<span class="gbadge">Employers · 2+ employees</span>':''}</div>
+          <div class="head ${c.bg}"><div class="ic">${svg(c.icon,26)}</div><h3>${c.name}</h3>${c.group?'<span class="gbadge">Employers · 5+ employees</span>':''}</div>
           <div class="photo ${c.bg}">${svg(c.icon,54)}<span class="ph-tag">licensed stock photo</span></div>
           <div class="body">
             <p>${c.desc}</p>

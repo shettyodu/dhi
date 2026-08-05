@@ -227,7 +227,7 @@ const SERVICE_CONTENT = {
           { id: "individual", label: "Individual", products: ["Accident", "Dental, Vision & Hearing", "Hospital Indemnity", "Short-Term Care", "Critical Illness, Cancer & Stroke", "Out-of-Pocket (GAP)"] },
           { id: "family", label: "Family", products: ["Accident", "Dental, Vision & Hearing", "Hospital Indemnity", "Critical Illness & Cancer", "Term Life", "Whole Life"] },
           { id: "senior", label: "Senior", products: ["Home Health Care", "Hospital Indemnity", "Short-Term Care", "Dental, Vision & Hearing", "Whole Life", "Fixed Indexed Annuity"] },
-          { id: "employer", label: "Employer / Group", products: ["SmartCare group medical (2+ employees)", "Group Accident", "Critical Illness & Cancer", "Disability", "Hospital Indemnity", "Group GAP", "Group Life"] },
+          { id: "employer", label: "Employer / Group", products: ["SmartCare group medical (5+ employees)", "Group Accident", "Critical Illness & Cancer", "Disability", "Hospital Indemnity", "Group GAP", "Group Life"] },
           { id: "traveler", label: "Traveler", products: ["Single-trip medical", "Annual multi-trip", "Adventure & sports", "Trip cancellation", "Medical evacuation"] },
         ],
       },
@@ -246,7 +246,7 @@ const SERVICE_CONTENT = {
         items: [
           { title: "Debt-free design", desc: "No deductibles and no coinsurance — a covered event won't turn into medical debt." },
           { title: "$699 / employee · 2-year rate lock", desc: "Predictable pricing locked for two years (illustrative; confirmed at underwriting)." },
-          { title: "Built for small business", desc: "Group coverage for as few as 2 employees, in all 50 states." },
+          { title: "Built for small business", desc: "Group coverage for as few as 5 employees, in all 50 states." },
           { title: "Major networks", desc: "Built on UnitedHealthcare and Cigna, with stop-loss and reinsurance for stability." },
           { title: "Designed to save", desc: "Typically 20–30% less than comparable traditional group plans (savings vary by group)." },
           { title: "Guided, digital setup", desc: "A licensed advisor plus digital enrollment handle quoting and setup end to end." },
