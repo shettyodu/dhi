@@ -35,6 +35,20 @@
     .in:focus{outline:none;border-color:var(--med);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
     .lbl{font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#475569;margin-bottom:.25rem;display:block}
     .fade{animation:fade .25s ease}@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    /* mode toggle */
+    .seg{display:inline-flex;background:#eef2f7;border-radius:999px;padding:.25rem;gap:.15rem}
+    .seg button{border:0;background:transparent;border-radius:999px;padding:.45rem .95rem;font-size:.82rem;font-weight:700;color:#64748b;cursor:pointer;display:inline-flex;align-items:center;gap:.35rem}
+    .seg button.on{background:#fff;color:var(--navy);box-shadow:0 1px 2px rgba(15,39,64,.12)}
+    /* chat bubbles */
+    .msg{border-radius:14px;padding:11px 14px;font-size:14px;line-height:1.55;max-width:92%}
+    .msg.u{background:var(--navy);color:#fff;margin-left:auto}
+    .msg.a{background:#f1f6fc;color:var(--ink)}
+    .msg.a b{color:var(--navy)}
+    .typing span{display:inline-block;width:6px;height:6px;margin:0 1px;border-radius:999px;background:#94a3b8;animation:blink 1.2s infinite}
+    .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+    @keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
+    .chip{cursor:pointer;border:1px solid #dbe4ee;background:#fff;border-radius:999px;padding:.4rem .75rem;font-size:.8rem;font-weight:600;color:#41505f}
+    .chip:hover{border-color:var(--med);color:var(--med)}
     @media (prefers-reduced-motion:reduce){.fade{animation:none}.opt:hover{transform:none}}
   </style>
 </head>
@@ -57,6 +71,17 @@
   </section>
 
   <main class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
+    <!-- mode toggle -->
+    <div class="mb-5 flex items-center justify-between gap-3">
+      <div class="seg" role="tablist" aria-label="Concierge mode">
+        <button id="mode-guided" type="button" class="on" role="tab" aria-selected="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:.9rem;height:.9rem"><path d="M9 6l6 6-6 6"/></svg>Guided walk-through</button>
+        <button id="mode-ask" type="button" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:.9rem;height:.9rem"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Ask anything</button>
+      </div>
+      <span class="hidden text-xs text-slate-400 sm:inline">Prefer to type? Switch anytime.</span>
+    </div>
+
     <!-- progress -->
     <div id="prog-wrap" class="mb-5">
       <div class="mb-1.5 flex items-center justify-between text-xs font-semibold text-slate-500">
@@ -366,6 +391,109 @@
         btn.disabled=false; btn.textContent="Have an advisor reach out";
       });
     }
+
+    // ================= "ASK ANYTHING" AI LAYER =================
+    var API=(new URLSearchParams(location.search).get("api")||localStorage.getItem("dhi_api_base")||"").replace(/\/+$/,"");
+    var mGuided=document.getElementById("mode-guided"), mAsk=document.getElementById("mode-ask");
+    var askEl=null, askLog=null, askHist=[];
+    function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+    function fmt(s){return esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>");}
+
+    function recCardsHTML(keys){
+      if(!keys||!keys.length) return "";
+      return '<div class="mt-2 grid gap-2 sm:grid-cols-2">'+keys.map(function(k){ var p=P[k]; if(!p) return "";
+        return '<div class="rec"><span class="tag" style="background:'+p.ac+'">'+p.tag+'</span><h4>'+p.title+'</h4>'+
+          '<a class="go" style="color:'+p.ac+'" href="'+p.href+'">'+p.cta+
+          ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:.8rem;height:.8rem"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>';
+      }).join("")+'</div>';
+    }
+    function localMatch(text){
+      var s=" "+text.toLowerCase()+" ", out=[]; function add(k){ if(out.indexOf(k)<0) out.push(k); }
+      var employer=/\b(business|company|employer|employees|staff|team|payroll|group)\b/.test(s);
+      if(/annuity|annuities|retire|retirement|nest egg|income for life/.test(s)) add("annuity");
+      if(/travel|trip|vacation|cruise|flight|abroad|overseas|europe/.test(s)) add("travel");
+      if(/life insurance|term life|whole life|beneficiary|pass away|provide for/.test(s)) add("life");
+      if(/accident|critical illness|cancer|disability|hospital|gap\b|supplement/.test(s)) add("supp");
+      if(/health|medical|smartcare/.test(s)) add(employer?"medical":"individual");
+      return out.slice(0,2);
+    }
+    function askAdd(role,html){ var d=document.createElement("div"); d.className="msg "+role+" fade"; d.innerHTML=html; askLog.appendChild(d); askLog.scrollTop=askLog.scrollHeight; return d; }
+    function askUser(t){ return askAdd("u",esc(t)); }
+    function askTyping(){ return askAdd("a",'<span class="typing"><span></span><span></span><span></span></span>'); }
+
+    function buildAskEl(){
+      var wrap=document.createElement("div"); wrap.className="fade";
+      wrap.innerHTML=
+        '<div class="flex items-start gap-3">'+
+          '<span class="ico" style="background:var(--med);flex:none;width:2.4rem;height:2.4rem;border-radius:.7rem;display:flex;align-items:center;justify-content:center;color:#fff">'+
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" style="width:1.35rem;height:1.35rem"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>'+
+          '<div><h2 class="font-display text-xl font-extrabold text-brand-900">Ask us anything about insurance</h2>'+
+          '<p class="mt-1 text-slate-600">Type a question in plain English — I’ll explain in plain English back, then a licensed advisor can take it from there.</p></div>'+
+        '</div>'+
+        '<div id="ask-log" class="mt-4 max-h-[44vh] min-h-[11rem] space-y-3 overflow-y-auto pr-1"></div>'+
+        '<div id="ask-chips" class="mt-3 flex flex-wrap gap-2"></div>'+
+        '<form id="ask-form" class="mt-3 flex items-end gap-2">'+
+          '<textarea id="ask-input" rows="1" class="in max-h-32 min-h-[2.9rem] flex-1 resize-none" placeholder="e.g. Can my family get SmartCare? · What’s the cheapest plan? · I’m going to Europe—what do I need?"></textarea>'+
+          '<button type="submit" class="inline-flex h-12 flex-none items-center gap-1.5 rounded-xl px-5 text-sm font-semibold text-white" style="background:var(--med)">Ask</button>'+
+        '</form>';
+      askLog=wrap.querySelector("#ask-log");
+      // greeting
+      askAdd("a","Hi! I can answer questions about DHI’s insurance options — group medical, supplemental, life, annuities, or travel. Ask me anything, or tap a starter below. <span class=\"text-slate-400\">Guidance only — not a quote or a bind.</span>");
+      // starters
+      var STARTERS=["Can an individual or family get SmartCare?","What’s the most affordable SmartCare plan?","What does “integrated gap benefit” mean?","I’m planning a trip abroad — what do I need?","What’s the difference between term and permanent life?"];
+      var chips=wrap.querySelector("#ask-chips");
+      STARTERS.forEach(function(t){ var b=document.createElement("button"); b.type="button"; b.className="chip"; b.textContent=t; b.addEventListener("click",function(){ sendAsk(t); }); chips.appendChild(b); });
+      // form
+      var form=wrap.querySelector("#ask-form"), input=wrap.querySelector("#ask-input");
+      form.addEventListener("submit",function(e){ e.preventDefault(); var t=input.value.trim(); if(t){ input.value=""; sendAsk(t); } });
+      input.addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
+      return wrap;
+    }
+
+    var asking=false;
+    async function sendAsk(text){
+      if(asking) return; asking=true;
+      askUser(text); askHist.push({role:"user",content:text});
+      var t=askTyping();
+      try{
+        var res=await fetch(API+"/.netlify/functions/insurance-concierge",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:askHist.slice(-8)})});
+        if(!res.ok) throw new Error("http "+res.status);
+        var d=await res.json(); t.remove();
+        var reply=(d && d.reply) || "Sorry, I didn’t catch that — could you rephrase?";
+        askAdd("a",fmt(reply)+recCardsHTML(d && d.suggest));
+        askHist.push({role:"assistant",content:reply});
+      }catch(err){
+        t.remove(); fallbackAnswer(text);
+      }
+      asking=false;
+    }
+    function fallbackAnswer(text){
+      var keys=localMatch(text);
+      if(keys.length){
+        askAdd("a","I can still point you in the right direction. Based on what you asked, here’s where I’d start — and a licensed DHI advisor can confirm the details:"+recCardsHTML(keys)+
+          '<div class="mt-2 text-[13px]">Want a person to walk you through it? <a class="font-semibold underline" style="color:var(--med)" href="#" data-toguided>Use the guided walk-through</a> or leave your details on the <a class="font-semibold underline" style="color:var(--med)" href="insurance.html#quote">insurance page</a>.</div>');
+      } else {
+        askAdd("a","I’m having trouble reaching the assistant right now. I can still help the quick way — tell me <b>who it’s for</b> (a business, yourself, your family) and <b>what’s on your mind</b> (health, a trip, life insurance, retirement), or <a class=\"font-semibold underline\" style=\"color:var(--med)\" href=\"#\" data-toguided>switch to the guided walk-through</a>.");
+      }
+      var g=askLog.querySelector("[data-toguided]"); if(g) g.addEventListener("click",function(e){ e.preventDefault(); setMode("guided"); });
+    }
+
+    function setMode(m){
+      var ask=(m==="ask");
+      mAsk.classList.toggle("on",ask); mAsk.setAttribute("aria-selected",ask?"true":"false");
+      mGuided.classList.toggle("on",!ask); mGuided.setAttribute("aria-selected",ask?"false":"true");
+      if(ask){
+        progWrap.style.display="none";
+        if(!askEl) askEl=buildAskEl();
+        card.innerHTML=""; card.appendChild(askEl);
+        var inp=askEl.querySelector("#ask-input"); if(inp) setTimeout(function(){ inp.focus(); },40);
+      } else {
+        progWrap.style.display="";
+        if(!hist.length) go("audience"); else render(hist[hist.length-1]);
+      }
+    }
+    mGuided.addEventListener("click",function(){ setMode("guided"); });
+    mAsk.addEventListener("click",function(){ setMode("ask"); });
 
     // ---------- start ----------
     go("audience");
