@@ -31,6 +31,9 @@
     :root{--life:#3f9a46;--life-d:#2f7a35;--life-l:#ecf7ed;--ann:#8d3b52;--navy:#0b2545;--ink:#1f2d3d;}
     .ph-box{border:2px dashed #b9cfbb;background:#f5faf5;border-radius:14px;padding:22px;text-align:center;color:#5c7860}
     .ph-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8a6d00;background:#fff7e6;border:1px solid #ffe2a8;border-radius:6px;padding:2px 8px;margin-bottom:8px}
+    .in{width:100%;border-radius:.6rem;border:1px solid #cbd5e1;padding:.6rem .75rem;font-size:.9rem}
+    .in:focus{outline:none;border-color:var(--life);box-shadow:0 0 0 3px rgba(63,154,70,.15)}
+    .lbl{font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#475569;margin-bottom:.2rem;display:block}
   </style>
 </head>
 <body class="bg-slate-50 text-slate-700 antialiased">
@@ -125,17 +128,38 @@
         </div>
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h3 class="font-semibold text-brand-900">Led by JP Lopez</h3>
-          <p class="mt-2 text-sm text-slate-600"><b>JP Lopez</b>, Managing Director of DHI's Life Division, runs the program and agent onboarding.</p>
+          <p class="mt-2 text-sm text-slate-600"><b>JP Lopez</b>, Managing Director, Life at InsurTech Hub (ITH), leads DHI's life &amp; annuity program and agent onboarding.</p>
         </div>
       </div>
 
-      <!-- PLACEHOLDER 2: embed or link JP Lopez's life & annuity AGENT dashboard here (after Aug 10 integration) -->
-      <div id="jp-dash" class="ph-box mt-6">
-        <span class="ph-tag">Placeholder · wire after Aug 10 JP Lopez integration</span>
-        <p class="mt-1 text-sm"><b>Agent dashboard</b> — embed or link JP Lopez's life &amp; annuity onboarding/production dashboard here (contracting, product access, production tracking).</p>
-        <div class="mt-3 flex flex-wrap justify-center gap-3">
-          <a href="insurance-sell.html" class="rounded-md px-5 py-2.5 text-sm font-semibold text-white" style="background:var(--life)">Request an appointment</a>
-          <a href="contact.html?interest=Insurance%20%E2%80%94%20Life%20agent" class="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-semibold text-brand-800 hover:bg-white">Ask about the life program</a>
+      <!-- DHI-stamped intro-to-JP flow: captures the producer on DHI's side, stamps
+           the lead as DHI-sourced, emails JP (lead-routing → JP Lopez), THEN unlocks
+           JP's booking calendar. So every agent is attributed to DHI and JP is
+           notified — no dependence on Google Calendar's (UTM-less) booking form.
+           (JP's live production dashboard embed still drops in here once provided.) -->
+      <div id="jp-dash" class="mt-6 grid gap-6 lg:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 class="font-display text-lg font-bold text-brand-900">Producers — start here</h3>
+          <p class="mt-1 text-sm text-slate-600">Tell us who you are and we’ll introduce you to <b>JP Lopez</b> as a <b>DHI-referred agent</b> — your details go straight to him so onboarding starts warm.</p>
+          <form id="jp-form" class="mt-4 grid gap-3 sm:grid-cols-2" novalidate>
+            <div><span class="lbl">Name</span><input id="jp-name" class="in" required /></div>
+            <div><span class="lbl">Business email</span><input id="jp-email" type="email" class="in" required /></div>
+            <div><span class="lbl">Phone</span><input id="jp-phone" class="in" /></div>
+            <div><span class="lbl">NPN <span class="font-normal text-slate-400">(Producer #)</span></span><input id="jp-npn" class="in" inputmode="numeric" /></div>
+            <div class="sm:col-span-2"><span class="lbl">States licensed <span class="font-normal text-slate-400">(optional)</span></span><input id="jp-states" class="in" placeholder="e.g. FL, GA, TX" /></div>
+            <input type="text" id="jp-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
+            <button type="submit" class="cta-pulse sm:col-span-2 mt-1 w-full rounded-lg px-5 py-3 text-sm font-bold text-white" style="background:var(--life)">Share my info with JP &amp; continue</button>
+            <p id="jp-note" class="sm:col-span-2 hidden rounded-lg px-4 py-3 text-sm"></p>
+          </form>
+        </div>
+        <div class="rounded-2xl border border-slate-200 p-6" style="background:var(--life-l)">
+          <h3 class="font-display text-lg font-bold text-brand-900">Then book your intro call</h3>
+          <p class="mt-1 text-sm text-slate-600">Pick a time directly on JP’s calendar. Because you came through DHI, your details are already with him — no need to re-explain.</p>
+          <a id="jp-book" href="https://calendar.app.google/7ST3DoN5tHj4RHAS8" target="_blank" rel="noopener" class="pointer-events-none mt-4 inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold text-white opacity-50" style="background:var(--life-d)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1rem;height:1rem"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Book a time with JP
+          </a>
+          <p id="jp-book-hint" class="mt-2 text-xs text-slate-500">Complete the form to unlock booking. (When booking, adding “DHI” in the notes helps too.)</p>
         </div>
       </div>
     </div>
@@ -151,5 +175,35 @@
   </section>
 
   <script src="assets/components.js"></script>
+  <script>
+  // DHI-stamped intro-to-JP: capture the producer, stamp the lead as DHI-sourced,
+  // fire the lead (→ lead-routing emails JP Lopez), then unlock JP's booking link.
+  (function(){
+    var f=document.getElementById("jp-form"); if(!f) return;
+    var note=document.getElementById("jp-note"), book=document.getElementById("jp-book"), hint=document.getElementById("jp-book-hint");
+    var API=(new URLSearchParams(location.search).get("api")||localStorage.getItem("dhi_api_base")||"").replace(/\/+$/,"");
+    function show(m,ok){ note.classList.remove("hidden"); note.textContent=m; note.className="sm:col-span-2 rounded-lg px-4 py-3 text-sm "+(ok?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-600"); }
+    function unlockBooking(){ book.classList.remove("opacity-50","pointer-events-none"); hint.textContent="You’re all set — pick a time with JP above. Your details are already with him."; }
+    f.addEventListener("submit", async function(e){
+      e.preventDefault();
+      if(document.getElementById("jp-hp").value){ f.reset(); return; }
+      var name=document.getElementById("jp-name").value.trim(), email=document.getElementById("jp-email").value.trim();
+      if(!name||!email){ show("Please add your name and business email.",false); return; }
+      var attribution=(window.DHIAttribution&&window.DHIAttribution())||{};
+      var npn=document.getElementById("jp-npn").value.trim(), states=document.getElementById("jp-states").value.trim(), phone=document.getElementById("jp-phone").value.trim();
+      var payload={ type:"inquiry", vertical:"insurance", name:name, email:email, company:"",
+        interest:"Life & Annuity — agent intro (JP Lopez)",
+        message:"[DHI-referred life agent] NPN: "+(npn||"—")+" · Phone: "+(phone||"—")+" · States: "+(states||"—"),
+        source:"DHI Insurance — Life agent (JP Lopez)", referral_code:attribution.ref||"DHI", hp:"" };
+      var btn=f.querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent="Sending…";
+      try{
+        var r=await fetch(API+"/.netlify/functions/submit-lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+        if(r.ok){ show("Thanks, "+name.split(" ")[0]+"! Your info is on its way to JP as a DHI-referred agent — pick a time with him whenever you’re ready.",true); f.reset(); unlockBooking(); }
+        else { show("Something went wrong — please email steve@digitalhealthinternational.com and we’ll connect you with JP.",false); }
+      }catch(err){ show("Network error — please try again in a moment.",false); }
+      btn.disabled=false; btn.textContent="Share my info with JP & continue";
+    });
+  })();
+  </script>
 </body>
 </html>

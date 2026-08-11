@@ -19,6 +19,10 @@ const ADMIN_URL = process.env.LEADS_ADMIN_URL || ""; // optional link to the adm
 // `sms` = a mobile number (env) that gets an instant text when a lead comes in;
 // blank = email only. Set LEAD_SMS_SMARTCARE to Todd's mobile to text group leads.
 const ROUTES = [
+  // Life & annuity (Ethos + carriers, via ITH) leads go to JP Lopez. MUST come
+  // BEFORE the SmartCare rule: JP shares the myinsurtechhub domain but owns the
+  // LIFE program, not group medical — so match life/annuity/ethos/JP first.
+  { re: /\blife\b|annuit|ethos|jp lopez/i, name: "JP Lopez", email: process.env.LEAD_OWNER_LIFE || "JP@MyInsurtechHub.com", sms: process.env.LEAD_SMS_LIFE || "" },
   // SmartCare / group medical (ITH — InsurTechHub) leads go to Todd Hall.
   { re: /smartcare|insurtechhub|myinsurtechhub|\bith\b/i, name: "Todd Hall", email: process.env.LEAD_OWNER_SMARTCARE || "Todd@myinsurtechhub.com", sms: process.env.LEAD_SMS_SMARTCARE || "" },
   { re: /auto|vehicle|fleet/i, name: "Bill", email: process.env.LEAD_OWNER_AUTO || "bill@digitalhealthinternational.com", sms: process.env.LEAD_SMS_AUTO || "" },
