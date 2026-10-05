@@ -162,6 +162,9 @@
     var API=(new URLSearchParams(location.search).get("api")||localStorage.getItem("dhi_api_base")||"").replace(/\/+$/,"");
     function syncIns(){ insWrap.classList.toggle("hidden", sel.value!=="insurance"); }
     sel.addEventListener("change", syncIns);
+    // deep-link from the ads: ?track=auto|lighting|insurance (or #auto) preselects
+    var qTrack=(new URLSearchParams(location.search).get("track")||location.hash.replace(/^#/,"")||"").toLowerCase();
+    if(MAP[qTrack]){ sel.value=qTrack; syncIns(); }
     // card apply buttons preselect track + scroll
     Array.prototype.forEach.call(document.querySelectorAll(".apply-btn"), function(b){
       b.addEventListener("click", function(){ sel.value=b.getAttribute("data-track"); syncIns();
