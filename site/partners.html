@@ -31,7 +31,7 @@
     <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
       <p class="text-sm font-semibold uppercase tracking-wider text-cyan-300">Partner with DHI</p>
       <h1 class="mt-2 max-w-3xl font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Own a vertical. Earn on what you close.</h1>
-      <p class="mt-4 max-w-2xl text-lg text-slate-300">Our products are built and live. What we're adding are <b class="text-white">commission-based vertical partners</b> — operators who already know the buyer, can explain the offering, and close. <b class="text-white">You bring the relationships; we bring the platform, back office, and fulfillment.</b></p>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">Our products are built and live. What we're adding are <b class="text-white">vertical leads</b> — operators who already know the buyer, can close, and will <b class="text-white">build and run the team</b> behind it. This is a lead role: you own the vertical's growth and operations, <b class="text-white">working directly with our C-suite</b>. You bring the relationships; we bring the platform, back office, and fulfillment.</p>
       <div class="mt-8 flex flex-wrap gap-3">
         <a href="#apply" class="cta-pulse rounded-md bg-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-900/40 hover:bg-cyan-500">Apply to partner</a>
         <a href="#tracks" class="rounded-md border border-slate-500 px-6 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10">See the tracks</a>
@@ -43,8 +43,12 @@
   <!-- WHY -->
   <section class="py-14">
     <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-      <h2 class="font-display text-2xl font-bold text-brand-900">What you get as a partner</h2>
-      <div class="mt-6 grid gap-5 md:grid-cols-3">
+      <h2 class="font-display text-2xl font-bold text-brand-900">What the role is</h2>
+      <div class="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 class="font-semibold text-brand-900">Build and lead a team</h3>
+          <p class="mt-2 text-sm text-slate-600">This isn't a solo quota. You'll recruit and manage the vertical's team, own its operations and reporting, and work directly with DHI's C-suite.</p>
+        </div>
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h3 class="font-semibold text-brand-900">A built, live product</h3>
           <p class="mt-2 text-sm text-slate-600">You're not selling a concept. Automotive, lighting, and insurance are in market today, with the technology, pricing, and support behind them.</p>
@@ -65,7 +69,7 @@
   <section id="tracks" class="border-t border-slate-200 bg-white py-14">
     <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
       <h2 class="font-display text-2xl font-bold text-brand-900">Three partner tracks</h2>
-      <p class="mt-2 max-w-2xl text-slate-600">Pick the one where you already own the customer relationships.</p>
+      <p class="mt-2 max-w-2xl text-slate-600">Pick the one where you already own the customer relationships. Each is a lead role — you'll build and manage the team and own the vertical's operations, reporting to the C-suite.</p>
       <div class="mt-6 grid gap-6 lg:grid-cols-3">
 
         <!-- AUTO -->
@@ -134,6 +138,8 @@
             <textarea id="pf-book" rows="2" class="in" placeholder="e.g. ~15 dealer relationships across Hampton Roads · facility managers at 3 school districts · 40 small-group health clients"></textarea></div>
           <div class="sm:col-span-2"><span class="lbl">One deal or result you personally closed</span>
             <textarea id="pf-result" rows="2" class="in" placeholder="Briefly — what you landed and the outcome"></textarea></div>
+          <div class="sm:col-span-2"><span class="lbl">Have you built or led a team?</span>
+            <input id="pf-team" class="in" placeholder="Briefly — team size and what you led" /></div>
           <div id="pf-ins-wrap" class="hidden sm:col-span-2 grid gap-3 sm:grid-cols-2">
             <div><span class="lbl">License / NPN <span class="font-normal text-slate-400">(insurance)</span></span><input id="pf-npn" class="in" /></div>
             <div><span class="lbl">States you cover</span><input id="pf-states" class="in" placeholder="e.g. VA, NC, FL" /></div>
@@ -144,7 +150,7 @@
         <p id="pf-note" class="mt-4 hidden rounded-lg px-4 py-3 text-sm"></p>
       </form>
       <p class="mt-4 text-xs leading-relaxed text-slate-400">
-        Commission and any equity/override terms are shared during conversations and onboarding and are subject to carrier, state, and partner requirements — nothing here is an offer of employment or securities, or a guarantee of earnings. Insurance producers must hold the applicable license and appointment; product availability varies by state and carrier. AutoCommand is an early-stage marketplace. DHI does not guarantee acceptance as a partner.
+        Compensation, team-build, and any equity/override terms are set during conversations and onboarding and are subject to carrier, state, and partner requirements — nothing here is an offer of employment or securities, or a guarantee of earnings. Insurance producers must hold the applicable license and appointment; product availability varies by state and carrier. AutoCommand is an early-stage marketplace. DHI does not guarantee acceptance as a partner.
       </p>
     </div>
   </section>
@@ -181,6 +187,7 @@
       var m=MAP[track], attribution=(window.DHIAttribution&&window.DHIAttribution())||{};
       var msg="[Partner application · "+track+"] Book: "+(v("pf-book")||"—")+
         " · Result: "+(v("pf-result")||"—")+
+        " · Team led: "+(v("pf-team")||"—")+
         " · Phone: "+(v("pf-phone")||"—")+
         (track==="insurance" ? (" · License/NPN: "+(v("pf-npn")||"—")+" · States: "+(v("pf-states")||"—")) : "");
       var payload={ type:"inquiry", vertical:m.vertical, name:name, email:email,
