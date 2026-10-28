@@ -23,6 +23,8 @@ const ROUTES = [
   // ALL route to Steve regardless of track. MUST be first — otherwise the auto
   // rule below would catch "DHI Partners — Automotive" and send it to Bill.
   { re: /DHI Partners/i, name: "Steve", email: process.env.LEAD_OWNER_PARTNERS || "steve@digitalhealthinternational.com", sms: process.env.LEAD_SMS_PARTNERS || "" },
+  // DataCommand — data-licensing exchange (company / AI lab / broker) leads.
+  { re: /datacommand|data exchange|data licensing/i, name: "Steve", email: process.env.LEAD_OWNER_DATA || "steve@digitalhealthinternational.com", sms: process.env.LEAD_SMS_DATA || "" },
   // Life & annuity (Ethos + carriers, via ITH) leads go to JP Lopez. MUST come
   // BEFORE the SmartCare rule: JP shares the myinsurtechhub domain but owns the
   // LIFE program, not group medical — so match life/annuity/ethos/JP first.
