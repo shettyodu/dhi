@@ -69,11 +69,47 @@
   <section id="how" class="border-t border-slate-200 bg-white py-14">
     <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
       <h2 class="font-display text-2xl font-bold text-brand-900">How it works</h2>
-      <div class="mt-6 grid gap-5 md:grid-cols-4">
-        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5"><p class="text-xs font-bold" style="color:var(--dc)">STEP 1</p><h3 class="mt-1 font-semibold text-brand-900">Assess &amp; qualify</h3><p class="mt-1 text-sm text-slate-600">Describe your data. An AI assessment flags eligibility, compliance issues, and an estimated value range.</p></div>
-        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5"><p class="text-xs font-bold" style="color:var(--dc)">STEP 2</p><h3 class="mt-1 font-semibold text-brand-900">Prepare &amp; protect</h3><p class="mt-1 text-sm text-slate-600">De-identify (PII/PHI/CUI), confirm rights, and build a provenance-clear data-sheet. Legal review before anything moves.</p></div>
-        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5"><p class="text-xs font-bold" style="color:var(--dc)">STEP 3</p><h3 class="mt-1 font-semibold text-brand-900">Match &amp; negotiate</h3><p class="mt-1 text-sm text-slate-600">A broker matches your data-sheet to AI-lab demand and structures terms. You approve or veto every bid.</p></div>
-        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5"><p class="text-xs font-bold" style="color:var(--dc)">STEP 4</p><h3 class="mt-1 font-semibold text-brand-900">Deliver &amp; get paid</h3><p class="mt-1 text-sm text-slate-600">Secure delivery (clean-room, or data stays in your environment) with an audit trail. Transparent settlement.</p></div>
+      <div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+        <svg viewBox="0 0 940 285" role="img" aria-label="DataCommand workflow: company to DHI DataCommand (assess, prepare, match, deliver) to AI lab, with owner approval and payment" style="width:100%;min-width:660px;height:auto;font-family:Inter,system-ui,sans-serif">
+          <defs>
+            <marker id="dcar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="#5f5e5a" stroke-width="1.3"/></marker>
+            <marker id="dcarg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="#047857" stroke-width="1.4"/></marker>
+          </defs>
+          <rect x="24" y="90" width="160" height="96" rx="10" fill="#F1EFE8" stroke="#B4B2A9"/>
+          <text x="104" y="126" font-size="14" font-weight="700" fill="#2C2C2A" text-anchor="middle">Company</text>
+          <text x="104" y="145" font-size="12" fill="#5F5E5A" text-anchor="middle">(data owner)</text>
+          <text x="104" y="163" font-size="11" fill="#5F5E5A" text-anchor="middle">operational data</text>
+          <line x1="184" y1="138" x2="206" y2="138" stroke="#5f5e5a" stroke-width="1.4" marker-end="url(#dcar)"/>
+          <rect x="210" y="58" width="520" height="172" rx="12" fill="#EEF0FE" stroke="#4f46e5" stroke-width="1.5"/>
+          <text x="224" y="82" font-size="13" font-weight="700" fill="#3730A3">DHI DataCommand</text>
+          <rect x="224" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
+          <text x="278" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">1 · Assess</text>
+          <text x="278" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">eligibility</text>
+          <text x="278" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">+ value</text>
+          <line x1="335" y1="133" x2="347" y2="133" stroke="#5f5e5a" stroke-width="1.2" marker-end="url(#dcar)"/>
+          <rect x="350" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
+          <text x="404" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">2 · Prepare</text>
+          <text x="404" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">de-identify</text>
+          <text x="404" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">+ rights</text>
+          <line x1="461" y1="133" x2="473" y2="133" stroke="#5f5e5a" stroke-width="1.2" marker-end="url(#dcar)"/>
+          <rect x="476" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
+          <text x="530" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">3 · Match</text>
+          <text x="530" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">broker to</text>
+          <text x="530" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">AI labs</text>
+          <line x1="587" y1="133" x2="599" y2="133" stroke="#5f5e5a" stroke-width="1.2" marker-end="url(#dcar)"/>
+          <rect x="602" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
+          <text x="656" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">4 · Deliver</text>
+          <text x="656" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">secure</text>
+          <text x="656" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">+ settle</text>
+          <text x="470" y="216" font-size="11" font-weight="700" fill="#3730A3" text-anchor="middle">Built in: de-identification · provenance · owner approval · secure delivery</text>
+          <line x1="730" y1="138" x2="754" y2="138" stroke="#5f5e5a" stroke-width="1.4" marker-end="url(#dcar)"/>
+          <rect x="756" y="90" width="160" height="96" rx="10" fill="#F1EFE8" stroke="#B4B2A9"/>
+          <text x="836" y="126" font-size="14" font-weight="700" fill="#2C2C2A" text-anchor="middle">AI lab</text>
+          <text x="836" y="145" font-size="12" fill="#5F5E5A" text-anchor="middle">(buyer)</text>
+          <text x="836" y="163" font-size="11" fill="#5F5E5A" text-anchor="middle">licenses the data</text>
+          <text x="470" y="250" font-size="11" font-weight="700" fill="#047857" text-anchor="middle">Payment: owner keeps ownership and vetoes every deal</text>
+          <path d="M836 186 L836 262 L104 262 L104 192" fill="none" stroke="#047857" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#dcarg)"/>
+        </svg>
       </div>
     </div>
   </section>
