@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>DataCommand — Prospect Qualifier (internal) | DHI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}.font-display{font-family:Montserrat,Inter,sans-serif}
+    :root{--dc:#4f46e5;--dc-d:#3730a3;}
+    .in{width:100%;border-radius:.6rem;border:1px solid #cbd5e1;padding:.6rem .75rem;font-size:.9rem}
+    .in:focus{outline:none;border-color:var(--dc);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+    th,td{padding:.5rem .6rem;text-align:left;vertical-align:top;font-size:.82rem;border-bottom:1px solid #e2e8f0}
+    th{font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#64748b;background:#f8fafc;position:sticky;top:0}
+    .bdg{display:inline-block;border-radius:999px;padding:.08rem .5rem;font-size:.68rem;font-weight:700}
+    .b-strong{background:#ecfdf5;color:#047857}.b-possible{background:#fffbeb;color:#b45309}.b-not{background:#fef2f2;color:#b91c1c}.b-error{background:#f1f5f9;color:#64748b}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <div id="hero-carousel" hidden></div>
+
+  <section class="border-b border-slate-200 bg-white py-8">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <p class="text-xs font-bold uppercase tracking-wider" style="color:var(--dc)">DataCommand · internal tool</p>
+      <h1 class="mt-1 font-display text-2xl font-extrabold text-brand-900 sm:text-3xl">Prospect qualifier</h1>
+      <p class="mt-2 max-w-2xl text-sm text-slate-600">Paste company websites (one per line). Each is screened for whether it's a data-licensing candidate — <b>strong / possible / not a fit</b> — with a rough value range and reasons. Same engine as the public estimator. For internal prospecting; results are a rough pre-qualifier from public signals.</p>
+    </div>
+  </section>
+
+  <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <label class="block"><span class="text-sm font-semibold text-brand-900">Domains</span>
+        <textarea id="domains" rows="6" class="in mt-2 font-mono text-xs" placeholder="acme-distribution.com&#10;grainger.com&#10;regional-engineering.com&#10;..."></textarea></label>
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <button id="run" class="rounded-lg px-6 py-2.5 text-sm font-bold text-white" style="background:var(--dc)">Screen prospects</button>
+        <button id="csv" class="hidden rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-brand-800 hover:bg-slate-50">Download CSV</button>
+        <span id="prog" class="text-sm text-slate-500"></span>
+      </div>
+      <p class="mt-2 text-xs text-slate-400">Up to 30 domains per run. Each takes a few seconds (the site is fetched and assessed).</p>
+    </div>
+
+    <div id="summary" class="mt-6 hidden flex-wrap gap-2 text-sm"></div>
+
+    <div id="results-wrap" class="mt-4 hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <table class="w-full min-w-[820px]">
+        <thead><tr><th>Domain</th><th>Verdict</th><th>Est. value</th><th>Business</th><th>Likely data</th><th>Why</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="assets/components.js"></script>
+  <script>
+  (function(){
+    "use strict";
+    var API=(new URLSearchParams(location.search).get("api")||localStorage.getItem("dhi_api_base")||"").replace(/\/+$/,"");
+    var LABEL={strong:"Strong",possible:"Possible",not:"Not a fit",error:"Error"};
+    var runBtn=document.getElementById("run"), csvBtn=document.getElementById("csv"), prog=document.getElementById("prog");
+    var rows=document.getElementById("rows"), resultsWrap=document.getElementById("results-wrap"), summary=document.getElementById("summary");
+    var RESULTS=[];
+    function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+    function parseDomains(raw){
+      var seen={}, out=[];
+      String(raw||"").split(/[\s,]+/).forEach(function(d){
+        d=d.trim().toLowerCase().replace(/^https?:\/\//,"").replace(/\/.*$/,"").replace(/^www\./,"");
+        if(d && /\.[a-z]{2,}$/.test(d) && !seen[d]){ seen[d]=1; out.push(d); }
+      });
+      return out.slice(0,30);
+    }
+
+    function addRow(r){
+      var cand=r.error?"error":(r.candidacy||"possible");
+      var tr=document.createElement("tr");
+      tr.innerHTML='<td class="font-mono text-xs font-semibold text-brand-900">'+esc(r.domain)+'</td>'+
+        '<td><span class="bdg b-'+cand+'">'+(LABEL[cand]||"Possible")+'</span></td>'+
+        '<td>'+esc(r.error?"—":(r.valueEstimate||""))+'</td>'+
+        '<td class="text-slate-600">'+esc(r.error?("("+r.error+")"):(r.business||""))+'</td>'+
+        '<td class="text-slate-600">'+esc(r.error?"":((r.likelyDataTypes||[]).join(", ")))+'</td>'+
+        '<td class="text-slate-600">'+esc(r.error?"":((r.reasons||[]).join("; ")))+'</td>';
+      rows.appendChild(tr);
+    }
+
+    function renderSummary(){
+      var c={strong:0,possible:0,not:0,error:0};
+      RESULTS.forEach(function(r){ c[r.error?"error":(r.candidacy||"possible")]++; });
+      summary.innerHTML=
+        '<span class="bdg b-strong">Strong: '+c.strong+'</span>'+
+        '<span class="bdg b-possible">Possible: '+c.possible+'</span>'+
+        '<span class="bdg b-not">Not a fit: '+c.not+'</span>'+
+        (c.error?'<span class="bdg b-error">Errors: '+c.error+'</span>':'');
+      summary.classList.remove("hidden"); summary.classList.add("flex");
+    }
+
+    async function one(domain){
+      try{
+        var r=await fetch(API+"/.netlify/functions/domain-assess",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({domain:domain})});
+        if(r.ok){ var a=(await r.json()).assessment||{}; a.domain=domain; return a; }
+        if(r.status===503) return {domain:domain,error:"estimator offline"};
+        return {domain:domain,error:"unavailable ("+r.status+")"};
+      }catch(e){ return {domain:domain,error:"network"}; }
+    }
+
+    async function pool(items, n, worker, onEach){
+      var i=0;
+      async function next(){ while(i<items.length){ var idx=i++; var res=await worker(items[idx]); onEach(res); } }
+      var runners=[]; for(var k=0;k<Math.min(n,items.length);k++) runners.push(next());
+      await Promise.all(runners);
+    }
+
+    runBtn.addEventListener("click", async function(){
+      var domains=parseDomains(document.getElementById("domains").value);
+      if(!domains.length){ prog.textContent="Enter at least one valid domain."; return; }
+      RESULTS=[]; rows.innerHTML=""; resultsWrap.classList.remove("hidden"); csvBtn.classList.add("hidden");
+      runBtn.disabled=true; runBtn.textContent="Screening…";
+      var done=0, total=domains.length; prog.textContent="Screening 0 / "+total+"…";
+      await pool(domains, 3, one, function(res){ RESULTS.push(res); addRow(res); done++; prog.textContent="Screening "+done+" / "+total+"…"; });
+      prog.textContent="Done — "+total+" screened.";
+      renderSummary(); csvBtn.classList.remove("hidden");
+      runBtn.disabled=false; runBtn.textContent="Screen prospects";
+    });
+
+    csvBtn.addEventListener("click", function(){
+      var hdr=["domain","verdict","value_estimate","business","likely_data","reasons"];
+      function q(s){ s=String(s==null?"":s); return '"'+s.replace(/"/g,'""')+'"'; }
+      var lines=[hdr.join(",")];
+      RESULTS.forEach(function(r){ var cand=r.error?"error":(r.candidacy||"possible");
+        lines.push([q(r.domain),q(LABEL[cand]||cand),q(r.error?"":(r.valueEstimate||"")),q(r.error?("("+r.error+")"):(r.business||"")),q(r.error?"":((r.likelyDataTypes||[]).join("; "))),q(r.error?"":((r.reasons||[]).join("; ")))].join(",")); });
+      var blob=new Blob([lines.join("\n")],{type:"text/csv"});
+      var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="datacommand-prospects.csv"; a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+    });
+  })();
+  </script>
+</body>
+</html>
