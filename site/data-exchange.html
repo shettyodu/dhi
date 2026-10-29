@@ -42,6 +42,34 @@
     </div>
   </section>
 
+  <!-- DOMAIN ESTIMATOR -->
+  <section class="border-t border-slate-200 bg-white py-12">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">Start with your website</h2>
+      <p class="mt-2 text-slate-600">Enter your company website for an instant, rough read on whether your data is a fit and what it might be worth. One field, no email. The full assessment below is more accurate.</p>
+      <form id="dom-form" class="mt-5 flex flex-col gap-2 sm:flex-row">
+        <input id="dom-input" class="in flex-1" placeholder="yourcompany.com" />
+        <button type="submit" class="whitespace-nowrap rounded-lg px-6 py-2.5 text-sm font-bold text-white" style="background:var(--dc)">Estimate</button>
+      </form>
+      <p id="dom-note" class="mt-3 hidden rounded-lg px-4 py-3 text-sm"></p>
+      <div id="dom-result" class="mt-5 hidden">
+        <div class="rounded-2xl border p-5 shadow-sm" style="border-color:#c7ccf7;background:#fff">
+          <div class="flex items-center gap-3">
+            <span id="dom-badge" class="rounded-full px-3 py-1 text-xs font-bold">—</span>
+            <h3 id="dom-domain" class="font-display text-base font-bold text-brand-900"></h3>
+          </div>
+          <p id="dom-business" class="mt-2 text-sm text-slate-600"></p>
+          <p id="dom-summary" class="mt-2 text-sm text-slate-700"></p>
+          <div class="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Rough estimate</p><p id="dom-value" class="mt-0.5 text-sm font-semibold text-brand-900"></p></div>
+          <div id="dom-types-wrap" class="mt-3 hidden"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Likely data</p><p id="dom-types" class="mt-0.5 text-sm text-slate-600"></p></div>
+          <div id="dom-reasons-wrap" class="mt-3 hidden"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Why</p><ul id="dom-reasons" class="mt-0.5 list-disc space-y-0.5 pl-5 text-sm text-slate-600"></ul></div>
+          <p id="dom-disc" class="mt-3 text-xs text-slate-400"></p>
+          <a id="dom-cta" href="#assess" class="mt-3 inline-block rounded-lg px-5 py-2 text-sm font-semibold text-white" style="background:var(--dc)">Run the full assessment &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- HOW IT WORKS -->
   <section id="how" class="border-t border-slate-200 bg-white py-14">
     <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
@@ -274,6 +302,39 @@
         company:company||"", interest:source, message:message||"", source:source, referral_code:attribution.ref||"", hp:"" }).catch(function(){});
     }
     function show(el,m,ok){ el.classList.remove("hidden"); el.textContent=m; el.className="mt-4 rounded-lg px-4 py-3 text-sm "+(ok?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-600"); }
+    function showPlain(el,m,ok){ el.classList.remove("hidden"); el.textContent=m; el.className="mt-3 rounded-lg px-4 py-3 text-sm "+(ok?"bg-emerald-50 text-emerald-700":"bg-amber-50 text-amber-700"); }
+
+    // ---- Domain estimator (one-field pre-qualifier) ----
+    var domForm=document.getElementById("dom-form"), domNote=document.getElementById("dom-note"), domResult=document.getElementById("dom-result");
+    var CAND={ strong:{label:"Strong candidate",cls:"badge-likely"}, possible:{label:"Possible fit",cls:"badge-needs_review"}, not:{label:"Not a fit",cls:"badge-unlikely"} };
+    if(domForm) domForm.addEventListener("submit", async function(e){
+      e.preventDefault();
+      var dom=v("dom-input"); if(!dom){ showPlain(domNote,"Enter your company website, for example yourcompany.com.",false); return; }
+      var btn=domForm.querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent="Checking…"; domNote.classList.add("hidden");
+      try{
+        var r=await post("/.netlify/functions/domain-assess",{domain:dom});
+        if(r.ok){
+          var a=(await r.json()).assessment||{}; var c=CAND[a.candidacy]||CAND.possible;
+          var b=document.getElementById("dom-badge"); b.textContent=c.label; b.className="rounded-full px-3 py-1 text-xs font-bold "+c.cls;
+          document.getElementById("dom-domain").textContent=a.domain||dom;
+          document.getElementById("dom-business").textContent=a.business||"";
+          document.getElementById("dom-summary").textContent=a.candidacySummary||"";
+          document.getElementById("dom-value").textContent=a.valueEstimate||"";
+          var tw=document.getElementById("dom-types-wrap");
+          if(a.likelyDataTypes&&a.likelyDataTypes.length){ tw.classList.remove("hidden"); document.getElementById("dom-types").textContent=a.likelyDataTypes.join(" · "); } else tw.classList.add("hidden");
+          var rw=document.getElementById("dom-reasons-wrap");
+          if(a.reasons&&a.reasons.length){ rw.classList.remove("hidden"); li(document.getElementById("dom-reasons"),a.reasons); } else rw.classList.add("hidden");
+          document.getElementById("dom-disc").textContent=(a.disclaimer||"")+(a.siteFetched?"":" (We could not reach the site, so this is a lower-confidence estimate.)");
+          var cta=document.getElementById("dom-cta"); cta.style.display=(a.candidacy==="not")?"none":"inline-block";
+          var dcDomain=document.getElementById("dc-domain"); if(dcDomain && !dcDomain.value) dcDomain.value=(a.domain||dom);
+          domResult.classList.remove("hidden"); domResult.scrollIntoView({behavior:"smooth",block:"nearest"});
+        } else {
+          var msg=(r.status===400)?"Enter a valid company website, for example yourcompany.com.":"Instant estimate is unavailable right now — use the full assessment below.";
+          showPlain(domNote,msg, false);
+        }
+      }catch(err){ showPlain(domNote,"Instant estimate is unavailable right now — use the full assessment below.",false); }
+      btn.disabled=false; btn.textContent="Estimate";
+    });
 
     var f=document.getElementById("dc-form"), note=document.getElementById("dc-note"), result=document.getElementById("dc-result");
     f.addEventListener("submit", async function(e){
