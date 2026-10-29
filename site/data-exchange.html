@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DataCommand — License Your Operational Data to AI Labs, Safely | DHI</title>
-  <meta name="description" content="DHI DataCommand is a compliance-first exchange that connects companies, brokers, and AI labs for licensing operational data. Get an instant AI assessment of your data's eligibility, compliance flags, and estimated value." />
+  <title>DataCommand — Turn Your Operational Data Into Licensed AI Revenue | DHI</title>
+  <meta name="description" content="DHI DataCommand helps companies license their operational data to AI labs — safely. Get an instant AI assessment of your data's eligibility, compliance flags, and estimated value. You keep ownership and veto every deal." />
   <meta property="og:title" content="DataCommand — license your operational data to AI labs, safely" />
-  <meta property="og:description" content="A compliance-first data-licensing exchange. Instant AI assessment of eligibility, compliance, and estimated value. You keep control and veto every deal." />
+  <meta property="og:description" content="Instant AI assessment of your data's eligibility, compliance, and estimated value. You keep ownership. Compliance and legal review built in." />
   <link rel="canonical" href="https://digitalhealthinternational.com/data-exchange.html" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
@@ -17,8 +17,9 @@
     .in{width:100%;border-radius:.6rem;border:1px solid #cbd5e1;padding:.6rem .75rem;font-size:.9rem}
     .in:focus{outline:none;border-color:var(--dc);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
     .lbl{font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#475569;margin-bottom:.2rem;display:block}
-    .rolecard{border-top:3px solid var(--dc)}
     .badge-likely{background:#ecfdf5;color:#047857}.badge-needs_review{background:#fffbeb;color:#b45309}.badge-unlikely{background:#fef2f2;color:#b91c1c}
+    .step{border-left:2px solid var(--dc);padding-left:1rem}
+    .tl{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--dc-d);background:var(--dc-l);border-radius:999px;padding:.1rem .5rem}
   </style>
 </head>
 <body class="bg-slate-50 text-slate-700 antialiased">
@@ -31,44 +32,22 @@
     <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 12%, #6366f1 0, transparent 42%), radial-gradient(circle at 8% 92%, #06b6d4 0, transparent 44%);"></div>
     <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
       <p class="text-sm font-semibold uppercase tracking-wider" style="color:#a5b4fc">DataCommand · DHI Data Exchange</p>
-      <h1 class="mt-2 max-w-3xl font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">License your operational data to AI labs — safely.</h1>
-      <p class="mt-4 max-w-2xl text-lg text-slate-300">AI labs pay to train on real, human-generated workflow data. <b class="text-white">DataCommand</b> is a compliance-first exchange that connects companies, brokers, and AI labs — with de-identification, provenance, and <b class="text-white">your approval on every deal</b> built in. Start with an instant AI assessment of your data.</p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <a href="#assess" class="cta-pulse rounded-md px-6 py-3 text-sm font-semibold text-white shadow-lg" style="background:var(--dc)">Assess my data</a>
-        <a href="#how" class="rounded-md border border-slate-500 px-6 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10">How it works</a>
+      <h1 class="mt-2 max-w-3xl font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Turn your operational data into licensed AI revenue.</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">AI labs pay to train on real, human-generated workflow data — work orders, quotes, service logs, tickets. Most companies are sitting on it. <b class="text-white">DataCommand</b> helps you license it, safely: de-identification, provenance, and <b class="text-white">your approval on every deal</b>. Start with a free, instant AI assessment.</p>
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <a href="#assess" class="cta-pulse rounded-md px-6 py-3 text-sm font-semibold text-white shadow-lg" style="background:var(--dc)">Assess my data — free</a>
+        <a href="#how" class="rounded-md border border-slate-500 px-6 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10">See how it works</a>
       </div>
-      <p class="mt-4 text-sm text-slate-400">You keep ownership and 100% veto. Nothing is licensed without your approval. This is a preliminary tool, not a quote or a guarantee of a sale.</p>
+      <p class="mt-4 text-sm text-slate-400">No upfront cost. You keep ownership and veto every deal. <a href="#parties" class="underline hover:text-slate-200">An AI lab or broker?</a></p>
     </div>
   </section>
 
-  <!-- ROLES -->
-  <section class="py-14">
-    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-      <h2 class="font-display text-2xl font-bold text-brand-900">Who it's for</h2>
-      <div class="mt-6 grid gap-6 md:grid-cols-3">
-        <div class="rolecard rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 class="font-display text-lg font-bold text-brand-900">Companies (data owners)</h3>
-          <p class="mt-2 text-sm text-slate-600">Turn sitting operational data into licensed revenue — with de-identification, compliance checks, and veto on every deal. Start with an instant assessment below.</p>
-          <a href="#assess" class="mt-4 inline-block text-sm font-semibold" style="color:var(--dc)">Assess my data &rarr;</a>
-        </div>
-        <div class="rolecard rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 class="font-display text-lg font-bold text-brand-900">AI labs (buyers)</h3>
-          <p class="mt-2 text-sm text-slate-600">Source real, domain-specific, de-identified workflow data that is licensed and provenance-clear. Tell us what you're looking for.</p>
-          <a href="#lab" class="mt-4 inline-block text-sm font-semibold" style="color:var(--dc)">Register demand &rarr;</a>
-        </div>
-        <div class="rolecard rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 class="font-display text-lg font-bold text-brand-900">Brokers &amp; partners</h3>
-          <p class="mt-2 text-sm text-slate-600">Bring supply or demand and work deals on a transparent, compliant platform — with the trust layer handled for you.</p>
-          <a href="#broker" class="mt-4 inline-block text-sm font-semibold" style="color:var(--dc)">Partner with us &rarr;</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- HOW -->
+  <!-- HOW IT WORKS -->
   <section id="how" class="border-t border-slate-200 bg-white py-14">
-    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
       <h2 class="font-display text-2xl font-bold text-brand-900">How it works</h2>
+      <p class="mt-2 max-w-2xl text-slate-600">Four stages, with you in control at every step. The buyer pays for the license; <b>you keep the majority</b>, and DHI and the broker earn a success fee — agreed in advance and <b>only when a deal closes and you are paid</b>.</p>
+
       <div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
         <svg viewBox="0 0 940 285" role="img" aria-label="DataCommand workflow: company to DHI DataCommand (assess, prepare, match, deliver) to AI lab, with owner approval and payment" style="width:100%;min-width:660px;height:auto;font-family:Inter,system-ui,sans-serif">
           <defs>
@@ -111,20 +90,60 @@
           <path d="M836 186 L836 262 L104 262 L104 192" fill="none" stroke="#047857" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#dcarg)"/>
         </svg>
       </div>
+
+      <div class="mt-8 grid gap-6 sm:grid-cols-2">
+        <div class="step"><div class="flex items-center gap-2"><h3 class="font-semibold text-brand-900">1 · Assess</h3><span class="tl">Minutes · free</span></div>
+          <p class="mt-1 text-sm text-slate-600">You describe your data below (no upload — just a description). An AI assessment returns an eligibility read, compliance flags, an estimated value range, and a draft data-sheet. There is no cost and no obligation.</p></div>
+        <div class="step"><div class="flex items-center gap-2"><h3 class="font-semibold text-brand-900">2 · Prepare &amp; protect</h3><span class="tl">~1–3 weeks</span></div>
+          <p class="mt-1 text-sm text-slate-600">If you choose to proceed, we help de-identify personal and regulated information, confirm your rights to license, and build a provenance-clear data-sheet. Legal review happens before anything is listed or moves.</p></div>
+        <div class="step"><div class="flex items-center gap-2"><h3 class="font-semibold text-brand-900">3 · Match &amp; negotiate</h3><span class="tl">Varies with demand</span></div>
+          <p class="mt-1 text-sm text-slate-600">A broker takes your de-identified data-sheet (not your raw data) to AI-lab demand and structures terms — price, scope, duration. You approve or veto every bid. Nothing is shared without your written approval.</p></div>
+        <div class="step"><div class="flex items-center gap-2"><h3 class="font-semibold text-brand-900">4 · Deliver &amp; get paid</h3><span class="tl">On close</span></div>
+          <p class="mt-1 text-sm text-slate-600">Secure delivery via a clean-room, or the data stays in your own environment — with an audit trail. The buyer pays, you receive the majority, and the success fee applies only now. Your license can limit scope and duration.</p></div>
+      </div>
+
+      <div class="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/50 p-5">
+        <h3 class="font-semibold text-brand-900">What happens right after you submit the assessment</h3>
+        <p class="mt-1 text-sm text-slate-600">You see your AI assessment on screen immediately. Within <b>two business days</b>, a DHI specialist emails you to confirm the read, answer questions, and — only if you want to proceed — scope de-identification and a data-sheet. No sales pressure, no obligation, and <b>nothing is listed or shared without your written approval</b>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAMPLE OUTPUT -->
+  <section class="py-14">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">What the assessment looks like</h2>
+      <p class="mt-2 text-slate-600">A redacted, anonymized example of what you get back.</p>
+      <div class="mt-6 rounded-2xl border p-6 shadow-sm" style="border-color:#c7ccf7;background:#fff">
+        <div class="flex items-center gap-3">
+          <span class="rounded-full px-3 py-1 text-xs font-bold badge-likely">Likely eligible</span>
+          <h3 class="font-display text-lg font-bold text-brand-900">Preliminary assessment</h3>
+        </div>
+        <dl class="mt-4 space-y-3 text-sm">
+          <div><dt class="font-semibold text-brand-900">Company</dt><dd class="text-slate-600">Regional electrical distributor (anonymized)</dd></div>
+          <div><dt class="font-semibold text-brand-900">Data</dt><dd class="text-slate-600">~1.8M records — 9 years of work orders, quotes, and service notes</dd></div>
+          <div><dt class="font-semibold text-brand-900">Compliance flags</dt><dd class="text-slate-600">Customer names and contact details appear in service notes → de-identify before listing. Confirm rights to license quote data.</dd></div>
+          <div><dt class="font-semibold text-brand-900">Estimated value</dt><dd class="text-slate-600"><b>$180k–$450k</b> <span class="text-slate-400">(illustrative; depends on volume, uniqueness, quality, and rights)</span></dd></div>
+          <div><dt class="font-semibold text-brand-900">Suggested use</dt><dd class="text-slate-600">Training field-service and agentic workflow models.</dd></div>
+          <div><dt class="font-semibold text-brand-900">Draft data-sheet</dt><dd class="text-slate-600">De-identification checklist + provenance documentation to gather.</dd></div>
+        </dl>
+        <p class="mt-4 text-xs text-slate-400">Illustrative example only — not an actual client, quote, or guarantee of a sale.</p>
+      </div>
     </div>
   </section>
 
   <!-- ASSESS -->
-  <section id="assess" class="py-14">
+  <section id="assess" class="border-t border-slate-200 bg-white py-14">
     <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-      <h2 class="font-display text-2xl font-bold text-brand-900">Instant AI data assessment</h2>
-      <p class="mt-2 text-slate-600">Describe your operational data. You'll get a preliminary read on eligibility, compliance flags to resolve, an estimated value range, and a draft data-sheet. No data is uploaded here — just a description.</p>
+      <h2 class="font-display text-2xl font-bold text-brand-900">Get your free AI data assessment</h2>
+      <p class="mt-2 text-slate-600">Describe your operational data — no upload, just a description. You'll get a preliminary read in under a minute.</p>
+      <p class="mt-2 text-sm text-slate-500"><b>Best fit:</b> operational data from distribution, engineering, manufacturing, logistics, construction, and services. Heavily regulated <i>core</i> datasets (for example patient records) need extra legal work and are often not a fit.</p>
       <form id="dc-form" class="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" novalidate>
         <div class="grid gap-3 sm:grid-cols-2">
           <div><span class="lbl">Company</span><input id="dc-company" class="in" /></div>
           <div><span class="lbl">Work email</span><input id="dc-email" type="email" class="in" /></div>
-          <div class="sm:col-span-2"><span class="lbl">Industry / domain</span><input id="dc-domain" class="in" placeholder="e.g. electrical distribution · hospital system · municipal utility" /></div>
-          <div class="sm:col-span-2"><span class="lbl">What data do you have?</span><textarea id="dc-types" rows="2" class="in" placeholder="e.g. 8 years of work orders, quotes, support tickets, CRM notes, inspection logs"></textarea></div>
+          <div class="sm:col-span-2"><span class="lbl">Industry / domain</span><input id="dc-domain" class="in" placeholder="e.g. electrical distribution · engineering · manufacturing · logistics" /></div>
+          <div class="sm:col-span-2"><span class="lbl">What data do you have?</span><textarea id="dc-types" rows="2" class="in" placeholder="e.g. 8 years of work orders, quotes, support tickets, service notes, inspection logs"></textarea></div>
           <div><span class="lbl">Approx. volume / history</span><input id="dc-volume" class="in" placeholder="e.g. ~2M records, 2016–2026" /></div>
           <div><span class="lbl">Do you own the rights?</span>
             <select id="dc-rights" class="in"><option value="">Select…</option><option>Yes, we own it</option><option>Partly / unsure</option><option>Contains third-party data</option></select></div>
@@ -144,7 +163,7 @@
         <div class="rounded-2xl border p-6 shadow-sm" style="border-color:#c7ccf7;background:#fff">
           <div class="flex items-center gap-3">
             <span id="dc-badge" class="rounded-full px-3 py-1 text-xs font-bold">—</span>
-            <h3 class="font-display text-lg font-bold text-brand-900">Preliminary assessment</h3>
+            <h3 class="font-display text-lg font-bold text-brand-900">Your preliminary assessment</h3>
           </div>
           <p id="dc-summary" class="mt-3 text-slate-700"></p>
           <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -164,43 +183,78 @@
             <div><p class="text-sm font-semibold text-brand-900">Provenance to gather</p><ul id="dc-prov" class="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600"></ul></div>
           </div>
           <p id="dc-disc" class="mt-4 text-xs text-slate-400"></p>
-          <div class="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">A DHI specialist will follow up to prepare a compliant data-sheet and, with your approval, take it to market. You keep ownership and veto every deal.</div>
+          <div class="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">A DHI specialist will email you within two business days to confirm the read and, only if you choose, scope de-identification and a data-sheet. You keep ownership and veto every deal.</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- LAB + BROKER -->
-  <section class="border-t border-slate-200 bg-white py-14">
-    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 grid gap-8 md:grid-cols-2">
-      <div id="lab">
-        <h2 class="font-display text-xl font-bold text-brand-900">AI labs — register demand</h2>
-        <p class="mt-2 text-sm text-slate-600">Tell us the kind of licensed, de-identified data you're sourcing.</p>
-        <form id="lab-form" class="mt-4 space-y-3" novalidate>
-          <div><span class="lbl">Organization</span><input id="lab-company" class="in" /></div>
-          <div><span class="lbl">Email</span><input id="lab-email" type="email" class="in" /></div>
-          <div><span class="lbl">What data are you looking for?</span><textarea id="lab-notes" rows="3" class="in" placeholder="Domain, task, volume, modality…"></textarea></div>
-          <input type="text" id="lab-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
-          <button type="submit" class="w-full rounded-lg px-5 py-2.5 text-sm font-semibold text-white" style="background:var(--dc)">Register demand</button>
-          <p id="lab-note" class="hidden rounded-lg px-4 py-3 text-sm"></p>
-        </form>
-      </div>
-      <div id="broker">
-        <h2 class="font-display text-xl font-bold text-brand-900">Brokers &amp; partners</h2>
-        <p class="mt-2 text-sm text-slate-600">Bring supply or demand to a compliant, transparent platform.</p>
-        <form id="brk-form" class="mt-4 space-y-3" novalidate>
-          <div><span class="lbl">Name / firm</span><input id="brk-company" class="in" /></div>
-          <div><span class="lbl">Email</span><input id="brk-email" type="email" class="in" /></div>
-          <div><span class="lbl">What would you bring?</span><textarea id="brk-notes" rows="3" class="in" placeholder="Networks, relationships, track record…"></textarea></div>
-          <input type="text" id="brk-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
-          <button type="submit" class="w-full rounded-lg px-5 py-2.5 text-sm font-semibold text-white" style="background:var(--dc)">Partner with us</button>
-          <p id="brk-note" class="hidden rounded-lg px-4 py-3 text-sm"></p>
-        </form>
+  <!-- SECURITY -->
+  <section class="py-14">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">Security &amp; your data</h2>
+      <div class="mt-6 grid gap-5 md:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">No data uploaded here</h3><p class="mt-2 text-sm text-slate-600">This page only takes a <b>description</b> of your data. You never upload a dataset to get an assessment. When a dataset is prepared later, it is encrypted in transit and at rest, and can remain inside your own environment.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">Retention &amp; deletion</h3><p class="mt-2 text-sm text-slate-600">We keep only your description and contact details to follow up. You can request deletion of your submission at any time by emailing <a href="mailto:steve@digitalhealthinternational.com" class="font-semibold" style="color:var(--dc)">steve@digitalhealthinternational.com</a>.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">What legal review covers</h3><p class="mt-2 text-sm text-slate-600">Before anything is listed or licensed, review covers your <b>rights to license</b> the data, <b>privacy and regulatory compliance</b> (PII, PHI, CUI, GDPR, CCPA), and the <b>license terms</b> (scope, duration, permitted use).</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">You stay in control</h3><p class="mt-2 text-sm text-slate-600">You keep ownership throughout. Personal and regulated information is de-identified or excluded. Nothing is shared or licensed without your written approval, and you can withdraw before a deal closes.</p></div>
       </div>
     </div>
   </section>
 
-  <section class="py-8">
+  <!-- FAQ -->
+  <section class="border-t border-slate-200 bg-white py-14">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">Questions</h2>
+      <div class="mt-6 space-y-5">
+        <div><h3 class="font-semibold text-brand-900">Do I lose ownership of my data?</h3><p class="mt-1 text-sm text-slate-600">No. You <b>license</b> it, you do not sell it. You keep full ownership, you set the terms, and you approve every deal.</p></div>
+        <div><h3 class="font-semibold text-brand-900">What happens to health or customer data?</h3><p class="mt-1 text-sm text-slate-600">Personal and regulated information (PII, PHI) must be <b>de-identified first or excluded</b>. Some heavily regulated core datasets, such as patient records, are not a fit. The assessment flags this up front.</p></div>
+        <div><h3 class="font-semibold text-brand-900">Can I withdraw?</h3><p class="mt-1 text-sm text-slate-600">Yes. Nothing is listed or shared without your written approval, and you can withdraw at any time before a deal closes.</p></div>
+        <div><h3 class="font-semibold text-brand-900">What if no buyer emerges?</h3><p class="mt-1 text-sm text-slate-600">Then nothing happens and you owe nothing. There is no upfront cost — the fee is success-based and applies only when a deal closes and you are paid.</p></div>
+        <div><h3 class="font-semibold text-brand-900">What does it cost me?</h3><p class="mt-1 text-sm text-slate-600">Zero upfront. DHI and the broker earn a success fee, agreed in advance, only when you are paid. The buyer funds the license.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI LABS + BROKERS (secondary) -->
+  <section id="parties" class="py-12">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-xl font-bold text-brand-900">AI labs &amp; brokers</h2>
+      <p class="mt-1 text-sm text-slate-600">Not a data owner? Register on the other side of the exchange.</p>
+      <div class="mt-5 grid gap-6 md:grid-cols-2">
+        <div id="lab" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 class="font-semibold text-brand-900">AI labs — register demand</h3>
+          <p class="mt-1 text-sm text-slate-600">Tell us the kind of licensed, de-identified data you're sourcing.</p>
+          <form id="lab-form" class="mt-3 space-y-3" novalidate>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <input id="lab-company" class="in" placeholder="Organization" />
+              <input id="lab-email" type="email" class="in" placeholder="Email" />
+            </div>
+            <textarea id="lab-notes" rows="2" class="in" placeholder="Domain, task, volume, modality…"></textarea>
+            <input type="text" id="lab-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
+            <button type="submit" class="w-full rounded-lg px-5 py-2.5 text-sm font-semibold text-white" style="background:var(--dc)">Register demand</button>
+            <p id="lab-note" class="hidden rounded-lg px-4 py-3 text-sm"></p>
+          </form>
+        </div>
+        <div id="broker" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 class="font-semibold text-brand-900">Brokers &amp; partners</h3>
+          <p class="mt-1 text-sm text-slate-600">Bring supply or demand to a compliant, transparent platform.</p>
+          <form id="brk-form" class="mt-3 space-y-3" novalidate>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <input id="brk-company" class="in" placeholder="Name / firm" />
+              <input id="brk-email" type="email" class="in" placeholder="Email" />
+            </div>
+            <textarea id="brk-notes" rows="2" class="in" placeholder="Networks, relationships, track record…"></textarea>
+            <input type="text" id="brk-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
+            <button type="submit" class="w-full rounded-lg px-5 py-2.5 text-sm font-semibold text-white" style="background:var(--dc)">Partner with us</button>
+            <p id="brk-note" class="hidden rounded-lg px-4 py-3 text-sm"></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-10">
     <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
       <p class="text-xs leading-relaxed text-slate-400">DataCommand is a preliminary assessment and matching tool, not legal, financial, or tax advice, a quote, or a guarantee of a sale. Estimated values are illustrative and depend on volume, uniqueness, quality, and rights. No data is licensed without the owner's approval, de-identification of personal or regulated information, and legal review. Government, municipal, and utility data may be subject to public-records, procurement, and regulatory restrictions. DHI does not guarantee a buyer.</p>
     </div>
@@ -212,7 +266,6 @@
     "use strict";
     var API=(new URLSearchParams(location.search).get("api")||localStorage.getItem("dhi_api_base")||"").replace(/\/+$/,"");
     function v(id){var e=document.getElementById(id);return e?(e.value||"").trim():"";}
-    function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
     function li(ul, arr){ ul.innerHTML=""; (arr||[]).forEach(function(x){ var l=document.createElement("li"); l.textContent=String(x); ul.appendChild(l); }); }
     function post(path, payload){ return fetch(API+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); }
     function lead(source, name, email, company, message){
@@ -222,7 +275,6 @@
     }
     function show(el,m,ok){ el.classList.remove("hidden"); el.textContent=m; el.className="mt-4 rounded-lg px-4 py-3 text-sm "+(ok?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-600"); }
 
-    // ---- Company assessment ----
     var f=document.getElementById("dc-form"), note=document.getElementById("dc-note"), result=document.getElementById("dc-result");
     f.addEventListener("submit", async function(e){
       e.preventDefault();
@@ -230,9 +282,7 @@
       var email=v("dc-email"), company=v("dc-company");
       if(!v("dc-types") && !v("dc-domain") && !v("dc-notes")){ show(note,"Describe the data you'd like assessed.",false); return; }
       var inv={ domain:v("dc-domain"), dataTypes:v("dc-types"), volume:v("dc-volume"), ownsRights:v("dc-rights"), pii:v("dc-pii"), sector:v("dc-sector"), notes:v("dc-notes") };
-      // capture the lead regardless
-      lead("DHI DataCommand — Company (data owner)", company, email, company,
-        "[DataCommand] "+JSON.stringify(inv).slice(0,1200));
+      lead("DHI DataCommand — Company (data owner)", company, email, company, "[DataCommand] "+JSON.stringify(inv).slice(0,1200));
       var btn=f.querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent="Assessing…"; note.classList.add("hidden");
       try{
         var r=await post("/.netlify/functions/data-assess",{inventory:inv});
@@ -253,13 +303,12 @@
           document.getElementById("dc-disc").textContent=a.disclaimer||"Preliminary, non-binding assessment. Not legal advice, a quote, or a guarantee of a sale.";
           result.classList.remove("hidden"); result.scrollIntoView({behavior:"smooth",block:"start"});
         } else {
-          show(note,"Thanks — your submission is in. A DHI specialist will follow up with your assessment.",true); f.reset();
+          show(note,"Thanks — your submission is in. A DHI specialist will follow up with your assessment within two business days.",true); f.reset();
         }
-      }catch(err){ show(note,"Thanks — your submission is in. A DHI specialist will follow up with your assessment.",true); f.reset(); }
+      }catch(err){ show(note,"Thanks — your submission is in. A DHI specialist will follow up with your assessment within two business days.",true); f.reset(); }
       btn.disabled=false; btn.textContent="Get my AI assessment";
     });
 
-    // ---- Lab + Broker ----
     function wire(formId, hpId, companyId, emailId, notesId, noteId, source, okMsg){
       var form=document.getElementById(formId); if(!form) return; var noteEl=document.getElementById(noteId);
       form.addEventListener("submit", async function(e){
@@ -268,9 +317,8 @@
         var email=v(emailId), company=v(companyId);
         if(!email||!company){ show(noteEl,"Please add your "+(companyId.indexOf("brk")>=0?"name/firm":"organization")+" and email.",false); return; }
         var btn=form.querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent="Sending…";
-        try{ var r=await lead(source, company, email, company, "[DataCommand] "+v(notesId));
-          show(noteEl, okMsg, true); form.reset();
-        }catch(err){ show(noteEl,"Network error — please try again.",false); }
+        try{ await lead(source, company, email, company, "[DataCommand] "+v(notesId)); show(noteEl, okMsg, true); form.reset(); }
+        catch(err){ show(noteEl,"Network error — please try again.",false); }
         btn.disabled=false; btn.textContent= formId==="lab-form"?"Register demand":"Partner with us";
       });
     }
