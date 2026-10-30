@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex,nofollow" />
-  <title>DataCommand — Prospect Qualifier (internal) | DHI</title>
+  <title>Asset Data Group — Prospect Qualifier (internal) | DHI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/tailwind.css" />
@@ -25,7 +25,7 @@
 
   <section class="border-b border-slate-200 bg-white py-8">
     <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-      <p class="text-xs font-bold uppercase tracking-wider" style="color:var(--dc)">DataCommand · internal tool</p>
+      <p class="text-xs font-bold uppercase tracking-wider" style="color:var(--dc)">Asset Data Group · internal tool</p>
       <h1 class="mt-1 font-display text-2xl font-extrabold text-brand-900 sm:text-3xl">Prospect qualifier</h1>
       <p class="mt-2 max-w-2xl text-sm text-slate-600">Paste company websites (one per line). Each is screened for whether it's a data-licensing candidate — <b>strong / possible / not a fit</b> — with a rough value range and reasons. Same engine as the public estimator. For internal prospecting; results are a rough pre-qualifier from public signals.</p>
     </div>
@@ -131,7 +131,7 @@
       RESULTS.forEach(function(r){ var cand=r.error?"error":(r.candidacy||"possible");
         lines.push([q(r.domain),q(LABEL[cand]||cand),q(r.error?"":(r.valueEstimate||"")),q(r.error?("("+r.error+")"):(r.business||"")),q(r.error?"":((r.likelyDataTypes||[]).join("; "))),q(r.error?"":((r.reasons||[]).join("; ")))].join(",")); });
       var blob=new Blob([lines.join("\n")],{type:"text/csv"});
-      var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="datacommand-prospects.csv"; a.click();
+      var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="adg-prospects.csv"; a.click();
       setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
     });
   })();
