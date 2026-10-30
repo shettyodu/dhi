@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asset Data Group — Turn Your Operational Data Into a Revenue-Generating Asset</title>
+  <meta name="description" content="Asset Data Group is a data asset commercialization firm. We help organizations evaluate, prepare, de-identify, package, and commercialize operational data assets for buyers seeking high-quality real-world datasets. Start with a complimentary AI-powered assessment." />
+  <meta property="og:url" content="https://assetdatagrp.com/" />
+  <meta property="og:title" content="Asset Data Group — a data asset commercialization firm" />
+  <meta property="og:description" content="More than a data broker. We help organizations transform operational data into market-ready assets. Complimentary AI-powered assessment. You stay in control of every transaction." />
+  <link rel="canonical" href="https://assetdatagrp.com/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}.font-display{font-family:Montserrat,Inter,sans-serif}
+    :root{--dc:#4f46e5;--dc-d:#3730a3;--dc-l:#eef0fe;}
+    .in{width:100%;border-radius:.6rem;border:1px solid #cbd5e1;padding:.6rem .75rem;font-size:.9rem}
+    .in:focus{outline:none;border-color:var(--dc);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+    .lbl{font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#475569;margin-bottom:.2rem;display:block}
+    .badge-likely{background:#ecfdf5;color:#047857}.badge-needs_review{background:#fffbeb;color:#b45309}.badge-unlikely{background:#fef2f2;color:#b91c1c}
+    .step{border-left:2px solid var(--dc);padding-left:1rem}
+    .tl{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--dc-d);background:var(--dc-l);border-radius:999px;padding:.1rem .5rem}
+    /* primary-action attention cue */
+    @keyframes adgPulse{0%{box-shadow:0 0 0 0 rgba(79,70,229,.45)}70%{box-shadow:0 0 0 9px rgba(79,70,229,0)}100%{box-shadow:0 0 0 0 rgba(79,70,229,0)}}
+    .cta-pulse{animation:adgPulse 2.2s cubic-bezier(.4,0,.2,1) infinite}
+    .cta-pulse:hover,.cta-pulse:focus{animation:none}
+    @media(prefers-reduced-motion:reduce){.cta-pulse{animation:none}}
+    .adg-mark{display:grid;place-items:center;height:2rem;width:2rem;border-radius:.5rem;color:#fff;font-weight:800;background:var(--dc)}
+  </style>
+</head>
+<body id="top" class="bg-slate-50 text-slate-700 antialiased">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+      <a href="#top" class="flex items-center gap-2">
+        <span class="adg-mark font-display">A</span>
+        <span class="font-display text-lg font-extrabold tracking-tight text-brand-900">Asset Data Group</span>
+      </a>
+      <nav class="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
+        <a href="#how" class="hover:text-brand-900">How it works</a>
+        <a href="#faq" class="hover:text-brand-900">Questions</a>
+        <a href="#parties" class="hover:text-brand-900">Buyers &amp; partners</a>
+        <a href="mailto:contact@assetdatagrp.com" class="hover:text-brand-900">Contact</a>
+      </nav>
+      <a href="#assess" class="whitespace-nowrap rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm" style="background:var(--dc)">Start assessment</a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-brand-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 12%, #6366f1 0, transparent 42%), radial-gradient(circle at 8% 92%, #06b6d4 0, transparent 44%);"></div>
+    <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <p class="text-sm font-semibold uppercase tracking-wider" style="color:#a5b4fc">Asset Data Group · Data Asset Commercialization</p>
+      <h1 class="mt-2 max-w-3xl font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Turn your operational data into a revenue-generating asset.</h1>
+      <p class="mt-4 max-w-2xl text-lg text-slate-300">Most organizations are sitting on valuable operational data but lack the expertise required to bring it to market. <b class="text-white">Asset Data Group is a data asset commercialization firm, not simply a data broker.</b> We help organizations evaluate, prepare, de-identify, package, and commercialize operational data assets for buyers seeking high-quality, real-world datasets.</p>
+      <p class="mt-3 max-w-2xl text-slate-300">Start with a complimentary AI-powered assessment and discover what your data may be worth.</p>
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <a href="#assess" class="cta-pulse rounded-md px-6 py-3 text-sm font-semibold text-white shadow-lg" style="background:var(--dc)">Start my complimentary assessment</a>
+        <a href="#how" class="rounded-md border border-slate-500 px-6 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10">See how it works</a>
+      </div>
+      <p class="mt-4 text-sm text-slate-400">No upfront cost. You keep ownership and approve every transaction. <a href="#parties" class="underline hover:text-slate-200">An AI lab or referral partner?</a></p>
+    </div>
+  </section>
+
+  <!-- BEYOND BROKERAGE -->
+  <section class="border-t border-slate-200 bg-white py-14">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">Beyond traditional data brokerage</h2>
+      <p class="mt-3 max-w-3xl text-slate-600">Traditional brokers often focus on finding a buyer for an existing dataset. Asset Data Group focuses on <b>increasing the value of the asset before it ever reaches the market</b>. Through data evaluation, de-identification planning, commercialization analysis, buyer-readiness assessments, asset packaging, and transaction support, we help organizations position their data for licensing and commercialization opportunities.</p>
+      <div class="mt-6 grid gap-5 sm:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6"><p class="text-xs font-bold uppercase tracking-wide text-slate-500">The difference</p><p class="mt-2 text-lg font-semibold text-brand-900">Brokers shop data.</p><p class="mt-1 text-lg font-semibold" style="color:var(--dc-d)">Asset Data Group helps build market-ready data assets.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">What we provide</p>
+          <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-slate-600">
+            <span>✅ AI-led data assessment</span><span>✅ Monetization analysis</span>
+            <span>✅ Valuation &amp; positioning</span><span>✅ De-identification strategy</span>
+            <span>✅ Compliance &amp; privacy review</span><span>✅ Documentation &amp; packaging</span>
+            <span>✅ Qualified buyer outreach</span><span>✅ Offer &amp; transaction management</span>
+          </div>
+        </div>
+      </div>
+      <p class="mt-5 max-w-3xl text-sm text-slate-500">Asset Data Group invests the time, expertise, and resources required to evaluate each opportunity before it reaches the market. We assume that risk so organizations can explore data monetization opportunities <b>without upfront costs</b>.</p>
+    </div>
+  </section>
+
+  <!-- DOMAIN ESTIMATOR -->
+  <section class="border-t border-slate-200 bg-white py-12">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">Start with your website</h2>
+      <p class="mt-2 text-slate-600">Enter your company website for an instant, rough read on whether your data is a fit and what it might be worth. One field, no email. The complimentary assessment below is more accurate.</p>
+      <form id="dom-form" class="mt-5 flex flex-col gap-2 sm:flex-row">
+        <input id="dom-input" class="in flex-1" placeholder="yourcompany.com" />
+        <button type="submit" class="whitespace-nowrap rounded-lg px-6 py-2.5 text-sm font-bold text-white" style="background:var(--dc)">Estimate</button>
+      </form>
+      <p id="dom-note" class="mt-3 hidden rounded-lg px-4 py-3 text-sm"></p>
+      <div id="dom-result" class="mt-5 hidden">
+        <div class="rounded-2xl border p-5 shadow-sm" style="border-color:#c7ccf7;background:#fff">
+          <div class="flex items-center gap-3">
+            <span id="dom-badge" class="rounded-full px-3 py-1 text-xs font-bold">—</span>
+            <h3 id="dom-domain" class="font-display text-base font-bold text-brand-900"></h3>
+          </div>
+          <p id="dom-business" class="mt-2 text-sm text-slate-600"></p>
+          <p id="dom-summary" class="mt-2 text-sm text-slate-700"></p>
+          <div class="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Rough estimate</p><p id="dom-value" class="mt-0.5 text-sm font-semibold text-brand-900"></p></div>
+          <div id="dom-types-wrap" class="mt-3 hidden"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Likely data</p><p id="dom-types" class="mt-0.5 text-sm text-slate-600"></p></div>
+          <div id="dom-reasons-wrap" class="mt-3 hidden"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Why</p><ul id="dom-reasons" class="mt-0.5 list-disc space-y-0.5 pl-5 text-sm text-slate-600"></ul></div>
+          <p id="dom-disc" class="mt-3 text-xs text-slate-400"></p>
+          <a id="dom-cta" href="#assess" class="mt-3 inline-block rounded-lg px-5 py-2 text-sm font-semibold text-white" style="background:var(--dc)">Run the full assessment &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="border-t border-slate-200 bg-white py-14">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+      <div class="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-6">
+        <h2 class="font-display text-xl font-bold text-brand-900">More than a data broker</h2>
+        <p class="mt-2 text-slate-600">Asset Data Group is a data asset commercialization firm that helps organizations transform operational data into market-ready assets. Through data evaluation, de-identification planning, asset packaging, buyer outreach, and transaction management, ADG helps organizations unlock the value of underutilized data assets. Our team invests the time, expertise, and resources required to evaluate, prepare, document, and commercialize qualifying data assets before they are ever presented to potential buyers.</p>
+      </div>
+
+      <h2 class="mt-10 font-display text-2xl font-bold text-brand-900">How it works</h2>
+      <p class="mt-2 max-w-3xl text-slate-600">We evaluate commercial potential, assist with data preparation and de-identification planning, develop buyer-ready documentation, identify qualified buyers, and manage the transaction from introduction through closing. You remain in control throughout, approving each step and every transaction. There are no upfront costs, and <b>Asset Data Group is compensated only when a successful transaction is completed</b>.</p>
+
+      <div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+        <svg viewBox="0 0 940 285" role="img" aria-label="Asset Data Group workflow: company to ADG (assess, prepare, market, execute) to buyer, with owner approval and payment" style="width:100%;min-width:660px;height:auto;font-family:Inter,system-ui,sans-serif">
+          <defs>
+            <marker id="dcar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="#5f5e5a" stroke-width="1.3"/></marker>
+            <marker id="dcarg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="#047857" stroke-width="1.4"/></marker>
+          </defs>
+          <rect x="24" y="90" width="160" height="96" rx="10" fill="#F1EFE8" stroke="#B4B2A9"/>
+          <text x="104" y="126" font-size="14" font-weight="700" fill="#2C2C2A" text-anchor="middle">Company</text>
+          <text x="104" y="145" font-size="12" fill="#5F5E5A" text-anchor="middle">(data owner)</text>
+          <text x="104" y="163" font-size="11" fill="#5F5E5A" text-anchor="middle">operational data</text>
+          <line x1="184" y1="138" x2="206" y2="138" stroke="#5f5e5a" stroke-width="1.4" marker-end="url(#dcar)"/>
+          <rect x="210" y="58" width="520" height="172" rx="12" fill="#EEF0FE" stroke="#4f46e5" stroke-width="1.5"/>
+          <text x="224" y="82" font-size="13" font-weight="700" fill="#3730A3">Asset Data Group · data asset commercialization</text>
+          <rect x="224" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
+          <text x="278" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">1 · Assess</text>
+          <text x="278" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">viability</text>
+          <text x="278" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">+ value</text>
+          <line x1="335" y1="133" x2="347" y2="133" stroke="#5f5e5a" stroke-width="1.2" marker-end="url(#dcar)"/>
+          <rect x="350" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
+          <text x="404" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">2 · Prepare</text>
+          <text x="404" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">de-identify</text>
+          <text x="404" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">+ package</text>
+          <line x1="461" y1="133" x2="473" y2="133" stroke="#5f5e5a" stroke-width="1.2" marker-end="url(#dcar)"/>
+          <rect x="476" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
+          <text x="530" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">3 · Market</text>
+          <text x="530" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">to qualified</text>
+          <text x="530" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">buyers</text>
+          <line x1="587" y1="133" x2="599" y2="133" stroke="#5f5e5a" stroke-width="1.2" marker-end="url(#dcar)"/>
+          <rect x="602" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
+          <text x="656" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">4 · Execute</text>
+          <text x="656" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">secure</text>
+          <text x="656" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">+ get paid</text>
+          <text x="470" y="216" font-size="11" font-weight="700" fill="#3730A3" text-anchor="middle">Built in: de-identification · provenance · owner approval · secure delivery</text>
+          <line x1="730" y1="138" x2="754" y2="138" stroke="#5f5e5a" stroke-width="1.4" marker-end="url(#dcar)"/>
+          <rect x="756" y="90" width="160" height="96" rx="10" fill="#F1EFE8" stroke="#B4B2A9"/>
+          <text x="836" y="126" font-size="14" font-weight="700" fill="#2C2C2A" text-anchor="middle">Buyer</text>
+          <text x="836" y="145" font-size="12" fill="#5F5E5A" text-anchor="middle">(AI · analytics · research)</text>
+          <text x="836" y="163" font-size="11" fill="#5F5E5A" text-anchor="middle">licenses the data</text>
+          <text x="470" y="250" font-size="11" font-weight="700" fill="#047857" text-anchor="middle">Payment: owner keeps ownership and approves every transaction</text>
+          <path d="M836 186 L836 262 L104 262 L104 192" fill="none" stroke="#047857" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#dcarg)"/>
+        </svg>
+      </div>
+
+      <div class="mt-8 grid gap-6 sm:grid-cols-2">
+        <div class="step"><div class="flex items-center gap-2"><h3 class="font-semibold text-brand-900">1 · Assess</h3><span class="tl">Minutes · complimentary</span></div>
+          <p class="mt-1 text-sm text-slate-600">You describe your organization's operational data assets through a short assessment. Asset Data Group's AI-assisted evaluation reviews commercial viability, compliance considerations, potential buyer demand, estimated value range, and data monetization readiness. You receive an initial commercialization assessment, estimated value range, and preliminary data asset profile. There is no cost and no obligation.</p></div>
+        <div class="step"><div class="flex items-center gap-2"><h3 class="font-semibold text-brand-900">2 · Evaluate, prepare &amp; protect</h3><span class="tl">Typically 1–3 weeks</span></div>
+          <p class="mt-1 text-sm text-slate-600">If your data qualifies, ADG conducts a deeper review of the asset's commercial potential — data structure, historical depth, documentation needs, compliance considerations, and de-identification strategy. We work with you to prepare a market-ready data asset package, including data inventories, commercialization documentation, and buyer-facing materials. Compliance and legal review occur before any opportunity is presented to buyers.</p></div>
+        <div class="step"><div class="flex items-center gap-2"><h3 class="font-semibold text-brand-900">3 · Market &amp; negotiate</h3><span class="tl">Timeline varies with demand</span></div>
+          <p class="mt-1 text-sm text-slate-600">Asset Data Group presents approved data asset opportunities to qualified buyers seeking operational datasets for AI, analytics, research, and commercial applications. Our team manages buyer outreach, evaluates market demand, structures licensing opportunities, and negotiates commercial terms including pricing, access rights, scope, exclusivity, duration, and permitted uses. No data is shared and no transaction moves forward without your written approval.</p></div>
+        <div class="step"><div class="flex items-center gap-2"><h3 class="font-semibold text-brand-900">4 · Execute &amp; get paid</h3><span class="tl">Upon closing</span></div>
+          <p class="mt-1 text-sm text-slate-600">Once terms are approved, ADG coordinates secure delivery and transaction execution — secure transfer, a clean-room environment, controlled licensing, or access within your existing infrastructure. Upon successful completion, your organization receives payment under the agreed terms. Asset Data Group is compensated through the commercialization process and transaction structure. All licensing terms, permitted uses, and duration limits remain subject to your approval.</p></div>
+      </div>
+
+      <div class="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/50 p-5">
+        <h3 class="font-semibold text-brand-900">What happens after you submit the assessment</h3>
+        <p class="mt-1 text-sm text-slate-600">You receive an immediate preliminary assessment of your organization's data commercialization potential. Within <b>two business days</b>, an Asset Data Group data commercialization specialist reviews the assessment, answers your questions, and discusses whether your organization may have a marketable data asset. If you choose to proceed, ADG begins a more detailed evaluation — data valuation, commercialization readiness, compliance considerations, and potential buyer demand. There is no obligation to move forward, and <b>nothing is marketed, listed, packaged, or shared with any third party without your written approval</b>.</p>
+      </div>
+
+      <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-5">
+        <h3 class="font-semibold text-brand-900">Where your data reaches buyers</h3>
+        <p class="mt-1 text-sm text-slate-600">A prepared, de-identified dataset can be licensed directly to buyers and listed on established data marketplaces — for example <b>AWS Data Exchange</b>, <b>Snowflake Marketplace</b>, and <b>Databricks Marketplace</b>, where AI, analytics, and research teams source datasets. Licensing is typically <b>non-exclusive</b>, so one dataset can be licensed more than once.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAMPLE OUTPUT -->
+  <section class="py-14">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">What the assessment looks like</h2>
+      <p class="mt-2 text-slate-600">A redacted, anonymized example of what you get back.</p>
+      <div class="mt-6 rounded-2xl border p-6 shadow-sm" style="border-color:#c7ccf7;background:#fff">
+        <div class="flex items-center gap-3">
+          <span class="rounded-full px-3 py-1 text-xs font-bold badge-likely">Strong candidate</span>
+          <h3 class="font-display text-lg font-bold text-brand-900">Preliminary commercialization assessment</h3>
+        </div>
+        <dl class="mt-4 space-y-3 text-sm">
+          <div><dt class="font-semibold text-brand-900">Organization</dt><dd class="text-slate-600">Regional electrical distributor (anonymized)</dd></div>
+          <div><dt class="font-semibold text-brand-900">Data</dt><dd class="text-slate-600">~1.8M records — 9 years of work orders, quotes, and service notes</dd></div>
+          <div><dt class="font-semibold text-brand-900">Compliance flags</dt><dd class="text-slate-600">Customer names and contact details appear in service notes → de-identify before marketing. Confirm rights to license quote data.</dd></div>
+          <div><dt class="font-semibold text-brand-900">Estimated value</dt><dd class="text-slate-600"><b>$180k–$450k</b> <span class="text-slate-400">(illustrative; depends on volume, uniqueness, quality, and rights)</span></dd></div>
+          <div><dt class="font-semibold text-brand-900">Suggested use</dt><dd class="text-slate-600">Training field-service and agentic workflow models.</dd></div>
+          <div><dt class="font-semibold text-brand-900">Preliminary asset profile</dt><dd class="text-slate-600">De-identification checklist + provenance documentation to gather.</dd></div>
+        </dl>
+        <p class="mt-4 text-xs text-slate-400">Illustrative example only — not an actual client, quote, or guarantee of a sale.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ASSESS -->
+  <section id="assess" class="border-t border-slate-200 bg-white py-14">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">Start your complimentary assessment</h2>
+      <p class="mt-2 text-slate-600">Describe your operational data — no upload, just a description. You'll get a preliminary commercialization read in under a minute.</p>
+      <p class="mt-2 text-sm text-slate-500"><b>Best fit:</b> operational data from distribution, engineering, manufacturing, logistics, construction, and services. Heavily regulated <i>core</i> datasets (for example patient records) need extra legal work and are often not a fit.</p>
+      <form id="dc-form" class="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" novalidate>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div><span class="lbl">Organization</span><input id="dc-company" class="in" /></div>
+          <div><span class="lbl">Work email</span><input id="dc-email" type="email" class="in" /></div>
+          <div class="sm:col-span-2"><span class="lbl">Industry / domain</span><input id="dc-domain" class="in" placeholder="e.g. electrical distribution · engineering · manufacturing · logistics" /></div>
+          <div class="sm:col-span-2"><span class="lbl">What data do you have?</span><textarea id="dc-types" rows="2" class="in" placeholder="e.g. 8 years of work orders, quotes, support tickets, service notes, inspection logs"></textarea></div>
+          <div><span class="lbl">Approx. volume / history</span><input id="dc-volume" class="in" placeholder="e.g. ~2M records, 2016–2026" /></div>
+          <div><span class="lbl">Do you own the rights?</span>
+            <select id="dc-rights" class="in"><option value="">Select…</option><option>Yes, we own it</option><option>Partly / unsure</option><option>Contains third-party data</option></select></div>
+          <div><span class="lbl">Contains PII / PHI / customer data?</span>
+            <select id="dc-pii" class="in"><option value="">Select…</option><option>No</option><option>Some</option><option>Yes</option><option>Unsure</option></select></div>
+          <div><span class="lbl">Government / municipal / utility data?</span>
+            <select id="dc-sector" class="in"><option value="">Select…</option><option>No</option><option>Yes</option></select></div>
+          <div class="sm:col-span-2"><span class="lbl">Anything else?</span><textarea id="dc-notes" rows="2" class="in" placeholder="Context, goals, concerns…"></textarea></div>
+        </div>
+        <input type="text" id="dc-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
+        <button type="submit" class="mt-5 w-full rounded-lg px-5 py-3 text-sm font-bold text-white" style="background:var(--dc)">Get my commercialization assessment</button>
+        <p id="dc-note" class="mt-4 hidden rounded-lg px-4 py-3 text-sm"></p>
+      </form>
+
+      <!-- RESULT -->
+      <div id="dc-result" class="mt-6 hidden">
+        <div class="rounded-2xl border p-6 shadow-sm" style="border-color:#c7ccf7;background:#fff">
+          <div class="flex items-center gap-3">
+            <span id="dc-badge" class="rounded-full px-3 py-1 text-xs font-bold">—</span>
+            <h3 class="font-display text-lg font-bold text-brand-900">Your preliminary assessment</h3>
+          </div>
+          <p id="dc-summary" class="mt-3 text-slate-700"></p>
+          <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p class="text-sm font-semibold text-brand-900">Estimated value</p>
+            <p id="dc-value" class="mt-1 text-sm text-slate-600"></p>
+          </div>
+          <div id="dc-flags-wrap" class="mt-4 hidden">
+            <p class="text-sm font-semibold text-brand-900">Compliance items to resolve first</p>
+            <ul id="dc-flags" class="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600"></ul>
+          </div>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div><p class="text-sm font-semibold text-brand-900">Suggested use</p><p id="dc-use" class="mt-1 text-sm text-slate-600"></p></div>
+            <div><p class="text-sm font-semibold text-brand-900">Next steps</p><ul id="dc-next" class="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600"></ul></div>
+          </div>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div><p class="text-sm font-semibold text-brand-900">De-identification checklist</p><ul id="dc-deid" class="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600"></ul></div>
+            <div><p class="text-sm font-semibold text-brand-900">Provenance to gather</p><ul id="dc-prov" class="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600"></ul></div>
+          </div>
+          <p id="dc-disc" class="mt-4 text-xs text-slate-400"></p>
+          <div class="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">An Asset Data Group specialist will email you within two business days to review the assessment and, only if you choose, begin a detailed evaluation. You keep ownership and approve every transaction.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECURITY -->
+  <section class="py-14">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">Security &amp; your data</h2>
+      <div class="mt-6 grid gap-5 md:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">No data uploaded here</h3><p class="mt-2 text-sm text-slate-600">This page only takes a <b>description</b> of your data. You never upload a dataset to get an assessment. When a dataset is prepared later, it is encrypted in transit and at rest, and can remain inside your own environment.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">Retention &amp; deletion</h3><p class="mt-2 text-sm text-slate-600">We keep only your description and contact details to follow up. You can request deletion of your submission at any time by emailing <a href="mailto:contact@assetdatagrp.com" class="font-semibold" style="color:var(--dc)">contact@assetdatagrp.com</a>.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">What legal review covers</h3><p class="mt-2 text-sm text-slate-600">Before anything is marketed or licensed, review covers your <b>rights to license</b> the data, <b>privacy and regulatory compliance</b> (PII, PHI, CUI, GDPR, CCPA), and the <b>license terms</b> (scope, duration, permitted use).</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">You stay in control</h3><p class="mt-2 text-sm text-slate-600">You keep ownership throughout. Personal and regulated information is de-identified or excluded. Nothing is marketed or licensed without your written approval, and you can withdraw before a transaction closes.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="border-t border-slate-200 bg-white py-14">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">Questions</h2>
+      <div class="mt-6 space-y-5">
+        <div><h3 class="font-semibold text-brand-900">What is Asset Data Group?</h3><p class="mt-1 text-sm text-slate-600">Asset Data Group is a <b>data asset commercialization firm</b> that helps organizations transform operational data into market-ready assets. Through data evaluation, de-identification planning, asset packaging, buyer outreach, and transaction management, ADG helps organizations unlock the value of underutilized data assets. Unlike traditional brokers that simply introduce buyers and sellers, ADG actively assesses, prepares, documents, positions, and commercializes data assets before they are presented to qualified buyers.</p></div>
+        <div><h3 class="font-semibold text-brand-900">Is Asset Data Group just a broker?</h3><p class="mt-1 text-sm text-slate-600">No. ADG provides a full commercialization process designed to maximize the marketability and value of qualifying data assets — evaluation, market-value assessment, de-identification planning, documentation and data dictionaries, compliance and commercialization review, asset packaging and positioning, qualified-buyer identification, offer management and negotiation, and transaction support. Our role is not limited to making introductions; we help transform operational data into a commercial asset.</p></div>
+        <div><h3 class="font-semibold text-brand-900">Why doesn't Asset Data Group charge upfront fees?</h3><p class="mt-1 text-sm text-slate-600">Because ADG assumes the upfront risk. Before a buyer is ever approached, our team may invest significant time and resources evaluating the opportunity, assessing commercialization potential, reviewing compliance, preparing documentation, building market-ready packages, and identifying qualified buyers. If a transaction does not occur, ADG absorbs that time and cost.</p></div>
+        <div><h3 class="font-semibold text-brand-900">What does it cost my organization?</h3><p class="mt-1 text-sm text-slate-600">There are <b>no upfront costs, consulting fees, evaluation fees, or participation fees</b>. ADG evaluates, prepares, and presents qualifying data assets to vetted buyers. If market demand exists, buyers may submit offers for approved data assets. You remain in control throughout and may accept or decline any offer.</p></div>
+        <div><h3 class="font-semibold text-brand-900">Why not simply sell our data directly?</h3><p class="mt-1 text-sm text-slate-600">Most organizations hold valuable operational data but lack the specialized expertise, commercial market access, technical resources, and buyer relationships to bring a data asset to market effectively. ADG bridges that gap with commercial valuation, asset preparation, de-identification planning, market positioning, buyer access, commercial negotiations, and transaction management.</p></div>
+        <div><h3 class="font-semibold text-brand-900">Do I lose ownership of my data?</h3><p class="mt-1 text-sm text-slate-600">No. You <b>license</b> it, you do not sell it. You keep full ownership, you set the terms, and you approve every transaction.</p></div>
+        <div><h3 class="font-semibold text-brand-900">What happens to health or customer data?</h3><p class="mt-1 text-sm text-slate-600">Personal and regulated information (PII, PHI) must be <b>de-identified first or excluded</b>. Some heavily regulated core datasets, such as patient records, are not a fit. The assessment flags this up front.</p></div>
+        <div><h3 class="font-semibold text-brand-900">Can I withdraw?</h3><p class="mt-1 text-sm text-slate-600">Yes. Nothing is marketed or shared without your written approval, and you can withdraw at any time before a transaction closes.</p></div>
+        <div><h3 class="font-semibold text-brand-900">What if no buyer emerges?</h3><p class="mt-1 text-sm text-slate-600">Then nothing happens and you owe nothing. There is no upfront cost — ADG is compensated only when a successful transaction is completed and you are paid.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI LABS + REFERRAL PARTNERS (secondary) -->
+  <section id="parties" class="py-12">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-xl font-bold text-brand-900">AI labs &amp; referral partners</h2>
+      <p class="mt-1 text-sm text-slate-600">Not a data owner? Register on the other side of the market.</p>
+      <div class="mt-5 grid gap-6 md:grid-cols-2">
+        <div id="lab" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 class="font-semibold text-brand-900">Buyers — register demand</h3>
+          <p class="mt-1 text-sm text-slate-600">AI, analytics, and research teams: tell us the kind of licensed, de-identified data you're sourcing.</p>
+          <form id="lab-form" class="mt-3 space-y-3" novalidate>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <input id="lab-company" class="in" placeholder="Organization" />
+              <input id="lab-email" type="email" class="in" placeholder="Email" />
+            </div>
+            <textarea id="lab-notes" rows="2" class="in" placeholder="Domain, task, volume, modality…"></textarea>
+            <input type="text" id="lab-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
+            <button type="submit" class="w-full rounded-lg px-5 py-2.5 text-sm font-semibold text-white" style="background:var(--dc)">Register demand</button>
+            <p id="lab-note" class="hidden rounded-lg px-4 py-3 text-sm"></p>
+          </form>
+        </div>
+        <div id="partner" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 class="font-semibold text-brand-900">Referral partners</h3>
+          <p class="mt-1 text-sm text-slate-600">Know an organization sitting on valuable operational data? Introduce them to Asset Data Group and earn a referral fee. Referral partners make introductions only — licensed data belongs to ADG and the client, and referral partners hold no claim or ownership of any license (terms set in a separate referral agreement).</p>
+          <form id="brk-form" class="mt-3 space-y-3" novalidate>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <input id="brk-company" class="in" placeholder="Name / firm" />
+              <input id="brk-email" type="email" class="in" placeholder="Email" />
+            </div>
+            <textarea id="brk-notes" rows="2" class="in" placeholder="The introductions you can make…"></textarea>
+            <input type="text" id="brk-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
+            <button type="submit" class="w-full rounded-lg px-5 py-2.5 text-sm font-semibold text-white" style="background:var(--dc)">Become a referral partner</button>
+            <p id="brk-note" class="hidden rounded-lg px-4 py-3 text-sm"></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-10">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <p class="text-xs leading-relaxed text-slate-400">Asset Data Group provides a preliminary assessment and data asset commercialization service. This is not legal, financial, or tax advice, a quote, or a guarantee of a sale. Estimated values are illustrative and depend on volume, uniqueness, quality, and rights. No data is marketed or licensed without the owner's approval, de-identification of personal or regulated information, and legal review. Government, municipal, and utility data may be subject to public-records, procurement, and regulatory restrictions. Asset Data Group does not guarantee a buyer. Contact: <a href="mailto:contact@assetdatagrp.com" class="underline">contact@assetdatagrp.com</a>.</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-brand-950 text-slate-300">
+    <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="adg-mark font-display">A</span>
+            <span class="font-display text-lg font-extrabold text-white">Asset Data Group</span>
+          </div>
+          <p class="mt-2 max-w-sm text-sm text-slate-400">A data asset commercialization firm. We help organizations turn operational data into a revenue-generating asset.</p>
+        </div>
+        <div class="flex flex-col gap-2 text-sm">
+          <a href="#how" class="text-slate-300 hover:text-white">How it works</a>
+          <a href="#faq" class="text-slate-300 hover:text-white">Questions</a>
+          <a href="#parties" class="text-slate-300 hover:text-white">Buyers &amp; referral partners</a>
+          <a href="mailto:contact@assetdatagrp.com" class="text-slate-300 hover:text-white">contact@assetdatagrp.com</a>
+        </div>
+      </div>
+      <div class="mt-8 border-t border-white/10 pt-6 text-xs text-slate-500">© 2026 Asset Data Group. A preliminary assessment and data asset commercialization service — not legal, financial, or tax advice, a quote, or a guarantee of a sale.</div>
+    </div>
+  </footer>
+
+  <script>
+  (function(){
+    "use strict";
+    // Same-origin by default; ?api= override is for local testing only.
+    var API=(new URLSearchParams(location.search).get("api")||"").replace(/\/+$/,"");
+    function v(id){var e=document.getElementById(id);return e?(e.value||"").trim():"";}
+    function li(ul, arr){ ul.innerHTML=""; (arr||[]).forEach(function(x){ var l=document.createElement("li"); l.textContent=String(x); ul.appendChild(l); }); }
+    function post(path, payload){ return fetch(API+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); }
+    // Self-contained referral capture: ?ref=CODE persists in localStorage.
+    function refCode(){ try{ var u=new URLSearchParams(location.search).get("ref"); if(u){ localStorage.setItem("adg_ref",u); return u; } return localStorage.getItem("adg_ref")||""; }catch(e){ return ""; } }
+    function lead(source, name, email, company, message){
+      return post("/.netlify/functions/submit-lead",{ type:"inquiry", vertical:"asset-data-group", name:name||company||email, email:email,
+        company:company||"", interest:source, message:message||"", source:source, referral_code:refCode(), hp:"" }).catch(function(){});
+    }
+    function show(el,m,ok){ el.classList.remove("hidden"); el.textContent=m; el.className="mt-4 rounded-lg px-4 py-3 text-sm "+(ok?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-600"); }
+    function showPlain(el,m,ok){ el.classList.remove("hidden"); el.textContent=m; el.className="mt-3 rounded-lg px-4 py-3 text-sm "+(ok?"bg-emerald-50 text-emerald-700":"bg-amber-50 text-amber-700"); }
+
+    // ---- Domain estimator ----
+    var domForm=document.getElementById("dom-form"), domNote=document.getElementById("dom-note"), domResult=document.getElementById("dom-result");
+    var CAND={ strong:{label:"Strong candidate",cls:"badge-likely"}, possible:{label:"Possible fit",cls:"badge-needs_review"}, not:{label:"Not a fit",cls:"badge-unlikely"} };
+    if(domForm) domForm.addEventListener("submit", async function(e){
+      e.preventDefault();
+      var dom=v("dom-input"); if(!dom){ showPlain(domNote,"Enter your company website, for example yourcompany.com.",false); return; }
+      var btn=domForm.querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent="Checking…"; domNote.classList.add("hidden");
+      try{
+        var r=await post("/.netlify/functions/domain-assess",{domain:dom});
+        if(r.ok){
+          var a=(await r.json()).assessment||{}; var c=CAND[a.candidacy]||CAND.possible;
+          var b=document.getElementById("dom-badge"); b.textContent=c.label; b.className="rounded-full px-3 py-1 text-xs font-bold "+c.cls;
+          document.getElementById("dom-domain").textContent=a.domain||dom;
+          document.getElementById("dom-business").textContent=a.business||"";
+          document.getElementById("dom-summary").textContent=a.candidacySummary||"";
+          document.getElementById("dom-value").textContent=a.valueEstimate||"";
+          var tw=document.getElementById("dom-types-wrap");
+          if(a.likelyDataTypes&&a.likelyDataTypes.length){ tw.classList.remove("hidden"); document.getElementById("dom-types").textContent=a.likelyDataTypes.join(" · "); } else tw.classList.add("hidden");
+          var rw=document.getElementById("dom-reasons-wrap");
+          if(a.reasons&&a.reasons.length){ rw.classList.remove("hidden"); li(document.getElementById("dom-reasons"),a.reasons); } else rw.classList.add("hidden");
+          document.getElementById("dom-disc").textContent=(a.disclaimer||"")+(a.siteFetched?"":" (We could not reach the site, so this is a lower-confidence estimate.)");
+          var cta=document.getElementById("dom-cta"); cta.style.display=(a.candidacy==="not")?"none":"inline-block";
+          var dcDomain=document.getElementById("dc-domain"); if(dcDomain && !dcDomain.value) dcDomain.value=(a.domain||dom);
+          domResult.classList.remove("hidden"); domResult.scrollIntoView({behavior:"smooth",block:"nearest"});
+        } else {
+          var msg=(r.status===400)?"Enter a valid company website, for example yourcompany.com.":"Instant estimate is unavailable right now — use the full assessment below.";
+          showPlain(domNote,msg, false);
+        }
+      }catch(err){ showPlain(domNote,"Instant estimate is unavailable right now — use the full assessment below.",false); }
+      btn.disabled=false; btn.textContent="Estimate";
+    });
+
+    var f=document.getElementById("dc-form"), note=document.getElementById("dc-note"), result=document.getElementById("dc-result");
+    f.addEventListener("submit", async function(e){
+      e.preventDefault();
+      if(document.getElementById("dc-hp").value){ f.reset(); return; }
+      var email=v("dc-email"), company=v("dc-company");
+      if(!v("dc-types") && !v("dc-domain") && !v("dc-notes")){ show(note,"Describe the data you'd like assessed.",false); return; }
+      var inv={ domain:v("dc-domain"), dataTypes:v("dc-types"), volume:v("dc-volume"), ownsRights:v("dc-rights"), pii:v("dc-pii"), sector:v("dc-sector"), notes:v("dc-notes") };
+      lead("Asset Data Group — Company (data owner)", company, email, company, "[ADG] "+JSON.stringify(inv).slice(0,1200));
+      var btn=f.querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent="Assessing…"; note.classList.add("hidden");
+      try{
+        var r=await post("/.netlify/functions/data-assess",{inventory:inv});
+        if(r.ok){
+          var d=await r.json(); var a=d.assessment||{};
+          var badge=document.getElementById("dc-badge"); var el=a.eligibility||"needs_review";
+          badge.textContent=({likely:"Strong candidate",needs_review:"Needs review",unlikely:"Not a fit"})[el]||"Needs review";
+          badge.className="rounded-full px-3 py-1 text-xs font-bold badge-"+el;
+          document.getElementById("dc-summary").textContent=a.eligibilitySummary||"";
+          document.getElementById("dc-value").textContent=a.valueEstimate||"";
+          var fw=document.getElementById("dc-flags-wrap");
+          if(a.complianceFlags&&a.complianceFlags.length){ fw.classList.remove("hidden"); li(document.getElementById("dc-flags"),a.complianceFlags); } else { fw.classList.add("hidden"); }
+          var ds=a.dataSheet||{};
+          document.getElementById("dc-use").textContent=ds.suggestedUse||"";
+          li(document.getElementById("dc-next"),a.nextSteps);
+          li(document.getElementById("dc-deid"),ds.deidentificationChecklist);
+          li(document.getElementById("dc-prov"),ds.provenanceNeeded);
+          document.getElementById("dc-disc").textContent=a.disclaimer||"Preliminary, non-binding assessment. Not legal advice, a quote, or a guarantee of a sale.";
+          result.classList.remove("hidden"); result.scrollIntoView({behavior:"smooth",block:"start"});
+        } else {
+          show(note,"Thank you — your submission is in. An Asset Data Group specialist will follow up within two business days.",true); f.reset();
+        }
+      }catch(err){ show(note,"Thank you — your submission is in. An Asset Data Group specialist will follow up within two business days.",true); f.reset(); }
+      btn.disabled=false; btn.textContent="Get my commercialization assessment";
+    });
+
+    function wire(formId, hpId, companyId, emailId, notesId, noteId, source, okMsg, btnText){
+      var form=document.getElementById(formId); if(!form) return; var noteEl=document.getElementById(noteId);
+      form.addEventListener("submit", async function(e){
+        e.preventDefault();
+        if(document.getElementById(hpId).value){ form.reset(); return; }
+        var email=v(emailId), company=v(companyId);
+        if(!email||!company){ show(noteEl,"Please add your "+(companyId.indexOf("brk")>=0?"name/firm":"organization")+" and email.",false); return; }
+        var btn=form.querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent="Sending…";
+        try{ await lead(source, company, email, company, "[ADG] "+v(notesId)); show(noteEl, okMsg, true); form.reset(); }
+        catch(err){ show(noteEl,"Network error — please try again.",false); }
+        btn.disabled=false; btn.textContent=btnText;
+      });
+    }
+    wire("lab-form","lab-hp","lab-company","lab-email","lab-notes","lab-note","Asset Data Group — Buyer (demand)","Thank you — your demand is registered. An Asset Data Group specialist will follow up.","Register demand");
+    wire("brk-form","brk-hp","brk-company","brk-email","brk-notes","brk-note","Asset Data Group — Referral partner","Thank you — we'll be in touch about becoming a referral partner.","Become a referral partner");
+  })();
+  </script>
+</body>
+</html>

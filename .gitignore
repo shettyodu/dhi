@@ -17,9 +17,9 @@
 !/WESCO_EDI_request_email.md
 # AutoCommand workflow drop (separate Python service)
 !/autocommand-workflow/
-# Netlify edge functions (host-scoped routing). NOTE: this is "/netlify/", the
-# deployable source dir — distinct from "/.netlify/" (local build cache) below.
-!/netlify/
+# Asset Data Group — standalone Netlify site (own branding + functions). Deployed
+# as its own Netlify site; committed here so that site can build from this repo.
+!/adg-site/
 
 # root build deps (Tailwind precompile) — never commit node_modules
 /node_modules/
