@@ -42,10 +42,10 @@ const VERTICALS = [
   },
   {
     slug: "data-exchange.html",
-    title: "DataCommand Data Exchange",
-    menu: "DataCommand — Data Exchange",
+    title: "Asset Data Group",
+    menu: "Asset Data Group — Data Commercialization",
     summary:
-      "Compliance-first exchange for licensing your operational data to AI labs — instant AI assessment, de-identification, provenance, and your approval on every deal.",
+      "A data asset commercialization firm — evaluate, prepare, de-identify, package, and commercialize your operational data for qualified buyers. Complimentary AI-powered assessment.",
     icon: "chart",
   },
   {
