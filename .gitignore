@@ -20,6 +20,8 @@
 # Asset Data Group — standalone Netlify site (own branding + functions). Deployed
 # as its own Netlify site; committed here so that site can build from this repo.
 !/adg-site/
+# ...but never its installed deps (Netlify runs npm install on build).
+/adg-site/node_modules/
 
 # root build deps (Tailwind precompile) — never commit node_modules
 /node_modules/
