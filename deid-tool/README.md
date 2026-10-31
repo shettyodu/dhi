@@ -44,6 +44,25 @@ python3 deid.py -i app.db --query "SELECT * FROM wo WHERE year=2024" -o clean.cs
 Reading straight from a database export (CSV/Parquet) is the recommended path for a
 one-time historical pull — simpler than an API integration.
 
+## Package it for buyers
+
+Once a dataset is cleaned, turn it into a **buyer-facing data-sheet** — coverage
+stats, a data dictionary, sample rows, and a de-identification attestation (with the
+source SHA-256 and the exact treatments applied) — plus a machine-readable manifest:
+
+```bash
+python3 package.py -i cleaned.csv --report report.json -o package.html --manifest package.json \
+    --title "Field-service operational dataset" \
+    --owner "Regional distributor (anonymized)" \
+    --use "Training field-service and agentic workflow models." \
+    --value "\$180k–\$450k (illustrative)"
+```
+
+`package.html` is self-contained (inline CSS, no external calls) so it can be emailed,
+printed, or hosted as-is. The manifest (`package.json`) is the structured form for a
+marketplace listing. The attestation is built from the de-id audit report, so the
+provenance ties back to the exact cleaning run.
+
 ## Run it as a local app (web UI)
 
 For people who'd rather drag a file in than use the command line:

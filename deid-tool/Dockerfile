@@ -23,7 +23,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir "spacy>=3.5" pyarrow openpyxl \
     && python -m spacy download en_core_web_sm
 
-COPY deid.py serve.py config.example.json README.md ./
+COPY deid.py package.py serve.py config.example.json README.md ./
 
 # Default: run the CLI; args after the image name pass straight through.
 ENTRYPOINT ["python", "deid.py"]
