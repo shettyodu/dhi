@@ -3,6 +3,7 @@
    Netlify Blobs and emails the ADG inbox. */
 const { submitLead } = require("../../lib/adg-leads");
 const { connectLambda } = require("@netlify/blobs");
+const { limited, tooMany } = require("../../lib/rate-limit");
 
 const cors = {
   "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
@@ -14,6 +15,8 @@ exports.handler = async (event) => {
   try { connectLambda(event); } catch (e) { /* auto-context fallback */ }
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: cors, body: JSON.stringify({ error: "Method not allowed" }) };
+  const rl = await limited(event, "submit-lead", 10, 600);
+  if (rl.over) return tooMany(cors, rl.retryAfter);
 
   let body = {};
   try { body = JSON.parse(event.body || "{}"); } catch (e) { /* ignore */ }
