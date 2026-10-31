@@ -22,7 +22,7 @@ async function limited(event, name, max, windowSec) {
   const bucket = Math.floor(Date.now() / 1000 / windowSec);
   const key = `${name}/${ip}/${bucket}`;
   try {
-    const cur = (await store().get(key, { type: "json" })) || { n: 0 };
+    const cur = (await store().get(key, { type: "json", consistency: "strong" })) || { n: 0 };
     const n = (cur.n || 0) + 1;
     await store().setJSON(key, { n });
     if (n > max) return { over: true, retryAfter: windowSec };
