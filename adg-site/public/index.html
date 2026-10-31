@@ -14,15 +14,15 @@
   <link rel="stylesheet" href="assets/tailwind.css" />
   <style>
     body{font-family:Inter,system-ui,sans-serif}.font-display{font-family:Montserrat,Inter,sans-serif}
-    :root{--dc:#4f46e5;--dc-d:#3730a3;--dc-l:#eef0fe;}
+    :root{--dc:#e8640f;--dc-d:#b84d0c;--dc-l:#fdeede;}
     .in{width:100%;border-radius:.6rem;border:1px solid #cbd5e1;padding:.6rem .75rem;font-size:.9rem}
-    .in:focus{outline:none;border-color:var(--dc);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+    .in:focus{outline:none;border-color:var(--dc);box-shadow:0 0 0 3px rgba(232,100,15,.15)}
     .lbl{font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#475569;margin-bottom:.2rem;display:block}
     .badge-likely{background:#ecfdf5;color:#047857}.badge-needs_review{background:#fffbeb;color:#b45309}.badge-unlikely{background:#fef2f2;color:#b91c1c}
     .step{border-left:2px solid var(--dc);padding-left:1rem}
     .tl{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--dc-d);background:var(--dc-l);border-radius:999px;padding:.1rem .5rem}
     /* primary-action attention cue */
-    @keyframes adgPulse{0%{box-shadow:0 0 0 0 rgba(79,70,229,.45)}70%{box-shadow:0 0 0 9px rgba(79,70,229,0)}100%{box-shadow:0 0 0 0 rgba(79,70,229,0)}}
+    @keyframes adgPulse{0%{box-shadow:0 0 0 0 rgba(232,100,15,.45)}70%{box-shadow:0 0 0 9px rgba(232,100,15,0)}100%{box-shadow:0 0 0 0 rgba(232,100,15,0)}}
     .cta-pulse{animation:adgPulse 2.2s cubic-bezier(.4,0,.2,1) infinite}
     .cta-pulse:hover,.cta-pulse:focus{animation:none}
     @media(prefers-reduced-motion:reduce){.cta-pulse{animation:none}}
@@ -45,7 +45,7 @@
           <a href="#security" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Security</a>
           <a href="#faq" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Questions</a>
           <a href="#parties" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Buyers &amp; partners</a>
-          <a href="mailto:contact@assetdatagrp.com" class="ml-2 inline-flex items-center rounded-md border px-3.5 py-2 text-sm font-semibold transition-colors hover:bg-indigo-50" style="border-color:var(--dc);color:var(--dc-d)">Contact</a>
+          <a href="mailto:contact@assetdatagrp.com" class="ml-2 inline-flex items-center rounded-md border px-3.5 py-2 text-sm font-semibold transition-colors hover:bg-orange-50" style="border-color:var(--dc);color:var(--dc-d)">Contact</a>
           <a href="#assess" class="ml-1.5 rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors" style="background:var(--dc)">Start assessment</a>
         </nav>
 
@@ -71,9 +71,9 @@
   <!-- HERO -->
   <section class="relative overflow-hidden bg-brand-950">
     <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
-    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 12%, #6366f1 0, transparent 42%), radial-gradient(circle at 8% 92%, #06b6d4 0, transparent 44%);"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 12%, #ef7a2a 0, transparent 42%), radial-gradient(circle at 8% 92%, #8fa2c4 0, transparent 44%);"></div>
     <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-      <p class="text-sm font-semibold uppercase tracking-wider" style="color:#a5b4fc">Asset Data Group · Data Asset Commercialization</p>
+      <p class="text-sm font-semibold uppercase tracking-wider" style="color:#f6a96a">Asset Data Group · Data Asset Commercialization</p>
       <h1 class="mt-2 max-w-3xl font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Turn your operational data into a revenue-generating asset.</h1>
       <p class="mt-4 max-w-2xl text-lg text-slate-300">Most organizations are sitting on valuable operational data but lack the expertise required to bring it to market. <b class="text-white">Asset Data Group is a data asset commercialization firm, not simply a data broker.</b> We help organizations evaluate, prepare, de-identify, package, and commercialize operational data assets for buyers seeking high-quality, real-world datasets.</p>
       <p class="mt-3 max-w-2xl text-slate-300">Start with a complimentary AI-powered assessment and discover what your data may be worth.</p>
@@ -117,7 +117,7 @@
       </form>
       <p id="dom-note" class="mt-3 hidden rounded-lg px-4 py-3 text-sm"></p>
       <div id="dom-result" class="mt-5 hidden">
-        <div class="rounded-2xl border p-5 shadow-sm" style="border-color:#c7ccf7;background:#fff">
+        <div class="rounded-2xl border p-5 shadow-sm" style="border-color:#cdd6e6;background:#fff">
           <div class="flex items-center gap-3">
             <span id="dom-badge" class="rounded-full px-3 py-1 text-xs font-bold">—</span>
             <h3 id="dom-domain" class="font-display text-base font-bold text-brand-900"></h3>
@@ -138,7 +138,7 @@
   <section id="how" class="border-t border-slate-200 bg-white py-14">
     <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
 
-      <div class="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-6">
+      <div class="rounded-2xl border border-orange-100 bg-orange-50/50 p-6">
         <h2 class="font-display text-xl font-bold text-brand-900">More than a data broker</h2>
         <p class="mt-2 text-slate-600">Asset Data Group is a data asset commercialization firm that helps organizations transform operational data into market-ready assets. Through data evaluation, de-identification planning, asset packaging, buyer outreach, and transaction management, ADG helps organizations unlock the value of underutilized data assets. Our team invests the time, expertise, and resources required to evaluate, prepare, document, and commercialize qualifying data assets before they are ever presented to potential buyers.</p>
       </div>
@@ -157,28 +157,28 @@
           <text x="104" y="145" font-size="12" fill="#5F5E5A" text-anchor="middle">(data owner)</text>
           <text x="104" y="163" font-size="11" fill="#5F5E5A" text-anchor="middle">operational data</text>
           <line x1="184" y1="138" x2="206" y2="138" stroke="#5f5e5a" stroke-width="1.4" marker-end="url(#dcar)"/>
-          <rect x="210" y="58" width="520" height="172" rx="12" fill="#EEF0FE" stroke="#4f46e5" stroke-width="1.5"/>
-          <text x="224" y="82" font-size="13" font-weight="700" fill="#3730A3">Asset Data Group · data asset commercialization</text>
-          <rect x="224" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
-          <text x="278" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">1 · Assess</text>
+          <rect x="210" y="58" width="520" height="172" rx="12" fill="#eef1f7" stroke="#1e2a4d" stroke-width="1.5"/>
+          <text x="224" y="82" font-size="13" font-weight="700" fill="#1e2a4d">Asset Data Group · data asset commercialization</text>
+          <rect x="224" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#cdd6e6"/>
+          <text x="278" y="127" font-size="12" font-weight="700" fill="#1e2a4d" text-anchor="middle">1 · Assess</text>
           <text x="278" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">viability</text>
           <text x="278" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">+ value</text>
           <line x1="335" y1="133" x2="347" y2="133" stroke="#5f5e5a" stroke-width="1.2" marker-end="url(#dcar)"/>
-          <rect x="350" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
-          <text x="404" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">2 · Prepare</text>
+          <rect x="350" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#cdd6e6"/>
+          <text x="404" y="127" font-size="12" font-weight="700" fill="#1e2a4d" text-anchor="middle">2 · Prepare</text>
           <text x="404" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">de-identify</text>
           <text x="404" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">+ package</text>
           <line x1="461" y1="133" x2="473" y2="133" stroke="#5f5e5a" stroke-width="1.2" marker-end="url(#dcar)"/>
-          <rect x="476" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
-          <text x="530" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">3 · Market</text>
+          <rect x="476" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#cdd6e6"/>
+          <text x="530" y="127" font-size="12" font-weight="700" fill="#1e2a4d" text-anchor="middle">3 · Market</text>
           <text x="530" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">to qualified</text>
           <text x="530" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">buyers</text>
           <line x1="587" y1="133" x2="599" y2="133" stroke="#5f5e5a" stroke-width="1.2" marker-end="url(#dcar)"/>
-          <rect x="602" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#c7ccf7"/>
-          <text x="656" y="127" font-size="12" font-weight="700" fill="#3730A3" text-anchor="middle">4 · Execute</text>
+          <rect x="602" y="94" width="108" height="78" rx="7" fill="#ffffff" stroke="#cdd6e6"/>
+          <text x="656" y="127" font-size="12" font-weight="700" fill="#1e2a4d" text-anchor="middle">4 · Execute</text>
           <text x="656" y="145" font-size="10.5" fill="#5F5E5A" text-anchor="middle">secure</text>
           <text x="656" y="159" font-size="10.5" fill="#5F5E5A" text-anchor="middle">+ get paid</text>
-          <text x="470" y="216" font-size="11" font-weight="700" fill="#3730A3" text-anchor="middle">Built in: de-identification · provenance · owner approval · secure delivery</text>
+          <text x="470" y="216" font-size="11" font-weight="700" fill="#1e2a4d" text-anchor="middle">Built in: de-identification · provenance · owner approval · secure delivery</text>
           <line x1="730" y1="138" x2="754" y2="138" stroke="#5f5e5a" stroke-width="1.4" marker-end="url(#dcar)"/>
           <rect x="756" y="90" width="160" height="96" rx="10" fill="#F1EFE8" stroke="#B4B2A9"/>
           <text x="836" y="126" font-size="14" font-weight="700" fill="#2C2C2A" text-anchor="middle">Buyer</text>
@@ -200,7 +200,7 @@
           <p class="mt-1 text-sm text-slate-600">Once terms are approved, ADG coordinates secure delivery and transaction execution — secure transfer, a clean-room environment, controlled licensing, or access within your existing infrastructure. Upon successful completion, your organization receives payment under the agreed terms. Asset Data Group is compensated through the commercialization process and transaction structure. All licensing terms, permitted uses, and duration limits remain subject to your approval.</p></div>
       </div>
 
-      <div class="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/50 p-5">
+      <div class="mt-6 rounded-xl border border-orange-100 bg-orange-50/50 p-5">
         <h3 class="font-semibold text-brand-900">What happens after you submit the assessment</h3>
         <p class="mt-1 text-sm text-slate-600">You receive an immediate preliminary assessment of your organization's data commercialization potential. Within <b>two business days</b>, an Asset Data Group data commercialization specialist reviews the assessment, answers your questions, and discusses whether your organization may have a marketable data asset. If you choose to proceed, ADG begins a more detailed evaluation — data valuation, commercialization readiness, compliance considerations, and potential buyer demand. There is no obligation to move forward, and <b>nothing is marketed, listed, packaged, or shared with any third party without your written approval</b>.</p>
       </div>
@@ -217,7 +217,7 @@
     <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
       <h2 class="font-display text-2xl font-bold text-brand-900">What the assessment looks like</h2>
       <p class="mt-2 text-slate-600">A redacted, anonymized example of what you get back.</p>
-      <div class="mt-6 rounded-2xl border p-6 shadow-sm" style="border-color:#c7ccf7;background:#fff">
+      <div class="mt-6 rounded-2xl border p-6 shadow-sm" style="border-color:#cdd6e6;background:#fff">
         <div class="flex items-center gap-3">
           <span class="rounded-full px-3 py-1 text-xs font-bold badge-likely">Strong candidate</span>
           <h3 class="font-display text-lg font-bold text-brand-900">Preliminary commercialization assessment</h3>
@@ -263,7 +263,7 @@
 
       <!-- RESULT -->
       <div id="dc-result" class="mt-6 hidden">
-        <div class="rounded-2xl border p-6 shadow-sm" style="border-color:#c7ccf7;background:#fff">
+        <div class="rounded-2xl border p-6 shadow-sm" style="border-color:#cdd6e6;background:#fff">
           <div class="flex items-center gap-3">
             <span id="dc-badge" class="rounded-full px-3 py-1 text-xs font-bold">—</span>
             <h3 class="font-display text-lg font-bold text-brand-900">Your preliminary assessment</h3>
@@ -376,7 +376,7 @@
             <img src="assets/img/adg-logo.png" alt="Asset Data Group" class="h-7 w-auto" />
           </div>
           <p class="mt-4 text-sm leading-relaxed text-slate-400">A data asset commercialization firm. We help organizations evaluate, prepare, and commercialize operational data into a revenue-generating asset — with you in control of every transaction.</p>
-          <p class="mt-4 text-xs uppercase tracking-wider" style="color:#a5b4fc">Data Asset Commercialization</p>
+          <p class="mt-4 text-xs uppercase tracking-wider" style="color:#f6a96a">Data Asset Commercialization</p>
         </div>
 
         <div>

@@ -199,11 +199,11 @@ def render_html(meta, stats, att):
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>%(title)s — Asset Data Group data package</title>
 <style>
-  :root{--dc:#4f46e5;--ink:#0a2540;--mut:#64748b;--line:#e2e8f0}
+  :root{--dc:#e8640f;--ink:#0a2540;--mut:#64748b;--line:#e2e8f0}
   *{box-sizing:border-box} body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#0f172a;margin:0;background:#f1f5f9;line-height:1.5}
   .sheet{max-width:900px;margin:24px auto;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
   header{padding:26px 34px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
-  .mark{display:grid;place-items:center;height:38px;width:38px;border-radius:10px;color:#fff;font-weight:800;background:linear-gradient(135deg,#6366f1,#4f46e5)}
+  .mark{display:grid;place-items:center;height:38px;width:38px;border-radius:10px;color:#fff;font-weight:800;background:linear-gradient(135deg,#2b3a63,#1e2a4d)}
   .brand{font-weight:800;color:var(--ink)} .kicker{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dc);font-weight:700}
   main{padding:26px 34px}
   h1{font-size:23px;color:var(--ink);margin:0 0 4px} .subtitle{color:var(--mut);margin:0 0 20px}
@@ -218,11 +218,11 @@ def render_html(meta, stats, att):
   td.num,th.num{text-align:right} .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
   .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;margin:12px 0}
   .meta-grid .k{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em} .meta-grid .v{font-weight:600;font-size:13px;word-break:break-all}
-  .chip{display:inline-block;background:#eef2ff;color:#4338ca;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin:2px 4px 2px 0}
+  .chip{display:inline-block;background:#fdeede;color:#b84d0c;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin:2px 4px 2px 0}
   .evalhead{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin-top:6px}
-  .score{background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:12px 18px;text-align:center;min-width:120px}
-  .score-n{font-size:30px;font-weight:800;color:var(--dc)} .score-n span{font-size:14px;color:#818cf8}
-  .score-l{font-size:12px;color:#4338ca;font-weight:700;margin-top:2px}
+  .score{background:#fdeede;border:1px solid #f6c9a6;border-radius:10px;padding:12px 18px;text-align:center;min-width:120px}
+  .score-n{font-size:30px;font-weight:800;color:var(--dc)} .score-n span{font-size:14px;color:#f0a868}
+  .score-l{font-size:12px;color:#b84d0c;font-weight:700;margin-top:2px}
   .facs{flex:1;min-width:280px}
   .fac{display:flex;align-items:center;gap:10px;margin:5px 0}
   .fac-l{width:150px;font-size:12px;color:#334155} .fac-s{width:26px;text-align:right;font-size:12px;font-weight:700;color:var(--ink)}

@@ -30,10 +30,10 @@ PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Asset Data Group — De-identification</title>
 <style>
-  :root{--dc:#4f46e5;--dc-d:#3730a3;--ink:#0a2540;--mut:#64748b;--line:#e2e8f0;--ok:#047857}
+  :root{--dc:#e8640f;--dc-d:#b84d0c;--ink:#0a2540;--mut:#64748b;--line:#e2e8f0;--ok:#047857}
   *{box-sizing:border-box} body{font-family:-apple-system,Segoe UI,Inter,Arial,sans-serif;margin:0;background:#f8fafc;color:#0f172a}
   header{background:#fff;border-bottom:1px solid var(--line);padding:16px 24px;display:flex;align-items:center;gap:12px}
-  .mark{display:grid;place-items:center;height:34px;width:34px;border-radius:9px;color:#fff;font-weight:800;background:linear-gradient(135deg,#6366f1,#4f46e5)}
+  .mark{display:grid;place-items:center;height:34px;width:34px;border-radius:9px;color:#fff;font-weight:800;background:linear-gradient(135deg,#2b3a63,#1e2a4d)}
   h1{font-size:17px;margin:0;color:var(--ink)} .sub{font-size:12px;color:var(--mut);margin:0}
   main{max-width:900px;margin:24px auto;padding:0 20px}
   .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(0,0,0,.04);margin-bottom:18px}
