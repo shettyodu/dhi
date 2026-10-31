@@ -61,16 +61,21 @@ PAGE = """<!doctype html>
         <label><input type="radio" name="mode" value="detect"/> Detect rules</label>
         <label><input type="radio" name="mode" value="dryrun" checked/> Dry run (report only)</label>
         <label><input type="radio" name="mode" value="apply"/> De-identify</label>
+        <label><input type="radio" name="mode" value="package"/> De-identify + package</label>
       </fieldset>
       <fieldset><legend>Profile</legend>
         <label><input type="checkbox" id="hipaa"/> HIPAA Safe Harbor</label>
+      </fieldset>
+      <fieldset id="titlewrap" class="hidden"><legend>Package title</legend>
+        <input id="title" placeholder="e.g. Field-service operational dataset" style="border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:13px;min-width:230px">
       </fieldset>
       <button id="run" disabled>Run</button>
     </div>
     <p class="note"><span class="priv">Private:</span> the file is processed locally by this tool and is not uploaded anywhere.</p>
   </div>
   <div id="out" class="card hidden">
-    <div id="dlwrap" class="hidden" style="margin-bottom:14px"><button id="dl" class="dl">Download cleaned file</button></div>
+    <div id="dlwrap" class="hidden" style="margin-bottom:14px"><button id="dl" class="dl">Download cleaned file</button> <button id="dlpkg" class="dl hidden">Download package (HTML)</button></div>
+    <div id="pkgwrap" class="hidden" style="margin-bottom:14px"><h3 style="font-size:14px;margin:0 0 8px;color:var(--ink)">Buyer package preview</h3><iframe id="pkgframe" style="width:100%;height:520px;border:1px solid var(--line);border-radius:10px"></iframe></div>
     <div id="preview"></div>
     <h3 style="font-size:14px;margin:16px 0 8px;color:var(--ink)">Audit report</h3>
     <pre id="report"></pre>
@@ -78,7 +83,7 @@ PAGE = """<!doctype html>
 </main>
 <script>
 (function(){
-  var file=null, cleaned=null, cleanedName="cleaned.csv";
+  var file=null, cleaned=null, cleanedName="cleaned.csv", pkg=null;
   var drop=document.getElementById("drop"), input=document.getElementById("file");
   var runBtn=document.getElementById("run"), out=document.getElementById("out");
   function setFile(f){ file=f; document.getElementById("fname").textContent=f?("Selected: "+f.name):""; runBtn.disabled=!f; }
@@ -104,17 +109,20 @@ PAGE = """<!doctype html>
     runBtn.disabled=true; runBtn.textContent="Working…"; out.classList.add("hidden");
     try{
       var buf=await file.arrayBuffer();
-      var q="?mode="+mode+"&profile="+encodeURIComponent(profile)+"&filename="+encodeURIComponent(file.name);
+      var q="?mode="+mode+"&profile="+encodeURIComponent(profile)+"&filename="+encodeURIComponent(file.name)+"&title="+encodeURIComponent(document.getElementById("title").value||"");
       var r=await fetch("/api/process"+q,{method:"POST",body:buf});
       var d=await r.json();
       var rep=document.getElementById("report"), dlwrap=document.getElementById("dlwrap"), pv=document.getElementById("preview");
-      dlwrap.classList.add("hidden"); pv.innerHTML="";
+      var dlpkg=document.getElementById("dlpkg"), pkgwrap=document.getElementById("pkgwrap");
+      dlwrap.classList.add("hidden"); dlpkg.classList.add("hidden"); pkgwrap.classList.add("hidden"); pv.innerHTML="";
       if(d.error){ rep.innerHTML='<span class="err">Error: '+esc(d.error)+'</span>\\n'+esc(d.log||""); }
       else if(d.mode==="detect"){ rep.textContent="Proposed rules (review, edit, then run):\\n\\n"+d.plan; }
       else {
         rep.textContent=d.report_txt||d.log||"(no report)";
-        if(d.mode==="apply" && d.cleaned_csv){ cleaned=d.cleaned_csv; cleanedName=d.filename||"cleaned.csv";
+        if((d.mode==="apply"||d.mode==="package") && d.cleaned_csv){ cleaned=d.cleaned_csv; cleanedName=d.filename||"cleaned.csv";
           dlwrap.classList.remove("hidden"); pv.innerHTML="<b style='font-size:13px'>Cleaned preview (first rows)</b>"+preview(cleaned); }
+        if(d.mode==="package" && d.package_html){ pkg=d.package_html; dlpkg.classList.remove("hidden");
+          pkgwrap.classList.remove("hidden"); document.getElementById("pkgframe").srcdoc=d.package_html; }
       }
       out.classList.remove("hidden");
     }catch(e){ document.getElementById("report").innerHTML='<span class="err">'+esc(e.message)+'</span>'; out.classList.remove("hidden"); }
@@ -123,6 +131,13 @@ PAGE = """<!doctype html>
   document.getElementById("dl").addEventListener("click",function(){
     var b=new Blob([cleaned],{type:"text/csv"}); var a=document.createElement("a");
     a.href=URL.createObjectURL(b); a.download=cleanedName; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  });
+  document.getElementById("dlpkg").addEventListener("click",function(){
+    if(!pkg) return; var b=new Blob([pkg],{type:"text/html"}); var a=document.createElement("a");
+    a.href=URL.createObjectURL(b); a.download="data-package.html"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=mode]'),function(r){
+    r.addEventListener("change",function(){ document.getElementById("titlewrap").classList.toggle("hidden", document.querySelector('input[name=mode]:checked').value!=="package"); });
   });
 })();
 </script></body></html>"""
@@ -136,7 +151,7 @@ def read(path):
         return ""
 
 
-def run_deid(mode, inp, profile, workdir):
+def run_deid(mode, inp, profile, workdir, title=""):
     base = [PYEXE, DEID, "-i", inp]
     if profile == "hipaa-safe-harbor":
         base += ["--profile", "hipaa-safe-harbor"]
@@ -150,6 +165,14 @@ def run_deid(mode, inp, profile, workdir):
                 "report_json": read(rep + ".json"), "log": p.stderr}
     outp = os.path.join(workdir, "cleaned.csv")
     p = subprocess.run(base + ["--out-format", "csv", "-o", outp, "-r", rep], capture_output=True, text=True)
+    if mode == "package":
+        pkg = os.path.join(workdir, "package.html")
+        pargs = [PYEXE, os.path.join(HERE, "package.py"), "-i", outp, "--report", rep + ".json", "-o", pkg]
+        if title:
+            pargs += ["--title", title]
+        pp = subprocess.run(pargs, capture_output=True, text=True)
+        return {"mode": "package", "report_txt": read(rep + ".txt"), "cleaned_csv": read(outp),
+                "package_html": read(pkg), "filename": "cleaned.csv", "log": (p.stderr or "") + (pp.stderr or "")}
     return {"mode": "apply", "report_txt": read(rep + ".txt"), "report_json": read(rep + ".json"),
             "cleaned_csv": read(outp), "filename": "cleaned.csv", "log": p.stderr}
 
@@ -177,6 +200,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         mode = q.get("mode", ["dryrun"])[0]
         profile = q.get("profile", [""])[0]
         fname = q.get("filename", ["input.csv"])[0]
+        title = q.get("title", [""])[0]
         length = int(self.headers.get("Content-Length", "0") or "0")
         data = self.rfile.read(length) if length else b""
         ext = os.path.splitext(fname)[1] or ".csv"
@@ -185,7 +209,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         try:
             with open(inp, "wb") as f:
                 f.write(data)
-            self._send(200, json.dumps(run_deid(mode, inp, profile, workdir)))
+            self._send(200, json.dumps(run_deid(mode, inp, profile, workdir, title)))
         except Exception as e:
             self._send(200, json.dumps({"error": str(e)}))
         finally:

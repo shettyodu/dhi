@@ -27,6 +27,8 @@ import re
 import sys
 from datetime import datetime, timezone
 
+from evaluate import evaluate_dataset
+
 VERSION = "0.1.0"
 
 ACTION_LABEL = {
@@ -182,6 +184,17 @@ def render_html(meta, stats, att):
                    "A de-identified operational dataset prepared by Asset Data Group for licensing to AI, analytics, and research buyers. Coverage, structure, and field-level detail are summarized below.")
     use = ('<section><h2>Suggested use</h2><p class=lead>%s</p></section>' % esc(meta["use"])) if meta.get("use") else ""
 
+    ev = meta.get("evaluation")
+    eval_html = ""
+    if ev:
+        bars = "".join(
+            '<div class=fac><div class=fac-l>%s</div><div class=fac-bar><div class=fac-fill style="width:%d%%"></div></div><div class=fac-s>%d</div></div>'
+            % (esc(f["label"]), f["score"], f["score"]) for f in ev["factors"])
+        eval_html = ('<section><h2>Evaluation</h2><div class=evalhead>'
+                     '<div class=score><div class=score-n>%d<span>/100</span></div><div class=score-l>Overall · Tier %s</div></div>'
+                     '<div class=facs>%s</div></div><p class=fine>%s</p></section>'
+                     % (ev["overall"], esc(ev["tier"]), bars, esc(ev["disclaimer"])))
+
     return """<!doctype html><html lang=en><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>%(title)s — Asset Data Group data package</title>
@@ -206,6 +219,15 @@ def render_html(meta, stats, att):
   .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;margin:12px 0}
   .meta-grid .k{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em} .meta-grid .v{font-weight:600;font-size:13px;word-break:break-all}
   .chip{display:inline-block;background:#eef2ff;color:#4338ca;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin:2px 4px 2px 0}
+  .evalhead{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin-top:6px}
+  .score{background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:12px 18px;text-align:center;min-width:120px}
+  .score-n{font-size:30px;font-weight:800;color:var(--dc)} .score-n span{font-size:14px;color:#818cf8}
+  .score-l{font-size:12px;color:#4338ca;font-weight:700;margin-top:2px}
+  .facs{flex:1;min-width:280px}
+  .fac{display:flex;align-items:center;gap:10px;margin:5px 0}
+  .fac-l{width:150px;font-size:12px;color:#334155} .fac-s{width:26px;text-align:right;font-size:12px;font-weight:700;color:var(--ink)}
+  .fac-bar{flex:1;height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden} .fac-fill{height:100%%;background:var(--dc)}
+  .fine{color:#94a3b8;font-size:11px;margin-top:10px}
   footer{padding:18px 34px;border-top:1px solid var(--line);color:#94a3b8;font-size:11px;line-height:1.6}
   @media print{body{background:#fff}.sheet{border:0;margin:0;max-width:none}}
 </style></head><body>
@@ -224,6 +246,7 @@ def render_html(meta, stats, att):
       <p class=lead style="margin-top:12px">%(overview)s</p>
     </section>
     %(use)s
+    %(eval)s
     <section>
       <h2>Data dictionary</h2>
       <table class=tbl><thead><tr><th>Field</th><th>Type</th><th>Range / detail</th><th class=num>Fill</th><th class=num>Distinct</th><th>Example (de-identified)</th></tr></thead><tbody>%(dict)s</tbody></table>
@@ -240,7 +263,7 @@ def render_html(meta, stats, att):
 </div></body></html>""" % {
         "title": esc(meta["title"]), "owner": esc(meta.get("owner") or "Owner anonymized"),
         "records": "{:,}".format(stats["records"]), "ncols": stats["n_columns"], "hist": esc(hist),
-        "value": value_html, "overview": overview, "use": use,
+        "value": value_html, "overview": overview, "use": use, "eval": eval_html,
         "dict": dict_rows(), "sample": sample_table(), "att": att_html,
         "gen": meta["gen"],
     }
@@ -256,7 +279,11 @@ def main(argv=None):
     ap.add_argument("--owner", help="anonymized owner description, e.g. 'Regional distributor (anonymized)'")
     ap.add_argument("--overview", help="one-paragraph description")
     ap.add_argument("--use", help="suggested use / applications")
-    ap.add_argument("--value", help="indicative value string (illustrative), e.g. '$180k–$450k illustrative'")
+    ap.add_argument("--value", help="indicative value string; if omitted, the rubric's band is used")
+    ap.add_argument("--uniqueness", choices=["low", "medium", "high"], default="medium", help="rubric input")
+    ap.add_argument("--rights", choices=["unclear", "partial", "owns"], default="partial", help="rubric input")
+    ap.add_argument("--demand", choices=["low", "medium", "high"], default="medium", help="rubric input")
+    ap.add_argument("--no-evaluate", action="store_true", help="skip the evaluation rubric")
     ap.add_argument("--tsv", action="store_true", help="input is tab-separated")
     args = ap.parse_args(argv)
 
@@ -273,9 +300,12 @@ def main(argv=None):
 
     stats = analyze(headers, rows)
     att = attestation(report)
+    evaluation = None if args.no_evaluate else evaluate_dataset(
+        stats, report, {"uniqueness": args.uniqueness, "rights": args.rights, "demand": args.demand})
+    value = args.value or ((evaluation["valueBand"] + " (illustrative)") if evaluation else None)
     gen = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     meta = {"title": args.title, "owner": args.owner, "overview": args.overview, "use": args.use,
-            "value": args.value, "sample": rows, "gen": gen}
+            "value": value, "sample": rows, "gen": gen, "evaluation": evaluation}
 
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(render_html(meta, stats, att))
@@ -283,10 +313,11 @@ def main(argv=None):
     if args.manifest:
         manifest = {
             "generator": "adg-package/%s" % VERSION, "generatedAt": gen,
-            "title": args.title, "owner": args.owner, "value": args.value,
+            "title": args.title, "owner": args.owner, "value": value,
             "records": stats["records"], "fields": stats["n_columns"],
             "history": stats["temporal"],
             "schema": [{"name": c["name"], "type": c["type"], "fillPct": c["fill"], "distinct": c["distinct"]} for c in stats["columns"]],
+            "evaluation": evaluation,
             "deidentification": att,
         }
         with open(args.manifest, "w", encoding="utf-8") as f:

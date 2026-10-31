@@ -63,6 +63,21 @@ printed, or hosted as-is. The manifest (`package.json`) is the structured form f
 marketplace listing. The attestation is built from the de-id audit report, so the
 provenance ties back to the exact cleaning run.
 
+### Evaluation rubric
+
+The package includes an **evaluation**: a consistent 0–100 score across eight factors
+(volume, history, breadth, completeness, uniqueness, rights, compliance readiness,
+demand), an A/B/C tier, and an illustrative value band grounded in the real market.
+Measured factors come from the data; judgment factors are inputs. Run it on its own
+with `evaluate.py`, or let `package.py` include it automatically:
+
+```bash
+python3 evaluate.py -i cleaned.csv --report report.json --uniqueness high --rights owns --demand medium
+# package.py accepts the same --uniqueness / --rights / --demand and uses the band for value
+```
+
+It is a prioritization heuristic, not a quote or a guarantee.
+
 ## Run it as a local app (web UI)
 
 For people who'd rather drag a file in than use the command line:
