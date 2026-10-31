@@ -6,6 +6,7 @@
 
 const { getStore } = require("@netlify/blobs");
 
+// Pipeline stages, in order.
 const STAGES = ["new", "assessing", "packaging", "marketing", "negotiating", "won", "lost"];
 
 function store(name) {
