@@ -25,6 +25,7 @@
 # Asset Data Group — de-identification tool (standalone Python CLI product).
 !/deid-tool/
 /deid-tool/__pycache__/
+/deid-tool/.venv/
 **/__pycache__/
 
 # root build deps (Tailwind precompile) — never commit node_modules

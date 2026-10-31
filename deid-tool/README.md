@@ -28,6 +28,50 @@ python3 deid.py -i sample/sample_input.csv --config plan.json -o cleaned.csv -r 
 python3 deid.py -i sample/sample_input.csv --profile hipaa-safe-harbor -o cleaned.csv -r report
 ```
 
+## Input & output formats
+
+CSV, TSV, JSON, JSON-Lines, and **SQLite** work with the standard library (no install).
+**Parquet** (pyarrow) and **Excel/.xlsx** (openpyxl) work if those packages are present.
+Format is inferred from the file extension, or forced with `--format` / `--out-format`.
+
+```bash
+python3 deid.py -i data.jsonl -o clean.jsonl -r report          # JSON Lines
+python3 deid.py -i export.parquet -o clean.parquet -r report    # Parquet (needs pyarrow)
+python3 deid.py -i app.db --table work_orders -o clean.csv -r report      # SQLite table
+python3 deid.py -i app.db --query "SELECT * FROM wo WHERE year=2024" -o clean.csv
+```
+
+Reading straight from a database export (CSV/Parquet) is the recommended path for a
+one-time historical pull — simpler than an API integration.
+
+## Run it as a local app (web UI)
+
+For people who'd rather drag a file in than use the command line:
+
+```bash
+python3 serve.py        # then open http://127.0.0.1:8000
+```
+
+It binds to `127.0.0.1` (this machine only) and runs the same `deid.py` locally — the
+file you choose is **not uploaded anywhere**. Choose *Detect rules*, *Dry run*, or
+*De-identify*, optionally tick *HIPAA Safe Harbor*, and download the cleaned file plus
+the audit report.
+
+## Run it in a container (Docker)
+
+The container is the batteries-included, portable form — spaCy name detection and the
+Parquet/Excel formats are baked in. Hand it to a client to run behind their firewall.
+
+```bash
+docker build -t adg-deid .
+docker run --rm -v "$PWD/data:/data" adg-deid -i /data/input.csv --detect
+docker run --rm -v "$PWD/data:/data" adg-deid \
+    -i /data/input.csv --profile hipaa-safe-harbor -o /data/cleaned.csv -r /data/report
+# or the web UI from the container:
+docker run --rm -p 8000:8000 -v "$PWD/data:/data" \
+    --entrypoint python adg-deid serve.py --host 0.0.0.0
+```
+
 ## Actions
 
 | Action | What it does |

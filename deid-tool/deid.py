@@ -335,10 +335,156 @@ def human_report(meta, plan, counters, text_counters):
     return "\n".join(lines)
 
 
+# --------------------------------------------------------------------------- #
+# Input / output formats. CSV/TSV/JSON/JSONL and SQLite are standard library;
+# Parquet (pyarrow) and Excel (openpyxl) are optional extras.
+# --------------------------------------------------------------------------- #
+FORMATS = {"csv": "csv", "txt": "csv", "tsv": "tsv", "tab": "tsv", "json": "json",
+           "jsonl": "jsonl", "ndjson": "jsonl", "parquet": "parquet", "pq": "parquet",
+           "xlsx": "xlsx", "db": "sqlite", "sqlite": "sqlite", "sqlite3": "sqlite"}
+
+
+def infer_format(path, default="csv"):
+    ext = path.rsplit(".", 1)[-1].lower() if path and "." in path else ""
+    return FORMATS.get(ext, default)
+
+
+def _s(v):
+    return "" if v is None else str(v)
+
+
+def _fields_from(gen):
+    fields, seen = [], set()
+    for i, r in enumerate(gen):
+        for k in r:
+            if k not in seen:
+                seen.add(k)
+                fields.append(k)
+        if i >= SAMPLE_ROWS:
+            break
+    return fields
+
+
+def read_source(args):
+    """Return (fmt, fieldnames, make_iter). make_iter() yields a FRESH generator of dict rows."""
+    fmt = args.format or infer_format(args.input)
+    inp = args.input
+    if fmt in ("csv", "tsv"):
+        delim = "\t" if fmt == "tsv" else ","
+        with open(inp, newline="", encoding="utf-8-sig") as f:
+            fields = csv.DictReader(f, delimiter=delim).fieldnames or []
+
+        def it():
+            with open(inp, newline="", encoding="utf-8-sig") as f:
+                for r in csv.DictReader(f, delimiter=delim):
+                    yield {k: _s(v) for k, v in r.items()}
+        return fmt, fields, it
+    if fmt == "jsonl":
+        def it():
+            with open(inp, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        yield {k: _s(v) for k, v in json.loads(line).items()}
+        return fmt, _fields_from(it()), it
+    if fmt == "json":
+        data = json.load(open(inp, encoding="utf-8"))
+        if isinstance(data, dict):
+            data = next((data[k] for k in ("records", "data", "rows") if isinstance(data.get(k), list)), [data])
+        norm = [{k: _s(v) for k, v in r.items()} for r in data]
+        return fmt, _fields_from(iter(norm)), (lambda: iter(norm))
+    if fmt == "sqlite":
+        import sqlite3
+        query = args.query or ('SELECT * FROM "%s"' % args.table if args.table else None)
+        if not query:
+            raise SystemExit("sqlite input needs --table NAME or --query SQL")
+        con = sqlite3.connect(inp)
+        fields = [d[0] for d in con.execute(query).description]
+        con.close()
+
+        def it():
+            con = sqlite3.connect(inp)
+            con.row_factory = sqlite3.Row
+            for row in con.execute(query):
+                yield {k: _s(row[k]) for k in row.keys()}
+            con.close()
+        return fmt, fields, it
+    if fmt == "parquet":
+        try:
+            import pyarrow.parquet as pq
+        except Exception:
+            raise SystemExit("Parquet input needs pyarrow (pip install pyarrow)")
+        norm = [{k: _s(v) for k, v in r.items()} for r in pq.read_table(inp).to_pylist()]
+        return fmt, (list(norm[0].keys()) if norm else []), (lambda: iter(norm))
+    if fmt == "xlsx":
+        try:
+            import openpyxl
+        except Exception:
+            raise SystemExit("Excel input needs openpyxl (pip install openpyxl)")
+        ws = openpyxl.load_workbook(inp, read_only=True, data_only=True).active
+        allrows = list(ws.iter_rows(values_only=True))
+        header = [_s(c) for c in allrows[0]] if allrows else []
+        norm = [dict(zip(header, [_s(c) for c in r])) for r in allrows[1:]]
+        return fmt, header, (lambda: iter(norm))
+    raise SystemExit("unsupported input format: %s" % fmt)
+
+
+class _Sink:
+    def __init__(self, writerow, close):
+        self._w, self._c = writerow, close
+
+    def writerow(self, r):
+        self._w(r)
+
+    def close(self):
+        self._c()
+
+
+def open_sink(path, fmt, fieldnames):
+    if fmt in ("csv", "tsv"):
+        f = open(path, "w", newline="", encoding="utf-8")
+        w = csv.DictWriter(f, fieldnames=fieldnames, delimiter="\t" if fmt == "tsv" else ",")
+        w.writeheader()
+        return _Sink(w.writerow, f.close)
+    if fmt == "jsonl":
+        f = open(path, "w", encoding="utf-8")
+        return _Sink(lambda r: f.write(json.dumps(r) + "\n"), f.close)
+    if fmt == "json":
+        f = open(path, "w", encoding="utf-8")
+        buf = []
+
+        def close():
+            json.dump(buf, f, indent=1)
+            f.close()
+        return _Sink(buf.append, close)
+    if fmt == "parquet":
+        try:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+        except Exception:
+            raise SystemExit("Parquet output needs pyarrow (pip install pyarrow)")
+        buf = []
+        return _Sink(buf.append, lambda: pq.write_table(pa.Table.from_pylist(buf or [{c: None for c in fieldnames}]), path))
+    if fmt == "xlsx":
+        try:
+            import openpyxl
+        except Exception:
+            raise SystemExit("Excel output needs openpyxl (pip install openpyxl)")
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.append(fieldnames)
+        return _Sink(lambda r: ws.append([r.get(c, "") for c in fieldnames]), lambda: wb.save(path))
+    raise SystemExit("unsupported output format: %s" % fmt)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Asset Data Group de-identification tool")
-    ap.add_argument("--input", "-i", required=True, help="input CSV path")
-    ap.add_argument("--output", "-o", help="cleaned CSV output path")
+    ap.add_argument("--input", "-i", required=True, help="input path (CSV/TSV/JSON/JSONL/Parquet/XLSX/SQLite)")
+    ap.add_argument("--output", "-o", help="cleaned output path (format from extension, or --out-format)")
+    ap.add_argument("--format", help="force input format: csv/tsv/json/jsonl/parquet/xlsx/sqlite")
+    ap.add_argument("--out-format", dest="out_format", help="force output format (default: match input)")
+    ap.add_argument("--table", help="sqlite input: table to read")
+    ap.add_argument("--query", help="sqlite input: SQL query (overrides --table)")
     ap.add_argument("--config", "-c", help="JSON config (column plan) to use instead of auto-detect")
     ap.add_argument("--report", "-r", help="audit report path (writes .json and .txt)")
     ap.add_argument("--profile", choices=["hipaa-safe-harbor"], help="apply a stricter rule profile")
@@ -351,18 +497,15 @@ def main(argv=None):
     if not os.path.isfile(args.input):
         ap.error("input file not found: %s" % args.input)
 
-    # Read headers + a detection sample.
-    with open(args.input, newline="", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        headers = reader.fieldnames or []
-        sample = []
-        for i, row in enumerate(reader):
-            if i >= SAMPLE_ROWS:
-                break
-            sample.append(row)
-
+    # Read headers + a detection sample from the source (any supported format).
+    src_fmt, headers, make_iter = read_source(args)
     if not headers:
-        ap.error("no columns found in input CSV")
+        ap.error("no columns found in input")
+    sample = []
+    for i, row in enumerate(make_iter()):
+        if i >= SAMPLE_ROWS:
+            break
+        sample.append(row)
 
     # Build the column plan (config overrides auto-detect).
     if args.config:
@@ -384,33 +527,33 @@ def main(argv=None):
     text_counters = Counter()
     rows = 0
 
-    writer = None
-    out_f = None
+    sink = None
     if not args.dry_run:
         if not args.output:
             ap.error("--output is required unless --dry-run or --detect is used")
-        out_f = open(args.output, "w", newline="", encoding="utf-8")
-        writer = csv.DictWriter(out_f, fieldnames=[h for h in headers if plan[h]["action"] != "drop"])
-        writer.writeheader()
+        out_fmt = args.out_format or infer_format(args.output, default=src_fmt)
+        if out_fmt == "sqlite":
+            out_fmt = "csv"  # writing back into a DB is out of scope; emit CSV
+        out_fields = [h for h in headers if plan[h]["action"] != "drop"]
+        sink = open_sink(args.output, out_fmt, out_fields)
 
-    with open(args.input, newline="", encoding="utf-8-sig") as f:
-        for row in csv.DictReader(f):
-            rows += 1
-            known = build_known(row, plan)
-            clean = {}
-            for h in headers:
-                spec = plan[h]
-                if spec["action"] == "drop":
-                    continue
-                if spec["action"] == "scrub_text":
-                    clean[h] = scrub_text(row.get(h, ""), salt, text_counters, nlp, known)
-                else:
-                    clean[h] = transform_value(row.get(h, ""), spec, salt, counters, text_counters, nlp)
-            if writer:
-                writer.writerow(clean)
+    for row in make_iter():
+        rows += 1
+        known = build_known(row, plan)
+        clean = {}
+        for h in headers:
+            spec = plan[h]
+            if spec["action"] == "drop":
+                continue
+            if spec["action"] == "scrub_text":
+                clean[h] = scrub_text(row.get(h, ""), salt, text_counters, nlp, known)
+            else:
+                clean[h] = transform_value(row.get(h, ""), spec, salt, counters, text_counters, nlp)
+        if sink:
+            sink.writerow(clean)
 
-    if out_f:
-        out_f.close()
+    if sink:
+        sink.close()
 
     meta = {
         "tool_version": VERSION,
