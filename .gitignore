@@ -24,6 +24,8 @@
 /adg-site/node_modules/
 # Asset Data Group — de-identification tool (standalone Python CLI product).
 !/deid-tool/
+/deid-tool/__pycache__/
+**/__pycache__/
 
 # root build deps (Tailwind precompile) — never commit node_modules
 /node_modules/
