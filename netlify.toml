@@ -69,3 +69,11 @@
   to = "/aicore.html"
   status = 301
   force = true
+
+# Asset Data Group spun off to its own standalone site (assetdatagrp.com). The old
+# DHI-hosted ADG page is removed; send any inbound links / bookmarks to the new site.
+[[redirects]]
+  from = "/data-exchange.html"
+  to = "https://assetdatagrp.com/"
+  status = 301
+  force = true

@@ -41,14 +41,6 @@ const VERTICALS = [
     icon: "shield",
   },
   {
-    slug: "data-exchange.html",
-    title: "Asset Data Group",
-    menu: "Asset Data Group — Data Commercialization",
-    summary:
-      "A data asset commercialization firm — evaluate, prepare, de-identify, package, and commercialize your operational data for qualified buyers. Complimentary AI-powered assessment.",
-    icon: "chart",
-  },
-  {
     slug: "supplies.html",
     title: "Supplies, Textiles & Linens",
     menu: "Supplies, Textiles & Linens",
@@ -117,7 +109,7 @@ const VERTICAL_CATEGORIES = [
   { id: "gov", label: "Government & Procurement", blurb: "SAM.gov-ready contracting and public-sector modernization.", icon: "building" },
 ];
 const VERTICAL_CAT_BY_SLUG = {
-  "aicore.html": "tech", "cybersecurity.html": "tech", "data-exchange.html": "tech",
+  "aicore.html": "tech", "cybersecurity.html": "tech",
   "supplies.html": "medical", "supply-spend-check.html": "medical", "insurance.html": "medical", "wellness.html": "medical",
   "lighting.html": "energy", "automotive.html": "energy",
   "government.html": "gov",
