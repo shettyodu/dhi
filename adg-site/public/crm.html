@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Asset Data Group — Deal pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}.font-display{font-family:Montserrat,Inter,sans-serif}
+    :root{--dc:#4f46e5;--dc-d:#3730a3}
+    .in{border-radius:.5rem;border:1px solid #cbd5e1;padding:.4rem .55rem;font-size:.85rem;width:100%}
+    .in:focus{outline:none;border-color:var(--dc);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+    th,td{padding:.5rem .6rem;text-align:left;vertical-align:top;font-size:.82rem;border-bottom:1px solid #e2e8f0}
+    th{font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#64748b;background:#f8fafc;position:sticky;top:0;z-index:1}
+    .st{border-radius:999px;padding:.1rem .5rem;font-size:.68rem;font-weight:700;border:0}
+    .st-new{background:#f1f5f9;color:#475569}.st-assessing{background:#eef2ff;color:#4338ca}.st-packaging{background:#eff6ff;color:#1d4ed8}
+    .st-marketing{background:#fffbeb;color:#b45309}.st-negotiating{background:#fef3c7;color:#92400e}.st-won{background:#ecfdf5;color:#047857}.st-lost{background:#fef2f2;color:#b91c1c}
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:.7rem .9rem}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+  <!-- LOCK SCREEN -->
+  <div id="lock" class="fixed inset-0 z-50 grid place-items-center bg-slate-50 px-4">
+    <div class="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+      <div class="flex items-center gap-2.5">
+        <span class="flex h-9 w-9 items-center justify-center rounded-lg font-display text-sm font-extrabold text-white" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">A</span>
+        <span class="font-display text-lg font-bold text-brand-900">Asset Data Group</span>
+      </div>
+      <h1 class="mt-4 font-display text-lg font-bold text-brand-900">Deal pipeline</h1>
+      <p class="mt-1 text-sm text-slate-500">Internal. Enter the passcode to continue.</p>
+      <form id="lock-form" class="mt-4 space-y-3">
+        <input id="pass" type="password" class="in" placeholder="Passcode" autocomplete="off" />
+        <button class="w-full rounded-lg px-5 py-2.5 text-sm font-bold text-white" style="background:var(--dc)">Unlock</button>
+        <p id="lock-msg" class="hidden text-sm text-red-600"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div class="flex items-center gap-2.5">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg font-display text-sm font-extrabold text-white" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">A</span>
+          <div><div class="font-display text-base font-bold text-brand-900">Deal pipeline</div><div class="text-xs text-slate-400">Asset Data Group · internal</div></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="add" class="rounded-md px-4 py-2 text-sm font-semibold text-white" style="background:var(--dc)">+ Add deal</button>
+          <button id="refresh" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-brand-800 hover:bg-slate-50">Refresh</button>
+          <button id="lockbtn" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-50">Lock</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+      <div id="summary" class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8"></div>
+
+      <div class="mt-5 flex flex-wrap items-center gap-2">
+        <input id="search" class="in max-w-xs" placeholder="Search company, contact, email…" />
+        <select id="filter" class="in max-w-[11rem]"><option value="">All stages</option></select>
+        <span id="count" class="ml-auto text-sm text-slate-500"></span>
+      </div>
+
+      <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <table class="w-full min-w-[1000px]">
+          <thead><tr>
+            <th>Company</th><th>Contact</th><th>Source</th><th>Stage</th><th>Owner</th><th>Est. value</th><th>Updated</th><th></th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p id="empty" class="hidden py-10 text-center text-sm text-slate-400">No deals yet. Leads from the site appear here automatically; use <b>+ Add deal</b> for ones you source directly.</p>
+    </main>
+  </div>
+
+  <!-- ADD DEAL MODAL -->
+  <div id="modal" class="hidden fixed inset-0 z-40 grid place-items-center bg-black/30 px-4">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+      <h3 class="font-display text-lg font-bold text-brand-900">Add a deal</h3>
+      <div class="mt-4 grid gap-3">
+        <div><span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Company</span><input id="m-company" class="in" /></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Contact</span><input id="m-name" class="in" /></div>
+          <div><span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Email</span><input id="m-email" class="in" /></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Source</span><input id="m-source" class="in" placeholder="e.g. Karthik — pharma" /></div>
+          <div><span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Est. value</span><input id="m-value" class="in" placeholder="$250k" /></div>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end gap-2">
+        <button id="m-cancel" class="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600">Cancel</button>
+        <button id="m-save" class="rounded-md px-4 py-2 text-sm font-semibold text-white" style="background:var(--dc)">Add deal</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    "use strict";
+    var STAGES=["new","assessing","packaging","marketing","negotiating","won","lost"];
+    var LABEL={new:"New",assessing:"Assessing",packaging:"Packaging",marketing:"Marketing",negotiating:"Negotiating",won:"Won",lost:"Lost"};
+    var PASS=localStorage.getItem("adg_crm_pass")||"";
+    var DEALS=[];
+    var $=function(id){return document.getElementById(id);};
+    function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+    function hdrs(){return{"Content-Type":"application/json","x-adg-pass":PASS};}
+    function parseVal(v){v=String(v||"").toLowerCase().replace(/[, $]/g,"");var m=v.match(/^([0-9.]+)([km]?)/);if(!m)return 0;var n=parseFloat(m[1])||0;return m[2]==="k"?n*1e3:m[2]==="m"?n*1e6:n;}
+    function money(n){if(!n)return "$0";if(n>=1e6)return "$"+(n/1e6).toFixed(n%1e6?1:0)+"M";if(n>=1e3)return "$"+Math.round(n/1e3)+"k";return "$"+n;}
+    function when(s){if(!s)return "";try{return new Date(s).toLocaleDateString();}catch(e){return "";}}
+
+    function unlock(pass){
+      PASS=pass;
+      return fetch("/.netlify/functions/crm-list",{headers:hdrs()}).then(function(r){
+        if(r.status===401){throw {msg:"Wrong passcode."};}
+        if(r.status===503){throw {msg:"CRM is locked — ask an admin to set ADG_ADMIN_SECRET on the site."};}
+        if(!r.ok){throw {msg:"Could not load ("+r.status+")."};}
+        return r.json();
+      }).then(function(d){
+        localStorage.setItem("adg_crm_pass",PASS);
+        DEALS=d.deals||[]; $("lock").classList.add("hidden"); $("app").classList.remove("hidden"); render();
+      });
+    }
+
+    $("lock-form").addEventListener("submit",function(e){
+      e.preventDefault(); var msg=$("lock-msg"); msg.classList.add("hidden");
+      unlock($("pass").value.trim()).catch(function(err){ msg.textContent=err.msg||"Error."; msg.classList.remove("hidden"); });
+    });
+    $("lockbtn").addEventListener("click",function(){ localStorage.removeItem("adg_crm_pass"); location.reload(); });
+    $("refresh").addEventListener("click",function(){ unlock(PASS).catch(function(){}); });
+
+    // build the stage filter
+    STAGES.forEach(function(s){ var o=document.createElement("option"); o.value=s; o.textContent=LABEL[s]; $("filter").appendChild(o); });
+    $("search").addEventListener("input",render); $("filter").addEventListener("change",render);
+
+    function filtered(){
+      var q=($("search").value||"").toLowerCase(), st=$("filter").value;
+      return DEALS.filter(function(d){
+        if(st && d.stage!==st) return false;
+        if(!q) return true;
+        return ((d.company||"")+" "+(d.name||"")+" "+(d.email||"")+" "+(d.source||"")).toLowerCase().indexOf(q)>=0;
+      });
+    }
+
+    function render(){
+      var list=filtered();
+      // summary across ALL deals (not just filtered)
+      var sum=$("summary"); sum.innerHTML="";
+      STAGES.forEach(function(s){
+        var inStage=DEALS.filter(function(d){return d.stage===s;});
+        var val=inStage.reduce(function(a,d){return a+parseVal(d.value);},0);
+        var c=document.createElement("div"); c.className="card";
+        c.innerHTML='<div class="text-xs font-semibold uppercase tracking-wide text-slate-400">'+LABEL[s]+'</div>'+
+          '<div class="mt-0.5 text-lg font-bold text-brand-900">'+inStage.length+'</div>'+
+          '<div class="text-xs text-slate-500">'+money(val)+'</div>';
+        sum.appendChild(c);
+      });
+      $("count").textContent=list.length+" of "+DEALS.length+" deals";
+      $("empty").classList.toggle("hidden", DEALS.length>0);
+      var rows=$("rows"); rows.innerHTML="";
+      list.forEach(function(d){ var tr=rowEl(d); rows.appendChild(tr); rows.appendChild(tr._notes); });
+    }
+
+    function rowEl(d){
+      var tr=document.createElement("tr"); tr.className="hover:bg-slate-50";
+      var contact=esc(d.name||"")+(d.email?'<div class="text-xs text-slate-400">'+esc(d.email)+'</div>':"");
+      var sel='<select class="st st-'+d.stage+'" data-k="stage">'+STAGES.map(function(s){return '<option value="'+s+'"'+(s===d.stage?" selected":"")+'>'+LABEL[s]+'</option>';}).join("")+'</select>';
+      tr.innerHTML=
+        '<td class="font-semibold text-brand-900">'+esc(d.company||"—")+(d.manual?' <span class="text-xs font-normal text-slate-400">(direct)</span>':"")+'</td>'+
+        '<td>'+contact+'</td>'+
+        '<td class="text-slate-500">'+esc(d.source||"")+'</td>'+
+        '<td>'+sel+'</td>'+
+        '<td><input class="in" style="width:7rem" data-k="owner" value="'+esc(d.owner||"")+'" placeholder="—"></td>'+
+        '<td><input class="in" style="width:6rem" data-k="value" value="'+esc(d.value||"")+'" placeholder="$"></td>'+
+        '<td class="text-xs text-slate-400">'+esc(when(d.updatedAt||d.submittedAt))+'</td>'+
+        '<td class="whitespace-nowrap"><button class="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-semibold text-brand-800 hover:bg-slate-50" data-a="notes">Notes</button> <button class="rounded-md px-2.5 py-1 text-xs font-semibold text-white" style="background:var(--dc)" data-a="save">Save</button></td>';
+      // notes row (hidden)
+      var ntr=document.createElement("tr"); ntr.className="hidden";
+      ntr.innerHTML='<td colspan="8"><div class="rounded-lg bg-slate-50 p-3">'+
+        (Object.keys(d.details||{}).length?'<div class="mb-2 text-xs text-slate-500"><b>Lead detail:</b> '+esc(JSON.stringify(d.details).slice(0,600))+'</div>':'')+
+        '<textarea class="in" rows="3" data-k="crmNotes" placeholder="Deal notes…">'+esc(d.crmNotes||"")+'</textarea></div></td>';
+      function collect(){
+        var o={id:d.id, manual:d.manual||false};
+        [tr,ntr].forEach(function(scope){ scope.querySelectorAll("[data-k]").forEach(function(el){ o[el.getAttribute("data-k")]=el.value; }); });
+        if(d.manual){ o.company=d.company; o.name=d.name; o.email=d.email; o.source=d.source; }
+        return o;
+      }
+      tr.querySelector('[data-k="stage"]').addEventListener("change",function(){ this.className="st st-"+this.value; save(collect(),tr); });
+      tr.querySelector('[data-a="save"]').addEventListener("click",function(){ save(collect(),this); });
+      tr.querySelector('[data-a="notes"]').addEventListener("click",function(){ ntr.classList.toggle("hidden"); });
+      tr._notes=ntr; return tr;
+    }
+
+    function save(payload,btn){
+      var old=btn.textContent; if(btn.tagName==="BUTTON"){btn.disabled=true;btn.textContent="…";}
+      fetch("/.netlify/functions/crm-save",{method:"POST",headers:hdrs(),body:JSON.stringify(payload)})
+        .then(function(r){return r.json();}).then(function(res){
+          var d=DEALS.find(function(x){return x.id===(payload.id);});
+          if(d){ d.stage=payload.stage; d.owner=payload.owner; d.value=payload.value; d.crmNotes=payload.crmNotes; d.updatedAt=new Date().toISOString(); }
+          render();
+        }).catch(function(){ if(btn.tagName==="BUTTON"){btn.disabled=false;btn.textContent=old;} });
+    }
+
+    // Add deal modal
+    $("add").addEventListener("click",function(){ $("modal").classList.remove("hidden"); });
+    $("m-cancel").addEventListener("click",function(){ $("modal").classList.add("hidden"); });
+    $("m-save").addEventListener("click",function(){
+      var p={manual:true, stage:"new",
+        company:$("m-company").value.trim(), name:$("m-name").value.trim(),
+        email:$("m-email").value.trim(), source:$("m-source").value.trim()||"Direct", value:$("m-value").value.trim()};
+      if(!p.company){ $("m-company").focus(); return; }
+      fetch("/.netlify/functions/crm-save",{method:"POST",headers:hdrs(),body:JSON.stringify(p)})
+        .then(function(r){return r.json();}).then(function(){ $("modal").classList.add("hidden");
+          ["m-company","m-name","m-email","m-source","m-value"].forEach(function(id){$(id).value="";});
+          unlock(PASS); });
+    });
+
+    // auto-unlock if we already have a stored passcode
+    if(PASS){ unlock(PASS).catch(function(){ /* show lock screen */ }); }
+  })();
+  </script>
+</body>
+</html>
