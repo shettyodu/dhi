@@ -17,8 +17,8 @@ function store(name) {
 // Passcode gate. Locked (503) until ADG_ADMIN_SECRET is set on the site; 401 on a
 // wrong passcode. The page sends the passcode in the x-adg-pass header.
 function authed(event) {
-  const secret = process.env.ADG_ADMIN_SECRET || "";
-  if (!secret) return { ok: false, status: 503, error: "CRM is locked — set ADG_ADMIN_SECRET on the ADG site to enable it." };
+  const secret = process.env.ADG_PASSCODE || process.env.ADG_ADMIN_SECRET || "";
+  if (!secret) return { ok: false, status: 503, error: "CRM is locked — set ADG_PASSCODE on the ADG site to enable it." };
   const given = (event.headers && (event.headers["x-adg-pass"] || event.headers["X-Adg-Pass"])) || "";
   if (given !== secret) return { ok: false, status: 401, error: "Wrong passcode." };
   return { ok: true };
