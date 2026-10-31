@@ -22,6 +22,8 @@
 !/adg-site/
 # ...but never its installed deps (Netlify runs npm install on build).
 /adg-site/node_modules/
+# Asset Data Group — de-identification tool (standalone Python CLI product).
+!/deid-tool/
 
 # root build deps (Tailwind precompile) — never commit node_modules
 /node_modules/

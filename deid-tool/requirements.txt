@@ -1,0 +1,14 @@
+# Asset Data Group — de-identification tool
+#
+# CORE: no dependencies. deid.py runs on the Python 3 standard library only, so it
+# works behind an air-gapped firewall with nothing to install.
+#
+# OPTIONAL — enables detection of people's NAMES / locations / orgs inside free text
+# (strongly recommended for production and for any health data):
+#
+#   pip install "spacy>=3.5"
+#   python -m spacy download en_core_web_sm
+#
+# Without spaCy, free-text scrubbing still removes emails, phones, SSNs, credit
+# cards, IPs, and URLs via the standard library — but not names. The audit report
+# states which mode ran.

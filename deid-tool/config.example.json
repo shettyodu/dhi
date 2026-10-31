@@ -1,0 +1,18 @@
+{
+  "_comment": "Column plan for the ADG de-identification tool. Generate a starting point with `python deid.py -i yourfile.csv --detect > myplan.json`, edit, then run with `--config myplan.json`. Actions: keep | drop | redact | mask | hash | generalize_date | generalize_zip | scrub_text.",
+  "columns": {
+    "record_id":       { "type": "other",    "action": "keep" },
+    "customer_name":   { "type": "name",      "action": "hash" },
+    "email":           { "type": "email",     "action": "mask" },
+    "phone":           { "type": "phone",     "action": "mask" },
+    "street_address":  { "type": "address",   "action": "redact" },
+    "city":            { "type": "city",      "action": "redact" },
+    "zip":             { "type": "zip",       "action": "generalize_zip" },
+    "service_date":    { "type": "date",      "action": "generalize_date" },
+    "dob":             { "type": "dob",       "action": "generalize_date" },
+    "account_no":      { "type": "account",   "action": "hash" },
+    "product":         { "type": "other",     "action": "keep" },
+    "amount":          { "type": "other",     "action": "keep" },
+    "work_order_notes":{ "type": "freetext",  "action": "scrub_text" }
+  }
+}
