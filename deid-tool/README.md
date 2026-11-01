@@ -156,6 +156,16 @@ and sign-off by a qualified statistical/privacy expert. Safe Harbor also require
 covered entity to have no actual knowledge that the remaining data could re-identify
 an individual.
 
+## Tests
+
+Standard-library test suite (no dependencies), including a de-identification pipeline
+check that asserts no raw PII (emails, SSNs, phones, names, cards) survives in the
+cleaned output:
+
+```bash
+python3 -m unittest test_adg -v
+```
+
 ## Notes
 
 - Input is read as UTF-8 (BOM-tolerant). Output is UTF-8 CSV.

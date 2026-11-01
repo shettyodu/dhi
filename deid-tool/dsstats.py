@@ -69,3 +69,47 @@ def history_label(temporal):
     lo = min(t[1] for t in act)
     hi = max(t[2] for t in act)
     return str(lo) if lo == hi else "%d – %d" % (lo, hi)
+
+
+def scan(path, delim=",", sample_n=8, distinct_cap=20000, type_sample=1000):
+    """Single-pass, bounded-memory statistics for a CSV of any size. Returns
+    (stats, sample_rows). Memory is capped: per-column distinct tracking stops at
+    distinct_cap, type inference uses the first type_sample non-empty values, and only
+    the first sample_n full rows are retained."""
+    per, headers, sample_rows, n = {}, None, [], 0
+    with open(path, newline="", encoding="utf-8-sig") as f:
+        r = csv.DictReader(f, delimiter=delim)
+        headers = r.fieldnames or []
+        for h in headers:
+            per[h] = {"nonempty": 0, "distinct": set(), "capped": False, "samples": []}
+        for row in r:
+            n += 1
+            if len(sample_rows) < sample_n:
+                sample_rows.append({k: (v if v is not None else "") for k, v in row.items()})
+            for h in headers:
+                v = row.get(h, "") or ""
+                if v == "":
+                    continue
+                p = per[h]
+                p["nonempty"] += 1
+                if not p["capped"]:
+                    p["distinct"].add(v)
+                    if len(p["distinct"]) >= distinct_cap:
+                        p["capped"] = True
+                if len(p["samples"]) < type_sample:
+                    p["samples"].append(v)
+    cols, temporal = [], []
+    for h in headers:
+        p = per[h]
+        typ, extra = infer_type(p["samples"])
+        cols.append({
+            "name": h, "type": typ, "range": extra,
+            "fill": round(100 * p["nonempty"] / n) if n else 0,
+            "distinct": len(p["distinct"]), "distinct_capped": p["capped"],
+            "example": (p["samples"][0] if p["samples"] else ""),
+        })
+        if typ in ("year", "date"):
+            years = [int(m.group(0)) for v in p["samples"] for m in [re.search(r"(19|20)\d{2}", v)] if m]
+            if years:
+                temporal.append([h, min(years), max(years)])
+    return {"records": n, "n_columns": len(headers), "columns": cols, "temporal": temporal}, sample_rows

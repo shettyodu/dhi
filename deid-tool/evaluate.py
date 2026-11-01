@@ -110,8 +110,7 @@ def main(argv=None):
 
     if not os.path.isfile(args.input):
         ap.error("input not found: %s" % args.input)
-    headers, rows = dsstats.read_csv(args.input, "\t" if args.tsv else ",")
-    stats = dsstats.analyze(headers, rows)
+    stats, _ = dsstats.scan(args.input, "\t" if args.tsv else ",")
     report = None
     if args.report and os.path.isfile(args.report):
         with open(args.report, encoding="utf-8") as f:
