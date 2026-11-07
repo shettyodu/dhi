@@ -89,6 +89,35 @@
         <a href="#how" class="rounded-full border border-slate-300 px-7 py-3.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">See how it works</a>
       </div>
       <p class="mt-6 text-sm text-slate-400">No upfront cost · No upload to get an estimate · You approve every transaction</p>
+      <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-500">Best for organizations with years of operational records — distribution, engineering, manufacturing, logistics, construction, and services.</p>
+    </div>
+  </section>
+
+  <!-- DOMAIN ESTIMATOR -->
+  <section class="border-t border-slate-200 bg-white py-12">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">What might your data be worth?</h2>
+      <p class="mt-2 text-slate-600">Enter your company website for an instant, rough read on whether your data is a fit and what it could be worth — one field, no email. For a more detailed read, the free assessment further down asks a few quick questions.</p>
+      <form id="dom-form" class="mt-5 flex flex-col gap-2 sm:flex-row">
+        <input id="dom-input" class="in flex-1" placeholder="yourcompany.com" />
+        <button type="submit" class="whitespace-nowrap rounded-lg px-6 py-2.5 text-sm font-bold text-white" style="background:var(--dc)">Estimate</button>
+      </form>
+      <p id="dom-note" class="mt-3 hidden rounded-lg px-4 py-3 text-sm"></p>
+      <div id="dom-result" class="mt-5 hidden">
+        <div class="rounded-2xl border p-5 shadow-sm" style="border-color:#cdd6e6;background:#fff">
+          <div class="flex items-center gap-3">
+            <span id="dom-badge" class="rounded-full px-3 py-1 text-xs font-bold">—</span>
+            <h3 id="dom-domain" class="font-display text-base font-bold text-brand-900"></h3>
+          </div>
+          <p id="dom-business" class="mt-2 text-sm text-slate-600"></p>
+          <p id="dom-summary" class="mt-2 text-sm text-slate-700"></p>
+          <div class="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Rough estimate</p><p id="dom-value" class="mt-0.5 text-sm font-semibold text-brand-900"></p></div>
+          <div id="dom-types-wrap" class="mt-3 hidden"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Likely data</p><p id="dom-types" class="mt-0.5 text-sm text-slate-600"></p></div>
+          <div id="dom-reasons-wrap" class="mt-3 hidden"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Why</p><ul id="dom-reasons" class="mt-0.5 list-disc space-y-0.5 pl-5 text-sm text-slate-600"></ul></div>
+          <p id="dom-disc" class="mt-3 text-xs text-slate-400"></p>
+          <a id="dom-cta" href="#assess" class="mt-3 inline-block rounded-lg px-5 py-2 text-sm font-semibold text-white" style="background:var(--dc)">Start my free assessment &rarr;</a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -113,33 +142,6 @@
     </div>
   </section>
 
-  <!-- DOMAIN ESTIMATOR -->
-  <section class="border-t border-slate-200 bg-white py-12">
-    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-      <h2 class="font-display text-2xl font-bold text-brand-900">Start with your website</h2>
-      <p class="mt-2 text-slate-600">Enter your company website for an instant, rough read on whether your data is a fit and what it might be worth. One field, no email. The complimentary assessment below is more accurate.</p>
-      <form id="dom-form" class="mt-5 flex flex-col gap-2 sm:flex-row">
-        <input id="dom-input" class="in flex-1" placeholder="yourcompany.com" />
-        <button type="submit" class="whitespace-nowrap rounded-lg px-6 py-2.5 text-sm font-bold text-white" style="background:var(--dc)">Estimate</button>
-      </form>
-      <p id="dom-note" class="mt-3 hidden rounded-lg px-4 py-3 text-sm"></p>
-      <div id="dom-result" class="mt-5 hidden">
-        <div class="rounded-2xl border p-5 shadow-sm" style="border-color:#cdd6e6;background:#fff">
-          <div class="flex items-center gap-3">
-            <span id="dom-badge" class="rounded-full px-3 py-1 text-xs font-bold">—</span>
-            <h3 id="dom-domain" class="font-display text-base font-bold text-brand-900"></h3>
-          </div>
-          <p id="dom-business" class="mt-2 text-sm text-slate-600"></p>
-          <p id="dom-summary" class="mt-2 text-sm text-slate-700"></p>
-          <div class="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Rough estimate</p><p id="dom-value" class="mt-0.5 text-sm font-semibold text-brand-900"></p></div>
-          <div id="dom-types-wrap" class="mt-3 hidden"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Likely data</p><p id="dom-types" class="mt-0.5 text-sm text-slate-600"></p></div>
-          <div id="dom-reasons-wrap" class="mt-3 hidden"><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Why</p><ul id="dom-reasons" class="mt-0.5 list-disc space-y-0.5 pl-5 text-sm text-slate-600"></ul></div>
-          <p id="dom-disc" class="mt-3 text-xs text-slate-400"></p>
-          <a id="dom-cta" href="#assess" class="mt-3 inline-block rounded-lg px-5 py-2 text-sm font-semibold text-white" style="background:var(--dc)">Run the full assessment &rarr;</a>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- HOW IT WORKS -->
   <section id="how" class="border-t border-slate-200 bg-white py-14">
@@ -237,10 +239,38 @@
     </div>
   </section>
 
+
+  <!-- SECURITY -->
+  <section id="security" class="py-14">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">Security &amp; your data</h2>
+      <div class="mt-6 grid gap-5 md:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">No data uploaded here</h3><p class="mt-2 text-sm text-slate-600">This page only takes a <b>description</b> of your data. You never upload a dataset to get an assessment. When a dataset is prepared later, it is encrypted in transit and at rest, and can remain inside your own environment.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">Retention &amp; deletion</h3><p class="mt-2 text-sm text-slate-600">We keep only your description and contact details to follow up. You can request deletion of your submission at any time by emailing <a href="mailto:contact@assetdatagrp.com" class="font-semibold" style="color:var(--dc)">contact@assetdatagrp.com</a>.</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">What legal review covers</h3><p class="mt-2 text-sm text-slate-600">Before anything is marketed or licensed, review covers your <b>rights to license</b> the data, <b>privacy and regulatory compliance</b> (PII, PHI, CUI, GDPR, CCPA), and the <b>license terms</b> (scope, duration, permitted use).</p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">You stay in control</h3><p class="mt-2 text-sm text-slate-600">You keep ownership throughout. Personal and regulated information is de-identified or excluded. Nothing is marketed or licensed without your written approval, and you can withdraw before a transaction closes.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="border-t border-slate-200 bg-white py-14">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">Questions</h2>
+      <div class="mt-6 space-y-5">
+        <div><h3 class="font-semibold text-brand-900">What is Asset Data Group, and how is it different from a broker?</h3><p class="mt-1 text-sm text-slate-600">We help you turn your operational data into something you can license. A broker just introduces a buyer. We do the work first — clean up the data, remove personal details, document it, find the right buyers, and handle the deal — so your data reaches the market ready to sell.</p></div>
+        <div><h3 class="font-semibold text-brand-900">What does it cost?</h3><p class="mt-1 text-sm text-slate-600">Nothing upfront. No fees to get started, to be evaluated, or to take part. We take on the time and cost of preparing your data, and we are paid only when a deal closes and you are paid. If no deal happens, you owe nothing.</p></div>
+        <div><h3 class="font-semibold text-brand-900">Do I keep ownership of my data?</h3><p class="mt-1 text-sm text-slate-600">Yes. You <b>license</b> it, you do not sell it. You keep full ownership, you set the terms, and you approve every deal.</p></div>
+        <div><h3 class="font-semibold text-brand-900">What about personal or health data?</h3><p class="mt-1 text-sm text-slate-600">Personal details are removed or left out before anything is shared. Some heavily regulated data, like patient records, is not a fit, and the assessment tells you that up front.</p></div>
+        <div><h3 class="font-semibold text-brand-900">What if I want to stop, or no buyer is found?</h3><p class="mt-1 text-sm text-slate-600">You can stop any time before a deal closes — nothing is shared without your written OK. And if no buyer comes forward, nothing happens and you owe nothing.</p></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ASSESS -->
   <section id="assess" class="border-t border-slate-200 bg-white py-14">
     <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-      <h2 class="font-display text-2xl font-bold text-brand-900">Start your complimentary assessment</h2>
+      <h2 class="font-display text-2xl font-bold text-brand-900">Start your free assessment</h2>
       <p class="mt-2 text-slate-600">Describe your operational data — no upload, just a description. You'll get a preliminary commercialization read in under a minute.</p>
       <p class="mt-2 text-sm text-slate-500"><b>Best fit:</b> operational data from distribution, engineering, manufacturing, logistics, construction, and services. Heavily regulated <i>core</i> datasets (for example patient records) need extra legal work and are often not a fit.</p>
       <form id="dc-form" class="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" novalidate>
@@ -259,7 +289,7 @@
           <div class="sm:col-span-2"><span class="lbl">Anything else?</span><textarea id="dc-notes" rows="2" class="in" placeholder="Context, goals, concerns…"></textarea></div>
         </div>
         <input type="text" id="dc-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
-        <button type="submit" class="mt-5 w-full rounded-lg px-5 py-3 text-sm font-bold text-white" style="background:var(--dc)">Get my commercialization assessment</button>
+        <button type="submit" class="mt-5 w-full rounded-lg px-5 py-3 text-sm font-bold text-white" style="background:var(--dc)">Get my free assessment</button>
         <p id="dc-note" class="mt-4 hidden rounded-lg px-4 py-3 text-sm"></p>
       </form>
 
@@ -290,37 +320,6 @@
           <p id="dc-disc" class="mt-4 text-xs text-slate-400"></p>
           <div class="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">An Asset Data Group specialist will email you within two business days to review the assessment and, only if you choose, begin a detailed evaluation. You keep ownership and approve every transaction.</div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECURITY -->
-  <section id="security" class="py-14">
-    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-      <h2 class="font-display text-2xl font-bold text-brand-900">Security &amp; your data</h2>
-      <div class="mt-6 grid gap-5 md:grid-cols-2">
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">No data uploaded here</h3><p class="mt-2 text-sm text-slate-600">This page only takes a <b>description</b> of your data. You never upload a dataset to get an assessment. When a dataset is prepared later, it is encrypted in transit and at rest, and can remain inside your own environment.</p></div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">Retention &amp; deletion</h3><p class="mt-2 text-sm text-slate-600">We keep only your description and contact details to follow up. You can request deletion of your submission at any time by emailing <a href="mailto:contact@assetdatagrp.com" class="font-semibold" style="color:var(--dc)">contact@assetdatagrp.com</a>.</p></div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">What legal review covers</h3><p class="mt-2 text-sm text-slate-600">Before anything is marketed or licensed, review covers your <b>rights to license</b> the data, <b>privacy and regulatory compliance</b> (PII, PHI, CUI, GDPR, CCPA), and the <b>license terms</b> (scope, duration, permitted use).</p></div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="font-semibold text-brand-900">You stay in control</h3><p class="mt-2 text-sm text-slate-600">You keep ownership throughout. Personal and regulated information is de-identified or excluded. Nothing is marketed or licensed without your written approval, and you can withdraw before a transaction closes.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section id="faq" class="border-t border-slate-200 bg-white py-14">
-    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-      <h2 class="font-display text-2xl font-bold text-brand-900">Questions</h2>
-      <div class="mt-6 space-y-5">
-        <div><h3 class="font-semibold text-brand-900">What is Asset Data Group?</h3><p class="mt-1 text-sm text-slate-600">Asset Data Group is a <b>data asset commercialization firm</b> that helps organizations transform operational data into market-ready assets. Through data evaluation, de-identification planning, asset packaging, buyer outreach, and transaction management, ADG helps organizations unlock the value of underutilized data assets. Unlike traditional brokers that simply introduce buyers and sellers, ADG actively assesses, prepares, documents, positions, and commercializes data assets before they are presented to qualified buyers.</p></div>
-        <div><h3 class="font-semibold text-brand-900">Is Asset Data Group just a broker?</h3><p class="mt-1 text-sm text-slate-600">No. ADG provides a full commercialization process designed to maximize the marketability and value of qualifying data assets — evaluation, market-value assessment, de-identification planning, documentation and data dictionaries, compliance and commercialization review, asset packaging and positioning, qualified-buyer identification, offer management and negotiation, and transaction support. Our role is not limited to making introductions; we help transform operational data into a commercial asset.</p></div>
-        <div><h3 class="font-semibold text-brand-900">Why doesn't Asset Data Group charge upfront fees?</h3><p class="mt-1 text-sm text-slate-600">Because ADG assumes the upfront risk. Before a buyer is ever approached, our team may invest significant time and resources evaluating the opportunity, assessing commercialization potential, reviewing compliance, preparing documentation, building market-ready packages, and identifying qualified buyers. If a transaction does not occur, ADG absorbs that time and cost.</p></div>
-        <div><h3 class="font-semibold text-brand-900">What does it cost my organization?</h3><p class="mt-1 text-sm text-slate-600">There are <b>no upfront costs, consulting fees, evaluation fees, or participation fees</b>. ADG evaluates, prepares, and presents qualifying data assets to vetted buyers. If market demand exists, buyers may submit offers for approved data assets. You remain in control throughout and may accept or decline any offer.</p></div>
-        <div><h3 class="font-semibold text-brand-900">Why not simply sell our data directly?</h3><p class="mt-1 text-sm text-slate-600">Most organizations hold valuable operational data but lack the specialized expertise, commercial market access, technical resources, and buyer relationships to bring a data asset to market effectively. ADG bridges that gap with commercial valuation, asset preparation, de-identification planning, market positioning, buyer access, commercial negotiations, and transaction management.</p></div>
-        <div><h3 class="font-semibold text-brand-900">Do I lose ownership of my data?</h3><p class="mt-1 text-sm text-slate-600">No. You <b>license</b> it, you do not sell it. You keep full ownership, you set the terms, and you approve every transaction.</p></div>
-        <div><h3 class="font-semibold text-brand-900">What happens to health or customer data?</h3><p class="mt-1 text-sm text-slate-600">Personal and regulated information (PII, PHI) must be <b>de-identified first or excluded</b>. Some heavily regulated core datasets, such as patient records, are not a fit. The assessment flags this up front.</p></div>
-        <div><h3 class="font-semibold text-brand-900">Can I withdraw?</h3><p class="mt-1 text-sm text-slate-600">Yes. Nothing is marketed or shared without your written approval, and you can withdraw at any time before a transaction closes.</p></div>
-        <div><h3 class="font-semibold text-brand-900">What if no buyer emerges?</h3><p class="mt-1 text-sm text-slate-600">Then nothing happens and you owe nothing. There is no upfront cost — ADG is compensated only when a successful transaction is completed and you are paid.</p></div>
       </div>
     </div>
   </section>
@@ -405,7 +404,7 @@
           <ul class="mt-4 space-y-2.5 text-sm text-slate-300">
             <li><a href="mailto:contact@assetdatagrp.com" class="break-all hover:text-white">contact@assetdatagrp.com</a></li>
           </ul>
-          <a href="#assess" class="mt-5 inline-block rounded-md px-4 py-2 text-sm font-semibold text-white" style="background:var(--dc)">Start my assessment</a>
+          <a href="#assess" class="mt-5 inline-block rounded-md px-4 py-2 text-sm font-semibold text-white" style="background:var(--dc)">Start my free assessment</a>
         </div>
       </div>
 
@@ -500,7 +499,7 @@
           show(note,"Thank you — your submission is in. An Asset Data Group specialist will follow up within two business days.",true); f.reset();
         }
       }catch(err){ show(note,"Thank you — your submission is in. An Asset Data Group specialist will follow up within two business days.",true); f.reset(); }
-      btn.disabled=false; btn.textContent="Get my commercialization assessment";
+      btn.disabled=false; btn.textContent="Get my free assessment";
     });
 
     function wire(formId, hpId, companyId, emailId, notesId, noteId, source, okMsg, btnText){
