@@ -10,23 +10,28 @@
   <meta property="og:description" content="More than a data broker. We help organizations transform operational data into market-ready assets. Complimentary AI-powered assessment. You stay in control of every transaction." />
   <link rel="canonical" href="https://assetdatagrp.com/" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/tailwind.css" />
   <style>
     body{font-family:Inter,system-ui,sans-serif}.font-display{font-family:Montserrat,Inter,sans-serif}
-    :root{--dc:#e8640f;--dc-d:#b84d0c;--dc-l:#fdeede;}
+    .font-serif-display{font-family:'Fraunces',Georgia,'Times New Roman',serif}
+    :root{--dc:#3651e7;--dc-d:#2740b8;--dc-l:#eef1fe;}
     .in{width:100%;border-radius:.6rem;border:1px solid #cbd5e1;padding:.6rem .75rem;font-size:.9rem}
-    .in:focus{outline:none;border-color:var(--dc);box-shadow:0 0 0 3px rgba(232,100,15,.15)}
+    .in:focus{outline:none;border-color:var(--dc);box-shadow:0 0 0 3px rgba(54,81,231,.15)}
     .lbl{font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#475569;margin-bottom:.2rem;display:block}
     .badge-likely{background:#ecfdf5;color:#047857}.badge-needs_review{background:#fffbeb;color:#b45309}.badge-unlikely{background:#fef2f2;color:#b91c1c}
     .step{border-left:2px solid var(--dc);padding-left:1rem}
     .tl{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--dc-d);background:var(--dc-l);border-radius:999px;padding:.1rem .5rem}
     /* primary-action attention cue */
-    @keyframes adgPulse{0%{box-shadow:0 0 0 0 rgba(232,100,15,.45)}70%{box-shadow:0 0 0 9px rgba(232,100,15,0)}100%{box-shadow:0 0 0 0 rgba(232,100,15,0)}}
+    @keyframes adgPulse{0%{box-shadow:0 0 0 0 rgba(54,81,231,.45)}70%{box-shadow:0 0 0 9px rgba(54,81,231,0)}100%{box-shadow:0 0 0 0 rgba(54,81,231,0)}}
     .cta-pulse{animation:adgPulse 2.2s cubic-bezier(.4,0,.2,1) infinite}
     .cta-pulse:hover,.cta-pulse:focus{animation:none}
     @media(prefers-reduced-motion:reduce){.cta-pulse{animation:none}}
     .adg-mark{display:grid;place-items:center;height:2rem;width:2rem;border-radius:.5rem;color:#fff;font-weight:800;background:var(--dc)}
+    /* TDV-style hero decoration */
+    .hero-grid{background-image:linear-gradient(#eef1fe 1px,transparent 1px),linear-gradient(90deg,#eef1fe 1px,transparent 1px);background-size:40px 40px;-webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,#000 55%,transparent 100%);mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,#000 55%,transparent 100%)}
+    .hero-sq{position:absolute;border-radius:6px;background:#dfe5fb}
   </style>
 </head>
 <body id="top" class="bg-slate-50 text-slate-700 antialiased">
@@ -36,7 +41,7 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="flex h-16 items-center justify-between">
         <a href="#top" class="flex items-center" aria-label="Asset Data Group — home">
-          <img src="assets/img/adg-logo.png?v=2" alt="Asset Data Group" class="h-9 w-auto sm:h-10" />
+          <img src="assets/img/adg-logo.png?v=3" alt="Asset Data Group" class="h-9 w-auto sm:h-10" />
         </a>
 
         <nav class="hidden items-center gap-1 lg:flex">
@@ -45,7 +50,7 @@
           <a href="#security" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Security</a>
           <a href="#faq" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Questions</a>
           <a href="#parties" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Buyers &amp; partners</a>
-          <a href="mailto:contact@assetdatagrp.com" class="ml-2 inline-flex items-center rounded-md border px-3.5 py-2 text-sm font-semibold transition-colors hover:bg-orange-50" style="border-color:var(--dc);color:var(--dc-d)">Contact</a>
+          <a href="mailto:contact@assetdatagrp.com" class="ml-2 inline-flex items-center rounded-md border px-3.5 py-2 text-sm font-semibold transition-colors hover:bg-blue-50" style="border-color:var(--dc);color:var(--dc-d)">Contact</a>
           <a href="#assess" class="ml-1.5 rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors" style="background:var(--dc)">Start assessment</a>
         </nav>
 
@@ -69,19 +74,21 @@
   </header>
 
   <!-- HERO -->
-  <section class="relative overflow-hidden bg-brand-950">
-    <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800"></div>
-    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 85% 12%, #ef7a2a 0, transparent 42%), radial-gradient(circle at 8% 92%, #8fa2c4 0, transparent 44%);"></div>
-    <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-      <p class="text-sm font-semibold uppercase tracking-wider" style="color:#f6a96a">Asset Data Group · Data Asset Commercialization</p>
-      <h1 class="mt-2 max-w-3xl font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Turn your operational data into a revenue-generating asset.</h1>
-      <p class="mt-4 max-w-2xl text-lg text-slate-300">Most organizations are sitting on valuable operational data but lack the expertise required to bring it to market. <b class="text-white">Asset Data Group is a data asset commercialization firm, not simply a data broker.</b> We help organizations evaluate, prepare, de-identify, package, and commercialize operational data assets for buyers seeking high-quality, real-world datasets.</p>
-      <p class="mt-3 max-w-2xl text-slate-300">Start with a complimentary AI-powered assessment and discover what your data may be worth.</p>
-      <div class="mt-8 flex flex-wrap items-center gap-4">
-        <a href="#assess" class="cta-pulse rounded-md px-6 py-3 text-sm font-semibold text-white shadow-lg" style="background:var(--dc)">Start my complimentary assessment</a>
-        <a href="#how" class="rounded-md border border-slate-500 px-6 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10">See how it works</a>
+  <section class="relative overflow-hidden bg-white">
+    <div class="hero-grid pointer-events-none absolute inset-0 opacity-70"></div>
+    <span class="hero-sq" style="top:16%;left:8%;width:26px;height:26px;opacity:.7"></span>
+    <span class="hero-sq" style="top:60%;left:85%;width:34px;height:34px;opacity:.6"></span>
+    <span class="hero-sq" style="top:28%;left:89%;width:16px;height:16px;opacity:.85"></span>
+    <span class="hero-sq" style="top:72%;left:12%;width:20px;height:20px;opacity:.5"></span>
+    <div class="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-20 text-center sm:py-28">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"><span class="mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle" style="background:var(--dc)"></span>Asset Data Group · Data asset commercialization</p>
+      <h1 class="font-serif-display mt-6 text-5xl leading-[1.05] tracking-tight text-brand-950 sm:text-7xl">Your operational data.<br /><span class="italic" style="color:var(--dc)">A revenue-generating asset.</span></h1>
+      <p class="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-slate-500">Your team spent years building real operational records. Asset Data Group helps you license a prepared, de-identified copy to buyers — you keep ownership and approve every transaction.</p>
+      <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
+        <a href="#assess" class="cta-pulse inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white shadow-lg" style="background:var(--dc)">Start my free assessment <span aria-hidden="true">↗</span></a>
+        <a href="#how" class="rounded-full border border-slate-300 px-7 py-3.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">See how it works</a>
       </div>
-      <p class="mt-4 text-sm text-slate-400">No upfront cost. You keep ownership and approve every transaction. <a href="#parties" class="underline hover:text-slate-200">An AI lab or referral partner?</a></p>
+      <p class="mt-6 text-sm text-slate-400">No upfront cost · No upload to get an estimate · You approve every transaction</p>
     </div>
   </section>
 
@@ -89,7 +96,7 @@
   <section class="border-t border-slate-200 bg-white py-14">
     <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
       <h2 class="font-display text-2xl font-bold text-brand-900">Beyond traditional data brokerage</h2>
-      <p class="mt-3 max-w-3xl text-slate-600">Traditional brokers often focus on finding a buyer for an existing dataset. Asset Data Group focuses on <b>increasing the value of the asset before it ever reaches the market</b>. Through data evaluation, de-identification planning, commercialization analysis, buyer-readiness assessments, asset packaging, and transaction support, we help organizations position their data for licensing and commercialization opportunities.</p>
+      <p class="mt-3 max-w-3xl text-slate-600">Traditional brokers look for a buyer. Asset Data Group <b>increases the value of the asset first</b> — evaluation, de-identification planning, compliance review, packaging, and buyer outreach — so your data reaches the market ready to license.</p>
       <div class="mt-6 grid gap-5 sm:grid-cols-2">
         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6"><p class="text-xs font-bold uppercase tracking-wide text-slate-500">The difference</p><p class="mt-2 text-lg font-semibold text-brand-900">Brokers shop data.</p><p class="mt-1 text-lg font-semibold" style="color:var(--dc-d)">Asset Data Group helps build market-ready data assets.</p></div>
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -102,7 +109,7 @@
           </div>
         </div>
       </div>
-      <p class="mt-5 max-w-3xl text-sm text-slate-500">Asset Data Group invests the time, expertise, and resources required to evaluate each opportunity before it reaches the market. We assume that risk so organizations can explore data monetization opportunities <b>without upfront costs</b>.</p>
+      <p class="mt-5 max-w-3xl text-sm text-slate-500">We invest the time and expertise to prepare each opportunity before it reaches a buyer, so you can explore data commercialization with <b>no upfront cost</b>.</p>
     </div>
   </section>
 
@@ -138,13 +145,8 @@
   <section id="how" class="border-t border-slate-200 bg-white py-14">
     <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
 
-      <div class="rounded-2xl border border-orange-100 bg-orange-50/50 p-6">
-        <h2 class="font-display text-xl font-bold text-brand-900">More than a data broker</h2>
-        <p class="mt-2 text-slate-600">Asset Data Group is a data asset commercialization firm that helps organizations transform operational data into market-ready assets. Through data evaluation, de-identification planning, asset packaging, buyer outreach, and transaction management, ADG helps organizations unlock the value of underutilized data assets. Our team invests the time, expertise, and resources required to evaluate, prepare, document, and commercialize qualifying data assets before they are ever presented to potential buyers.</p>
-      </div>
-
-      <h2 class="mt-10 font-display text-2xl font-bold text-brand-900">How it works</h2>
-      <p class="mt-2 max-w-3xl text-slate-600">We evaluate commercial potential, assist with data preparation and de-identification planning, develop buyer-ready documentation, identify qualified buyers, and manage the transaction from introduction through closing. You remain in control throughout, approving each step and every transaction. There are no upfront costs, and <b>Asset Data Group is compensated only when a successful transaction is completed</b>.</p>
+      <h2 class="font-display text-2xl font-bold text-brand-900">How it works</h2>
+      <p class="mt-2 max-w-3xl text-slate-600">We handle evaluation, preparation, buyer outreach, and the transaction from first look to closing. You stay in control and approve every step. No upfront cost — <b>we are paid only when a transaction closes and you are paid</b>.</p>
 
       <div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
         <svg viewBox="0 0 940 285" role="img" aria-label="Asset Data Group workflow: company to ADG (assess, prepare, market, execute) to buyer, with owner approval and payment" style="width:100%;min-width:660px;height:auto;font-family:Inter,system-ui,sans-serif">
@@ -200,7 +202,7 @@
           <p class="mt-1 text-sm text-slate-600">Once terms are approved, ADG coordinates secure delivery and transaction execution — secure transfer, a clean-room environment, controlled licensing, or access within your existing infrastructure. Upon successful completion, your organization receives payment under the agreed terms. Asset Data Group is compensated through the commercialization process and transaction structure. All licensing terms, permitted uses, and duration limits remain subject to your approval.</p></div>
       </div>
 
-      <div class="mt-6 rounded-xl border border-orange-100 bg-orange-50/50 p-5">
+      <div class="mt-6 rounded-xl border border-blue-100 bg-blue-50/50 p-5">
         <h3 class="font-semibold text-brand-900">What happens after you submit the assessment</h3>
         <p class="mt-1 text-sm text-slate-600">You receive an immediate preliminary assessment of your organization's data commercialization potential. Within <b>two business days</b>, an Asset Data Group data commercialization specialist reviews the assessment, answers your questions, and discusses whether your organization may have a marketable data asset. If you choose to proceed, ADG begins a more detailed evaluation — data valuation, commercialization readiness, compliance considerations, and potential buyer demand. There is no obligation to move forward, and <b>nothing is marketed, listed, packaged, or shared with any third party without your written approval</b>.</p>
       </div>
@@ -373,10 +375,10 @@
       <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <div class="inline-flex items-center rounded-lg bg-white px-3 py-2.5 shadow-sm">
-            <img src="assets/img/adg-logo.png?v=2" alt="Asset Data Group" class="h-7 w-auto" />
+            <img src="assets/img/adg-logo.png?v=3" alt="Asset Data Group" class="h-7 w-auto" />
           </div>
           <p class="mt-4 text-sm leading-relaxed text-slate-400">A data asset commercialization firm. We help organizations evaluate, prepare, and commercialize operational data into a revenue-generating asset — with you in control of every transaction.</p>
-          <p class="mt-4 text-xs uppercase tracking-wider" style="color:#f6a96a">Data Asset Commercialization</p>
+          <p class="mt-4 text-xs uppercase tracking-wider" style="color:#9db2f0">Data Asset Commercialization</p>
         </div>
 
         <div>
