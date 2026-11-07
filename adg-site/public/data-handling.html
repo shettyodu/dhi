@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How we protect your data — Asset Data Group</title>
+  <meta name="description" content="How Asset Data Group handles your data after an agreement is signed: sample-first intake, a de-identification plan you approve, de-identification at the source, human QA, a clean room, and an audit trail with a non-retention certificate. One controlled chain of custody, in house." />
+  <meta property="og:url" content="https://assetdatagrp.com/data-handling" />
+  <meta property="og:title" content="How we protect your data — Asset Data Group" />
+  <meta property="og:description" content="One controlled chain of custody, in house. We show you what was done to every record, prove what was removed, and certify what was not kept." />
+  <link rel="canonical" href="https://assetdatagrp.com/data-handling" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}.font-display{font-family:Montserrat,Inter,sans-serif}
+    .font-serif-display{font-family:'Fraunces',Georgia,'Times New Roman',serif}
+    :root{--dc:#3651e7;--dc-d:#2740b8;--dc-l:#eef1fe;}
+    .step{border-left:2px solid var(--dc);padding-left:1rem}
+    .tl{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--dc-d);background:var(--dc-l);border-radius:999px;padding:.1rem .5rem}
+    .numb{display:grid;place-items:center;height:2rem;width:2rem;flex:none;border-radius:999px;color:#fff;font-weight:800;font-size:.85rem;background:var(--dc)}
+    .hero-grid{background-image:linear-gradient(#eef1fe 1px,transparent 1px),linear-gradient(90deg,#eef1fe 1px,transparent 1px);background-size:40px 40px;-webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,#000 55%,transparent 100%);mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,#000 55%,transparent 100%)}
+    .hero-sq{position:absolute;border-radius:6px;background:#dfe5fb}
+  </style>
+</head>
+<body id="top" class="bg-slate-50 text-slate-700 antialiased">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 items-center justify-between">
+        <a href="/" class="flex items-center" aria-label="Asset Data Group — home">
+          <img src="assets/img/adg-logo.png?v=4" alt="Asset Data Group" class="h-9 w-auto sm:h-10" />
+        </a>
+        <nav class="hidden items-center gap-1 lg:flex">
+          <a href="/#how" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">How it works</a>
+          <a href="/#sample" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Example</a>
+          <a href="/data-handling" class="rounded-md px-3 py-2 text-sm font-semibold transition-colors hover:bg-blue-50" style="color:var(--dc-d)">Your data</a>
+          <a href="/#faq" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Questions</a>
+          <a href="/#parties" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Buyers &amp; partners</a>
+          <a href="mailto:contact@assetdatagrp.com" class="ml-2 inline-flex items-center rounded-md border px-3.5 py-2 text-sm font-semibold transition-colors hover:bg-blue-50" style="border-color:var(--dc);color:var(--dc-d)">Contact</a>
+          <a href="/#assess" class="ml-1.5 rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors" style="background:var(--dc)">Start my free assessment</a>
+        </nav>
+        <button id="mobile-btn" class="inline-flex items-center justify-center rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open menu">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white lg:hidden">
+      <div class="space-y-1 px-4 py-3">
+        <a href="/#how" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">How it works</a>
+        <a href="/#sample" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Example assessment</a>
+        <a href="/data-handling" class="block rounded-md px-3 py-2 text-sm font-semibold" style="color:var(--dc-d)">Your data</a>
+        <a href="/#faq" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Questions</a>
+        <a href="/#parties" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Buyers &amp; referral partners</a>
+        <a href="mailto:contact@assetdatagrp.com" class="mt-2 block rounded-md border px-3 py-2 text-center text-sm font-semibold" style="border-color:var(--dc);color:var(--dc-d)">Contact</a>
+        <a href="/#assess" class="mt-2 block rounded-md px-3 py-2 text-center text-sm font-semibold text-white" style="background:var(--dc)">Start my free assessment</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-white">
+    <div class="hero-grid pointer-events-none absolute inset-0 opacity-70"></div>
+    <span class="hero-sq" style="top:20%;left:9%;width:24px;height:24px;opacity:.7"></span>
+    <span class="hero-sq" style="top:62%;left:86%;width:30px;height:30px;opacity:.6"></span>
+    <span class="hero-sq" style="top:30%;left:90%;width:16px;height:16px;opacity:.85"></span>
+    <div class="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-16 text-center sm:py-24">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"><span class="mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle" style="background:var(--dc)"></span>Asset Data Group · Data handling</p>
+      <h1 class="font-serif-display mt-6 text-4xl leading-[1.05] tracking-tight text-brand-950 sm:text-6xl">Your data, handled safely.<br /><span class="italic" style="color:var(--dc)">And proven, every step.</span></h1>
+      <p class="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-slate-500">Once an agreement is in place, Asset Data Group prepares your data in house, under one controlled chain of custody, and gives you an audit trail that shows exactly what happened to it.</p>
+    </div>
+  </section>
+
+  <!-- ADVANTAGE -->
+  <section class="border-t border-slate-200 bg-white pb-4 pt-12">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div class="rounded-2xl border border-blue-100 bg-blue-50/60 p-6">
+        <p class="text-xs font-bold uppercase tracking-wide" style="color:var(--dc-d)">Why this matters</p>
+        <p class="mt-2 text-slate-700">A traditional broker often passes your account, and sometimes your data, to a third party to prepare it, and cannot tell you what happens to it after that. <b>Asset Data Group prepares your data itself</b>, under one controlled chain of custody, and gives you an audit trail that shows what was done to every record, proves what was removed, and certifies what was not kept.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- AT A GLANCE -->
+  <section class="bg-white py-10">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">At a glance</h2>
+      <div class="mt-5 overflow-x-auto rounded-2xl border border-slate-200">
+        <table class="w-full min-w-[640px] border-collapse text-left text-sm">
+          <thead>
+            <tr class="text-white" style="background:#0a2540">
+              <th class="px-4 py-3 font-semibold">Step</th>
+              <th class="px-4 py-3 font-semibold">What happens</th>
+              <th class="px-4 py-3 font-semibold">How your data is protected</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 text-slate-600">
+            <tr><td class="px-4 py-3 font-semibold text-brand-900">1 · Scope &amp; secure intake</td><td class="px-4 py-3">We agree the exact records in scope and take a small, representative sample first.</td><td class="px-4 py-3">Encrypted transfer, named access only, every access logged.</td></tr>
+            <tr class="bg-slate-50/60"><td class="px-4 py-3 font-semibold text-brand-900">2 · De-identification plan</td><td class="px-4 py-3">We inspect the sample and write a plan for what is removed, masked, or generalized.</td><td class="px-4 py-3">You review and approve the plan before any full run.</td></tr>
+            <tr><td class="px-4 py-3 font-semibold text-brand-900">3 · De-identify at the source</td><td class="px-4 py-3">We run de-identification where the data lives; only the cleaned copy leaves.</td><td class="px-4 py-3">The identified source is not retained; links kept only by one-way tokens.</td></tr>
+            <tr class="bg-slate-50/60"><td class="px-4 py-3 font-semibold text-brand-900">4 · Human QA &amp; risk check</td><td class="px-4 py-3">A person checks the cleaned output and the re-identification risk.</td><td class="px-4 py-3">Two sign-offs, technical and compliance, before any buyer sees it.</td></tr>
+            <tr><td class="px-4 py-3 font-semibold text-brand-900">5 · Clean room</td><td class="px-4 py-3">The prepared data is evaluated in a locked, access-logged environment.</td><td class="px-4 py-3">Buyers work inside it; no raw bulk copy leaves with them.</td></tr>
+            <tr class="bg-slate-50/60"><td class="px-4 py-3 font-semibold text-brand-900">6 · Audit &amp; attestation</td><td class="px-4 py-3">Every action is recorded.</td><td class="px-4 py-3">You receive an audit report and a non-retention certificate.</td></tr>
+            <tr><td class="px-4 py-3 font-semibold text-brand-900">7 · Return &amp; deletion</td><td class="px-4 py-3">We delete identifier detail and return or certify deletion of any source.</td><td class="px-4 py-3">We hold no key that could re-identify your data.</td></tr>
+            <tr class="bg-slate-50/60"><td class="px-4 py-3 font-semibold text-brand-900">8 · Ongoing control</td><td class="px-4 py-3">Buyers are bound by contract and you approve every use.</td><td class="px-4 py-3">No re-identification, no redistribution, nothing outside scope.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP BY STEP -->
+  <section class="border-t border-slate-200 bg-white py-12">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-2xl font-bold text-brand-900">The process, step by step</h2>
+      <div class="mt-8 space-y-7">
+        <div class="flex gap-4"><span class="numb">1</span><div><h3 class="font-semibold text-brand-900">Scope and secure intake</h3><p class="mt-1 text-sm text-slate-600">We start from the agreement. On the Order Form we fix exactly which records are in scope: the systems, record types, date range, fields, and anything excluded. You then provide a small, representative <b>sample</b> rather than your full dataset, so we can confirm the structure and build the plan without moving more data than necessary. Where data must move, it moves once, over a single encrypted channel, to a named location that only authorized Asset Data Group personnel can reach, and every access is logged.</p></div></div>
+
+        <div class="flex gap-4"><span class="numb">2</span><div><h3 class="font-semibold text-brand-900">De-identification plan, reviewed by you</h3><p class="mt-1 text-sm text-slate-600">We inspect the sample: the field names, the data types, where personal or regulated information appears, and any free-text fields. From that we write a plan that states, field by field, what will be removed, masked, tokenized, or generalized, and how free text will be scrubbed. <b>You review and approve that plan before any full run</b>, and nothing is marketed from the sample.</p></div></div>
+
+        <div class="flex gap-4"><span class="numb">3</span><div><h3 class="font-semibold text-brand-900">De-identification, at the source</h3><p class="mt-1 text-sm text-slate-600">The de-identification runs where your data lives, inside your environment or a controlled Asset Data Group environment, using our own tooling. Only the cleaned output leaves. Direct identifiers are removed, masked, or replaced with one-way tokens; dates are generalized; geography is reduced; and names, contacts, and identifiers are scrubbed out of free text. Where records need to stay linked, we use one-way tokens, so the data still connects without being identifiable.</p>
+        <p class="mt-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-500"><b class="text-slate-600">What we do not claim:</b> de-identification reduces the risk of re-identification, but it is not, by itself, a guarantee that re-identification is impossible. Where the data or the method requires it, for example health data, a qualified expert reviews and signs off under the Expert Determination standard.</p></div></div>
+
+        <div class="flex gap-4"><span class="numb">4</span><div><h3 class="font-semibold text-brand-900">Human quality check and risk review</h3><p class="mt-1 text-sm text-slate-600">Software is the first pass, not the last word. A person reviews a documented sample of the cleaned output to confirm that no personal information slipped through, with particular attention to free text, and checks the re-identification risk from rare combinations of fields such as dates, geography, and uncommon codes. Two sign-offs, one technical and one compliance, are required before anything is shown to a buyer.</p></div></div>
+
+        <div class="flex gap-4"><span class="numb">5</span><div><h3 class="font-semibold text-brand-900">Clean room and controlled access</h3><p class="mt-1 text-sm text-slate-600">Your prepared data is held and evaluated in a <b>clean room</b>: a controlled, access-logged environment. A buyer can work with the data inside that environment and see results, rather than walking away with a raw bulk copy. Access is granted to named people, is time limited, and is logged. Delivery, when it happens, follows the method agreed in your Order Form, whether that is a controlled transfer, a clean-room session, or access within your own environment.</p></div></div>
+
+        <div class="flex gap-4"><span class="numb">6</span><div><h3 class="font-semibold text-brand-900">Audit trail and attestation</h3><p class="mt-1 text-sm text-slate-600">Every step produces a record. The audit report documents what was in scope, a fingerprint (a SHA-256 hash) of the source file, the exact treatment applied to each field, the number of items redacted from free text, who accessed the data and when, the quality sign-offs, and a certification of what was not retained. This is your evidence that your data was handled exactly as agreed.</p></div></div>
+
+        <div class="flex gap-4"><span class="numb">7</span><div><h3 class="font-semibold text-brand-900">Minimum hold, return, and certified deletion</h3><p class="mt-1 text-sm text-slate-600">Asset Data Group does not keep your identified source data, and holds no key, code list, or crosswalk that could re-identify the cleaned data. Identifier-level detail is deleted within the window set in your agreement, and any copy of your source data is returned or certified as deleted on schedule, with the certificate filed. If we ever receive a legal request for your data, we notify you where lawful and disclose only what the law requires.</p></div></div>
+
+        <div class="flex gap-4"><span class="numb">8</span><div><h3 class="font-semibold text-brand-900">Ongoing control</h3><p class="mt-1 text-sm text-slate-600">You keep ownership throughout and approve every buyer and every use. Every downstream buyer agreement bars re-identification and redistribution and limits use to what was agreed. Nothing is marketed, licensed, or shared outside the scope you approved.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIFFERENT FROM A BROKER + WHAT YOU RECEIVE -->
+  <section class="border-t border-slate-200 bg-white py-12">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 grid gap-8 md:grid-cols-2">
+      <div>
+        <h2 class="font-display text-xl font-bold text-brand-900">Why this is different from a broker</h2>
+        <p class="mt-2 text-sm text-slate-600">Traditional brokers often introduce a buyer and then hand your account, and sometimes your data, to a third party to prepare it. They cannot tell you who touched it or what became of it. Asset Data Group keeps the entire process in house, under one chain of custody, and documents it. We can show you what was done to every record, prove what was removed, and certify what was not kept. That is a level of assurance an introduction-only broker cannot offer.</p>
+      </div>
+      <div>
+        <h2 class="font-display text-xl font-bold text-brand-900">What you receive</h2>
+        <ul class="mt-2 space-y-2 text-sm text-slate-600">
+          <li class="flex gap-2"><span style="color:var(--dc)">✓</span> An approved de-identification plan.</li>
+          <li class="flex gap-2"><span style="color:var(--dc)">✓</span> A de-identified dataset, prepared to that plan.</li>
+          <li class="flex gap-2"><span style="color:var(--dc)">✓</span> An audit report with provenance, per-field treatments, and access logs.</li>
+          <li class="flex gap-2"><span style="color:var(--dc)">✓</span> A non-retention certificate, and a certificate of deletion where applicable.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="bg-white pb-16">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center">
+        <h2 class="font-serif-display text-2xl text-brand-950 sm:text-3xl">See what your data could be worth.</h2>
+        <p class="mx-auto mt-2 max-w-xl text-sm text-slate-500">Start with a free assessment. No upload, no upfront cost, and you approve every step.</p>
+        <a href="/#assess" class="mt-5 inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white shadow-lg" style="background:var(--dc)">Start my free assessment <span aria-hidden="true">↗</span></a>
+      </div>
+      <p class="mt-6 text-xs leading-relaxed text-slate-400">This page describes Asset Data Group's intended data-handling process. De-identification is a safeguard, not legal advice, and it does not by itself certify anonymization. Specific controls, retention periods, and delivery methods are set in your signed agreement and Order Form. Where the method requires it, a qualified de-identification expert and counsel review the approach before data is prepared or marketed.</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-brand-950 text-slate-300">
+    <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <div class="inline-flex items-center rounded-lg bg-white px-3 py-2.5 shadow-sm">
+            <img src="assets/img/adg-logo.png?v=4" alt="Asset Data Group" class="h-7 w-auto" />
+          </div>
+          <p class="mt-4 text-sm leading-relaxed text-slate-400">A data asset commercialization firm. We help organizations evaluate, prepare, and commercialize operational data into a revenue-generating asset — with you in control of every transaction.</p>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-white">Explore</h3>
+          <ul class="mt-4 space-y-2.5 text-sm">
+            <li><a href="/#how" class="text-slate-300 transition-colors hover:text-white">How it works</a></li>
+            <li><a href="/#sample" class="text-slate-300 transition-colors hover:text-white">Example assessment</a></li>
+            <li><a href="/data-handling" class="text-slate-300 transition-colors hover:text-white">How we protect your data</a></li>
+            <li><a href="/#faq" class="text-slate-300 transition-colors hover:text-white">Questions</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-white">Get started</h3>
+          <ul class="mt-4 space-y-2.5 text-sm">
+            <li><a href="/#assess" class="text-slate-300 transition-colors hover:text-white">Data owners — free assessment</a></li>
+            <li><a href="/#parties" class="text-slate-300 transition-colors hover:text-white">Buyers — register demand</a></li>
+            <li><a href="/#parties" class="text-slate-300 transition-colors hover:text-white">Referral partners</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-white">Contact</h3>
+          <ul class="mt-4 space-y-2.5 text-sm text-slate-300">
+            <li><a href="mailto:contact@assetdatagrp.com" class="break-all hover:text-white">contact@assetdatagrp.com</a></li>
+          </ul>
+          <a href="/#assess" class="mt-5 inline-block rounded-md px-4 py-2 text-sm font-semibold text-white" style="background:var(--dc)">Start my free assessment</a>
+        </div>
+      </div>
+      <div class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row">
+        <p>&copy; 2026 Asset Data Group. All rights reserved. · <a href="/privacy.html" class="hover:text-slate-300">Privacy</a> · <a href="/terms.html" class="hover:text-slate-300">Terms</a></p>
+        <p class="max-w-xl text-center sm:text-right">A preliminary assessment and data asset commercialization service — not legal, financial, or tax advice, a quote, or a guarantee of a sale.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  (function(){
+    "use strict";
+    var mb=document.getElementById("mobile-btn"), mm=document.getElementById("mobile-menu");
+    if(mb&&mm){ mb.addEventListener("click",function(){ mm.classList.toggle("hidden"); });
+      mm.addEventListener("click",function(e){ if(e.target.tagName==="A") mm.classList.add("hidden"); }); }
+  })();
+  </script>
+</body>
+</html>
