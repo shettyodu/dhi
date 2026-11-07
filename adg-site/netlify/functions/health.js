@@ -21,6 +21,20 @@ exports.handler = async (event) => {
     crm_passcode_set: !!(process.env.ADG_PASSCODE || process.env.ADG_ADMIN_SECRET),
   };
 
+  // Per-variable presence diagnostic (booleans only, never values). Gated behind ?diag=1.
+  const q = event.queryStringParameters || {};
+  if (q.diag === "1") {
+    const seen = (n) => ({ set: !!process.env[n], len: process.env[n] ? String(process.env[n]).length : 0 });
+    checks.vars = {
+      SMTP_HOST: seen("SMTP_HOST"), SMTP_PORT: seen("SMTP_PORT"),
+      SMTP_USER: seen("SMTP_USER"), SMTP_PASS: seen("SMTP_PASS"),
+      MAIL_FROM: seen("MAIL_FROM"), ADG_LEAD_EMAIL: seen("ADG_LEAD_EMAIL"),
+      GMAIL_USER: seen("GMAIL_USER"), GMAIL_APP_PASSWORD: seen("GMAIL_APP_PASSWORD"),
+    };
+    // Any env key that looks SMTP/MAIL-related, to catch misspellings (names only).
+    checks.mail_like_keys = Object.keys(process.env).filter((k) => /SMTP|MAIL|GMAIL/i.test(k)).sort();
+  }
+
   let ok = checks.openai_configured;
   const deep = event.queryStringParameters && event.queryStringParameters.deep === "1";
   if (deep && checks.openai_configured) {
