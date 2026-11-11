@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>See if we're a fit — Asset Data Group</title>
+  <meta name="description" content="A few quick questions before your call with Asset Data Group, so we can tell whether your operational data is a fit. Metadata only — which systems you use and roughly how much history. No data, no uploads, no logins." />
+  <meta property="og:url" content="https://assetdatagrp.com/fit" />
+  <meta property="og:title" content="See if we're a fit — Asset Data Group" />
+  <meta property="og:description" content="Tell us which systems your work lives in and roughly how much history you keep. Metadata only, no uploads. We review it before your call." />
+  <link rel="canonical" href="https://assetdatagrp.com/fit" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://assetdatagrp.com/assets/img/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="See if we're a fit — Asset Data Group" />
+  <meta name="twitter:description" content="A few quick questions before your call. Metadata only, no uploads." />
+  <meta name="twitter:image" content="https://assetdatagrp.com/assets/img/og.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tailwind.css?v=20261109" />
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}
+    .font-serif-display{font-family:'Fraunces',Georgia,'Times New Roman',serif}
+    :root{--dc:#3651e7;--dc-d:#2740b8;--dc-l:#eef1fe;}
+    .in{width:100%;border-radius:.6rem;border:1px solid #cbd5e1;padding:.6rem .75rem;font-size:.9rem}
+    .in:focus{outline:none;border-color:var(--dc);box-shadow:0 0 0 3px rgba(54,81,231,.15)}
+    .lbl{font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#475569;margin-bottom:.2rem;display:block}
+    .chk{display:inline-flex;align-items:center;gap:.4rem;font-size:.9rem;color:#334155;border:1px solid #cbd5e1;border-radius:.6rem;padding:.4rem .7rem;cursor:pointer}
+    .chk input{accent-color:var(--dc)}
+    .hero-grid{background-image:linear-gradient(#eef1fe 1px,transparent 1px),linear-gradient(90deg,#eef1fe 1px,transparent 1px);background-size:40px 40px;-webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,#000 55%,transparent 100%);mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,#000 55%,transparent 100%)}
+    .hero-sq{position:absolute;border-radius:6px;background:#dfe5fb}
+  </style>
+</head>
+<body id="top" class="bg-slate-50 text-slate-700 antialiased">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 items-center justify-between">
+        <a href="/" class="flex items-center" aria-label="Asset Data Group — home">
+          <img src="assets/img/adg-logo.png?v=4" alt="Asset Data Group" class="h-9 w-auto sm:h-10" />
+        </a>
+        <nav class="hidden items-center gap-1 lg:flex">
+          <a href="/#how" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">How it works</a>
+          <a href="/#sample" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Example</a>
+          <a href="/data-handling" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Your data</a>
+          <a href="/#faq" class="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-800">Questions</a>
+          <a href="mailto:contact@assetdatagrp.com" class="ml-2 inline-flex items-center rounded-md border px-3.5 py-2 text-sm font-semibold transition-colors hover:bg-blue-50" style="border-color:var(--dc);color:var(--dc-d)">Contact</a>
+        </nav>
+        <button id="mobile-btn" class="inline-flex items-center justify-center rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open menu">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white lg:hidden">
+      <div class="space-y-1 px-4 py-3">
+        <a href="/#how" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">How it works</a>
+        <a href="/data-handling" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Your data</a>
+        <a href="/#faq" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Questions</a>
+        <a href="mailto:contact@assetdatagrp.com" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Contact</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-white">
+    <div class="hero-grid pointer-events-none absolute inset-0 opacity-70"></div>
+    <span class="hero-sq" style="top:22%;left:9%;width:24px;height:24px;opacity:.7"></span>
+    <span class="hero-sq" style="top:60%;left:87%;width:30px;height:30px;opacity:.6"></span>
+    <div class="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-14 text-center sm:py-20">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"><span class="mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle" style="background:var(--dc)"></span>Asset Data Group · Before our call</p>
+      <h1 class="font-serif-display mt-6 text-4xl leading-[1.05] tracking-tight text-brand-950 sm:text-5xl">Let's see if we're a fit.</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-500">A few quick questions so we can tell, before our call, whether your operational data is a match. This is <b class="text-slate-700">metadata only</b> — which systems your work lives in and roughly how much history you keep. No data, no uploads, no logins.</p>
+    </div>
+  </section>
+
+  <!-- FORM -->
+  <section class="bg-white pb-16">
+    <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+      <form id="fit-form" novalidate class="space-y-8">
+
+        <!-- About you -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="font-display text-lg font-bold text-brand-900">About you</h2>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div><span class="lbl">Company *</span><input id="f-company" class="in" /></div>
+            <div><span class="lbl">Your name *</span><input id="f-name" class="in" /></div>
+            <div><span class="lbl">Your role</span><input id="f-role" class="in" placeholder="e.g. COO, Operations, IT" /></div>
+            <div><span class="lbl">Work email *</span><input id="f-email" type="email" class="in" /></div>
+            <div class="sm:col-span-2"><span class="lbl">Phone (optional)</span><input id="f-phone" class="in" /></div>
+          </div>
+        </div>
+
+        <!-- Your systems -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="font-display text-lg font-bold text-brand-900">Where your work lives</h2>
+          <p class="mt-1 text-sm text-slate-500">Just the names of the tools and roughly how long you've used each. No access needed.</p>
+
+          <div class="mt-5 grid gap-4 sm:grid-cols-3">
+            <div class="sm:col-span-2"><span class="lbl">CRM — which one?</span><input id="f-crm" class="in" placeholder="e.g. Salesforce, HubSpot, none" /></div>
+            <div><span class="lbl">Since when?</span><input id="f-crm-since" class="in" placeholder="e.g. 2018" /></div>
+          </div>
+
+          <div class="mt-4">
+            <span class="lbl">Chat &amp; comms — which do you use?</span>
+            <div class="flex flex-wrap gap-2">
+              <label class="chk"><input type="checkbox" value="Slack" name="comms" /> Slack</label>
+              <label class="chk"><input type="checkbox" value="Microsoft Teams" name="comms" /> Microsoft Teams</label>
+              <label class="chk"><input type="checkbox" value="Google Workspace" name="comms" /> Google Workspace</label>
+              <label class="chk"><input type="checkbox" value="Email" name="comms" /> Email</label>
+              <label class="chk"><input type="checkbox" value="Other" name="comms" id="f-comms-other" /> Other</label>
+            </div>
+            <div class="mt-3 grid gap-4 sm:grid-cols-3">
+              <div class="sm:col-span-2"><span class="lbl">Anything else / notes</span><input id="f-comms-note" class="in" placeholder="other comms tool, or leave blank" /></div>
+              <div><span class="lbl">Since when?</span><input id="f-comms-since" class="in" placeholder="e.g. 2016" /></div>
+            </div>
+          </div>
+
+          <div class="mt-4 grid gap-4 sm:grid-cols-3">
+            <div class="sm:col-span-2"><span class="lbl">Ticketing / work orders / helpdesk — which one?</span><input id="f-ticketing" class="in" placeholder="e.g. Zendesk, Jira, ServiceTitan" /></div>
+            <div><span class="lbl">Since when?</span><input id="f-ticketing-since" class="in" placeholder="e.g. 2019" /></div>
+          </div>
+
+          <div class="mt-4 grid gap-4 sm:grid-cols-3">
+            <div class="sm:col-span-2"><span class="lbl">Any other system where work lives?</span><input id="f-other" class="in" placeholder="ERP, custom app, spreadsheets, etc." /></div>
+            <div><span class="lbl">Since when?</span><input id="f-other-since" class="in" placeholder="e.g. 2015" /></div>
+          </div>
+        </div>
+
+        <!-- History & scale -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="font-display text-lg font-bold text-brand-900">History &amp; scale</h2>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div><span class="lbl">Roughly how far back does the history go?</span><input id="f-history" class="in" placeholder="e.g. about 9 years, since 2016" /></div>
+            <div><span class="lbl">Roughly how many people use these systems?</span><input id="f-users" class="in" placeholder="e.g. 60" /></div>
+          </div>
+        </div>
+
+        <!-- Your work -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="font-display text-lg font-bold text-brand-900">Your work</h2>
+          <div class="mt-4 space-y-4">
+            <div><span class="lbl">One repeating job, start to finish (one sentence)</span><textarea id="f-workflow" rows="2" class="in" placeholder="e.g. A quote comes in, we schedule a tech, complete the work order, and invoice."></textarea></div>
+            <div><span class="lbl">Who approves a decision like this on your side?</span><input id="f-approver" class="in" placeholder="e.g. me, our CEO, legal" /></div>
+          </div>
+        </div>
+
+        <input type="text" id="f-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
+        <div>
+          <button type="submit" class="w-full rounded-full px-6 py-3.5 text-sm font-semibold text-white shadow-lg" style="background:var(--dc)">Send this to Asset Data Group</button>
+          <p class="mt-3 text-center text-xs text-slate-400">Metadata only — no data or logins. We review it before your call, and you stay in control of every next step.</p>
+          <p id="fit-note" class="mt-4 hidden rounded-lg px-4 py-3 text-sm"></p>
+        </div>
+      </form>
+
+      <!-- Success -->
+      <div id="fit-done" class="hidden rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full" style="background:var(--dc-l)"><span class="text-2xl" style="color:var(--dc)">✓</span></div>
+        <h2 class="font-serif-display mt-4 text-2xl text-brand-950">Thank you — we've got what we need.</h2>
+        <p class="mx-auto mt-2 max-w-md text-slate-500">We'll review this before our call so we can get straight to whether your data is a fit and what it might be worth. Nothing happens to your data, and there's no obligation.</p>
+        <a href="/" class="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg" style="background:var(--dc)">Back to home</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-brand-950 text-slate-300">
+    <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <div class="inline-flex items-center rounded-lg bg-white px-3 py-2.5 shadow-sm">
+            <img src="assets/img/adg-logo.png?v=4" alt="Asset Data Group" class="h-7 w-auto" />
+          </div>
+          <p class="mt-4 text-sm leading-relaxed text-slate-400">A data asset commercialization firm. We help organizations evaluate, prepare, and commercialize operational data into a revenue-generating asset — with you in control of every transaction.</p>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-white">Explore</h3>
+          <ul class="mt-4 space-y-2.5 text-sm">
+            <li><a href="/#how" class="text-slate-300 transition-colors hover:text-white">How it works</a></li>
+            <li><a href="/#sample" class="text-slate-300 transition-colors hover:text-white">Example assessment</a></li>
+            <li><a href="/data-handling" class="text-slate-300 transition-colors hover:text-white">How we protect your data</a></li>
+            <li><a href="/#faq" class="text-slate-300 transition-colors hover:text-white">Questions</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-white">Get started</h3>
+          <ul class="mt-4 space-y-2.5 text-sm">
+            <li><a href="/#assess" class="text-slate-300 transition-colors hover:text-white">Data owners — free assessment</a></li>
+            <li><a href="/fit" class="text-slate-300 transition-colors hover:text-white">See if we're a fit (pre-call)</a></li>
+            <li><a href="/#parties" class="text-slate-300 transition-colors hover:text-white">Buyers &amp; referral partners</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-white">Contact</h3>
+          <ul class="mt-4 space-y-2.5 text-sm text-slate-300">
+            <li><a href="mailto:contact@assetdatagrp.com" class="break-all hover:text-white">contact@assetdatagrp.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row">
+        <p>&copy; 2026 Asset Data Group. All rights reserved. · <a href="/privacy.html" class="hover:text-slate-300">Privacy</a> · <a href="/terms.html" class="hover:text-slate-300">Terms</a></p>
+        <p class="max-w-xl text-center sm:text-right">A preliminary assessment and data asset commercialization service — not legal, financial, or tax advice, a quote, or a guarantee of a sale.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  (function(){
+    "use strict";
+    var mb=document.getElementById("mobile-btn"), mm=document.getElementById("mobile-menu");
+    if(mb&&mm){ mb.addEventListener("click",function(){ mm.classList.toggle("hidden"); });
+      mm.addEventListener("click",function(e){ if(e.target.tagName==="A") mm.classList.add("hidden"); }); }
+    var API=(new URLSearchParams(location.search).get("api")||"").replace(/\/+$/,"");
+    function v(id){var e=document.getElementById(id);return e?(e.value||"").trim():"";}
+    function refCode(){ try{ var u=new URLSearchParams(location.search).get("ref"); if(u){ localStorage.setItem("adg_ref",u); return u; } return localStorage.getItem("adg_ref")||""; }catch(e){ return ""; } }
+    function show(el,m,ok){ el.classList.remove("hidden"); el.textContent=m; el.className="mt-4 rounded-lg px-4 py-3 text-sm "+(ok?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-600"); }
+
+    var form=document.getElementById("fit-form"), note=document.getElementById("fit-note"), done=document.getElementById("fit-done");
+    form.addEventListener("submit", async function(e){
+      e.preventDefault();
+      if(v("f-hp")){ form.reset(); return; }
+      var company=v("f-company"), name=v("f-name"), email=v("f-email");
+      if(!company||!name||!email){ show(note,"Please add your company, name, and work email.",false); return; }
+      var comms=[].slice.call(document.querySelectorAll('input[name="comms"]:checked')).map(function(c){return c.value;}).join(", ");
+      var lines=[
+        "[ADG FIT] Pre-call intake",
+        "Company: "+company,
+        "Name: "+name+(v("f-role")?" ("+v("f-role")+")":""),
+        "Email: "+email,
+        "Phone: "+(v("f-phone")||"—"),
+        "CRM: "+(v("f-crm")||"—")+(v("f-crm-since")?" (since "+v("f-crm-since")+")":""),
+        "Comms: "+(comms||"—")+(v("f-comms-note")?" / "+v("f-comms-note"):"")+(v("f-comms-since")?" (since "+v("f-comms-since")+")":""),
+        "Ticketing/work orders: "+(v("f-ticketing")||"—")+(v("f-ticketing-since")?" (since "+v("f-ticketing-since")+")":""),
+        "Other systems: "+(v("f-other")||"—")+(v("f-other-since")?" (since "+v("f-other-since")+")":""),
+        "History goes back: "+(v("f-history")||"—"),
+        "People using systems: "+(v("f-users")||"—"),
+        "Workflow example: "+(v("f-workflow")||"—"),
+        "Approver: "+(v("f-approver")||"—")
+      ];
+      var payload={ type:"inquiry", vertical:"asset-data-group", name:name, email:email, company:company,
+        interest:"Fit intake (pre-call)", message:lines.join("\n"), source:"Asset Data Group — Fit intake (pre-call)",
+        referral_code:refCode(), hp:"" };
+      var btn=form.querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent="Sending…"; note.classList.add("hidden");
+      try{
+        await fetch(API+"/.netlify/functions/submit-lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      }catch(err){ /* lead still useful; show success regardless */ }
+      form.classList.add("hidden"); done.classList.remove("hidden");
+      done.scrollIntoView({behavior:"smooth",block:"center"});
+    });
+  })();
+  </script>
+</body>
+</html>
